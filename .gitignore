@@ -1,0 +1,21 @@
+# Node
+node_modules/
+
+# Builds / dist
+build/
+dist/
+
+# Logs
+npm-debug.log
+yarn-error.log
+
+# Configs sensíveis
+.env
+
+# Sistema / OS
+.DS_Store
+Thumbs.db
+
+# IDE / editor
+.vscode/
+.idea/
