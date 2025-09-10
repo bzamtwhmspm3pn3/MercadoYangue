@@ -14,17 +14,17 @@ const app = express();
 
 // 🔹 Middleware: permitir CORS e leitura de JSON
 const allowedOrigins = [
-  'http://localhost:3000',                          // Dev local
-  process.env.FRONTEND_URL || 'https://super-suflê-c9b0fb.netlify.app' // Netlify
+  'http://localhost:3000',                             // Dev local
+  'https://super-souffle-c9b0fb.netlify.app'          // Netlify (corrigido)
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // requests sem origin (Postman, servidor) são aceitos
+    // requests sem origin (Postman, server-side) são aceitos
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = '❌ O CORS não permite esta origem.';
+    if (!allowedOrigins.includes(origin)) {
+      const msg = `❌ O CORS não permite esta origem: ${origin}`;
       return callback(new Error(msg), false);
     }
     return callback(null, true);
