@@ -42,7 +42,7 @@ export default function AbaProdutos({
 
   const fetchProdutos = async () => {
     const token = localStorage.getItem("token");
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/produtos`, {
+    const res = await fetch("http://localhost:5000/api/produtos", {
       headers: { Authorization: `Bearer ${token}` },
     });
     const dados = await res.json();
@@ -93,7 +93,7 @@ export default function AbaProdutos({
     if (!window.confirm("Deseja mesmo eliminar este produto?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`${process.env.REACT_APP_API_URL}/api/produtos/${id}`, {
+      await axios.delete(`http://localhost:5000/api/produtos/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProdutosFiltrados((prev) => prev.filter((prod) => prod._id !== id));
@@ -172,7 +172,7 @@ export default function AbaProdutos({
                     </button>
 
                     <img
-                      src={`${process.env.REACT_APP_API_URL}/uploads/${produto.imagem}`}
+                      src={`http://localhost:5000/uploads/${produto.imagem}`}
                       alt={produto.nome}
                       className="mx-auto h-48 object-contain cursor-pointer"
                       onClick={() => {

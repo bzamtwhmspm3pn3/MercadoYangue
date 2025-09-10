@@ -72,29 +72,24 @@ export default function ConfirmacaoPagamento({ comprador, carrinho, navigateToCh
       )?.nomeVendedor || "Vendedor";
 
       try {
-  const token = localStorage.getItem("token");
+        const token = localStorage.getItem("token");
 
-  await fetch(`${process.env.REACT_APP_API_URL}/api/vendas`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      vendedorId: vendedorChave,
-      produtos: itens,
-      totalGeral,
-      entregador: solicitaEntrega ? entregadorSelecionado : null,
-      factura: solicitaFactura
-        ? { tipo: "autofactura" } // ou "manual", dependendo do contexto
-        : undefined,
-    }),
-  });
-} catch (err) {
-  console.error("Erro ao registrar venda:", err);
-  alert("Erro ao registrar venda.");
-}
-
+        await fetch("http://localhost:5000/api/vendas", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            vendedorId: vendedorChave,
+            produtos: itens,
+            totalGeral,
+            entregador: solicitaEntrega ? entregadorSelecionado : null,
+            factura: solicitaFactura
+  ? { tipo: "autofactura" } // ou "manual", dependendo do contexto
+  : undefined,
+          }),
+        });
 
         const msgAutomatica = gerarMensagemVendedor({
           comprador,
