@@ -322,7 +322,7 @@ const [produtosFiltrados, setProdutosFiltrados] = useState([]);
 
       setUsuario(usuarioLogado);
       alert(`Bem-vindo(a), ${usuarioLogado.nome}!`);
-      limparCampos();
+      limparCampos() ;
     } catch (error) {
       alert("Erro ao conectar com o servidor.");
       console.error(error);
