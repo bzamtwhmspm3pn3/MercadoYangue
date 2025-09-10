@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Venda = require('../models/Venda');
-const Produto = require('../models/Produto');
+const Venda = require('../models/venda');
+const Produto = require('../models/produto');
 
 // Confirmar pagamento (checkout)
 router.post('/checkout', async (req, res) => {

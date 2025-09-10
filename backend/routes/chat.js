@@ -1,7 +1,7 @@
 // backend/routes/chat.js
 const express = require('express');
 const router = express.Router();
-const Mensagem = require('../models/Mensagem'); // Modelo Mongoose
+const Mensagem = require('../models/mensagem'); // Modelo Mongoose
 
 // Rota para enviar mensagem
 router.post('/enviar', async (req, res) => {

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Produto = require('../models/Produto');
-const Usuario = require('../models/Usuario');
+const Produto = require('../models/produto');
+const Usuario = require('../models/usuario');
 
 // Rota para buscar vendedores que possuem produtos com nome parecido
 router.get('/buscar-vendedores', async (req, res) => {
