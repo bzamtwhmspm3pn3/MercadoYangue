@@ -288,24 +288,28 @@ const [produtosFiltrados, setProdutosFiltrados] = useState([]);
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha }),
-      });
+  const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, senha }),
+  });
 
-      if (!res.ok) {
-        const erro = await res.json();
-        alert(erro.msg || "Erro no login");
-        return;
-      }
+  if (!res.ok) {
+    const erro = await res.json();
+    alert(erro.msg || "Erro no login");
+    return;
+  }
 
-      const data = await res.json();
+  const data = await res.json();
 
-      if (!data.token || !data.usuario || !data.usuario.nome || !data.usuario.tipo) {
-        alert("Dados incompletos recebidos do servidor.");
-        return;
-      }
+  if (!data.token || !data.usuario || !data.usuario.nome || !data.usuario.tipo) {
+    alert("Dados incompletos recebidos do servidor.");
+    return;
+  }
+} catch (err) {
+  console.error("Erro na requisição:", err);
+  alert("Erro ao conectar com o servidor.");
+}
 
       const usuarioLogado = {
         nome: data.usuario.nome,
@@ -357,7 +361,7 @@ const [produtosFiltrados, setProdutosFiltrados] = useState([]);
     };
 
     try {
-  const res = await fetch("http://localhost:5000/api/auth/cadastro", {
+  const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/cadastro`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(novoUsuario),
@@ -387,7 +391,7 @@ const [produtosFiltrados, setProdutosFiltrados] = useState([]);
   alert("Erro ao conectar com o servidor.");
   console.error(error);
 }
-  };
+
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded shadow-md border border-green-200">
@@ -641,7 +645,7 @@ const [mostrarPainelFBI, setMostrarPainelFBI] = useState(false);
 
 useEffect(() => {
   axios
-    .get("http://localhost:5000/api/produtos")
+    .get(`${process.env.REACT_APP_API_URL}/api/produtos`) // URL relativa ao backend
     .then((response) => {
       const dados = response.data;
       if (Array.isArray(dados)) {
@@ -654,7 +658,10 @@ useEffect(() => {
       }
     })
     .catch((error) => {
-      console.error("Erro ao buscar produtos:", error.response?.data?.msg || error.message);
+      console.error(
+        "Erro ao buscar produtos:",
+        error.response?.data?.msg || error.message
+      );
       setProdutos([]);
       setProdutosFiltrados([]);
     });
@@ -997,29 +1004,34 @@ if (contemTermoBanido) {
     envio.append('formaPagamento', JSON.stringify(formaPagamento));
  // ✅ modo novo
 
-    try {
-      const token = localStorage.getItem('token');
+try {
+  const token = localStorage.getItem('token');
 
-      const response = await fetch('http://localhost:5000/api/produtos', {
-        method: 'POST',
-        body: envio,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        alert('Produto cadastrado com sucesso!');
-        form.reset();
-      } else {
-        const erro = await response.json();
-        console.error('Erro detalhado:', erro);
-alert('Erro ao cadastrar produto:\n' + (erro.message || JSON.stringify(erro)));
-
-      }
-    } catch (error) {
-      alert('Erro de rede ou servidor: ' + error.message);
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/produtos`, // URL dinâmica do .env
+    {
+      method: 'POST',
+      body: envio,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }
+  );
+
+  if (response.ok) {
+    alert('Produto cadastrado com sucesso!');
+    form.reset();
+  } else {
+    const erro = await response.json();
+    console.error('Erro detalhado:', erro);
+    alert(
+      'Erro ao cadastrar produto:\n' + (erro.message || JSON.stringify(erro))
+    );
+  }
+} catch (err) {
+  console.error('Falha na requisição:', err);
+  alert('Erro ao conectar com o servidor.');
+}
   }}
   className="flex flex-col gap-4"
 >

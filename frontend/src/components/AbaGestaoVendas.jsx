@@ -17,56 +17,57 @@ const AbaGestaoVendas = ({ usuario }) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
+const carregarProdutos = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/produtos/meus-produtos`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Erro ao buscar produtos");
+    const dados = await res.json();
+    setProdutos(Array.isArray(dados) ? dados : []);
+  } catch (err) {
+    console.error("Erro ao carregar produtos:", err);
+    setProdutos([]);
+  }
+};
 
-    const carregarProdutos = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/produtos/meus-produtos", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Erro ao buscar produtos");
-        const dados = await res.json();
-        setProdutos(Array.isArray(dados) ? dados : []);
-      } catch (err) {
-        console.error("Erro ao carregar produtos:", err);
-        setProdutos([]);
-      }
-    };
+const carregarVendas = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/vendas/confirmadas`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Erro ao buscar vendas confirmadas");
+    const dados = await res.json();
+    setVendasConfirmadas(Array.isArray(dados) ? dados : []);
+  } catch (err) {
+    console.error("Erro ao carregar vendas:", err);
+    setVendasConfirmadas([]);
+  }
+};
 
-    const carregarVendas = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/vendas/confirmadas", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Erro ao buscar vendas confirmadas");
-        const dados = await res.json();
-        setVendasConfirmadas(Array.isArray(dados) ? dados : []);
-      } catch (err) {
-        console.error("Erro ao carregar vendas:", err);
-        setVendasConfirmadas([]);
-      }
-    };
+carregarProdutos();
+carregarVendas();
 
-    carregarProdutos();
-    carregarVendas();
-  }, []);
-
-  // 🔹 Confirmar venda
-  const confirmarVenda = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/vendas/${id}/confirmar`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        setVendasConfirmadas((prev) =>
-          prev.map((v) => (v._id === id ? { ...v, status: "confirmada" } : v))
-        );
-      }
-    } catch (err) {
-      console.error("Erro ao confirmar venda:", err);
+// 🔹 Confirmar venda
+const confirmarVenda = async (id) => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/vendas/${id}/confirmar`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      setVendasConfirmadas((prev) =>
+        prev.map((v) => (v._id === id ? { ...v, status: "confirmada" } : v))
+      );
     }
-  };
+  } catch (err) {
+    console.error("Erro ao confirmar venda:", err);
+  }
+};
+
 
   const emitirFactura = (id) => {
     alert(`📑 Factura emitida para venda ${id}`);

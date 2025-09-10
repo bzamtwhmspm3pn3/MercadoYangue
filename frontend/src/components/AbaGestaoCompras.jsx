@@ -13,10 +13,16 @@ export default function AbaGestaoCompras({ novasCompras }) {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
-    fetch('http://localhost:5000/api/compras/minhas', { headers: { Authorization: `Bearer ${token}` } })
+
+    fetch(`${process.env.REACT_APP_API_URL}/api/compras/minhas`, { 
+      headers: { Authorization: `Bearer ${token}` } 
+    })
       .then(r => r.ok ? r.json() : Promise.reject(r))
       .then(data => setCompras(Array.isArray(data) ? data : []))
-      .catch(err => { console.error('Erro compras', err); setCompras([]); });
+      .catch(err => { 
+        console.error('Erro compras', err); 
+        setCompras([]); 
+      });
 
     // socket
     const payload = JSON.parse(atob(token.split('.')[1])); // extrai payload do JWT
@@ -24,7 +30,6 @@ export default function AbaGestaoCompras({ novasCompras }) {
     if (!socket) return;
     socket.on('novaCompra', (comp) => setCompras(prev => [comp, ...prev]));
     socket.on('vendaAtualizada', (v) => {
-      // actualiza se necessário (quando o vendedor muda status)
       setCompras(prev => prev.map(c => c._id === v._id ? { ...c, status: v.status } : c));
     });
     return () => socket.disconnect();
