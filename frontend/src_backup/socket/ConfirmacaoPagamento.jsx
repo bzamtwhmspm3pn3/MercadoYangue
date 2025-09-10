@@ -85,7 +85,7 @@ export default function ConfirmacaoPagamento({ comprador, carrinho, navigateToCh
         });
 
         // 1️⃣ Criar VENDA
-        await fetch("https://mercadoyangue-i3in.onrender.com/api/vendas", {
+        await fetch("http://localhost:5000/api/vendas", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({
@@ -99,7 +99,7 @@ export default function ConfirmacaoPagamento({ comprador, carrinho, navigateToCh
         });
 
         // 2️⃣ Criar COMPRA
-        await fetch("https://mercadoyangue-i3in.onrender.com/api/compras", {
+        await fetch("http://localhost:5000/api/compras", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({

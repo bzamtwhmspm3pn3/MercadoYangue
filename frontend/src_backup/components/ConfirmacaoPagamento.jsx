@@ -10,7 +10,6 @@ export default function ConfirmacaoPagamento({ comprador, carrinho, navigateToCh
   const [pagamentoConfirmado, setPagamentoConfirmado] = useState(false);
   const [filtros, setFiltros] = useState({ provincia: "", municipio: "", veiculo: "" });
 
-  // Mock de entregadores
   useEffect(() => {
     setEntregadores([
       { nome: "Manuel Moto", veiculo: "Moto", provincia: "Luanda", municipio: "Viana", local: "KM 30", pagamento: "TPA", tarifa: 1500, contacto: "923-000-111" },
@@ -20,7 +19,6 @@ export default function ConfirmacaoPagamento({ comprador, carrinho, navigateToCh
     ]);
   }, []);
 
-  // Filtros dependentes
   const provincias = [...new Set(entregadores.map(e => e.provincia))];
   const municipios = [...new Set(entregadores.filter(e => !filtros.provincia || e.provincia === filtros.provincia).map(e => e.municipio))];
   const veiculos = [...new Set(entregadores.map(e => e.veiculo))];
@@ -31,87 +29,76 @@ export default function ConfirmacaoPagamento({ comprador, carrinho, navigateToCh
     (!filtros.veiculo || e.veiculo === filtros.veiculo)
   );
 
-  // Gera a mensagem enviada no chat
-  const gerarMensagemVendedor = ({ desejaFactura, desejaEntrega, entregador, itens }) => {
-    let msg = `👋 Olá! Acabei de comprar alguns dos seus produtos:\n\n`;
+  const gerarMensagemVendedor = ({ comprador, desejaFactura, desejaEntrega, entregador, itens }) => {
+  let msg = `👋 Olá! Acabei de comprar alguns dos seus produtos:\n\n`;
 
-    itens.forEach(item => {
-      const totalItem = item.precoUnitario * item.quantidade;
-      msg += `• ${item.produto} — ${item.quantidade} x ${item.precoUnitario.toLocaleString()} Kz = ${totalItem.toLocaleString()} Kz\n`;
-    });
+  itens.forEach(item => {
+    const totalItem = item.precoUnitario * item.quantidade;
+    msg += `• ${item.nome} — ${item.quantidade} x ${item.precoUnitario.toLocaleString()} Kz = ${totalItem.toLocaleString()} Kz\n`;
+  });
 
-    if (desejaFactura) {
-      msg += `\n📄 Gostaria de receber uma factura. Caso não possa emitir, por favor envie o seu BI para efeitos de autofacturação.`;
-    }
+  if (desejaFactura) {
+    msg += `\n📄 Gostaria de receber uma factura. Caso não possa emitir, por favor envie o seu BI para efeitos de autofacturação.`;
+  }
 
-    if (desejaEntrega && entregador) {
-      msg += `\n\n🚚 Solicitei entrega com os seguintes dados:\n• Nome: ${entregador.nome}\n• Veículo: ${entregador.veiculo}\n• Local: ${entregador.local}, ${entregador.municipio}, ${entregador.provincia}\n• Tarifa: ${entregador.tarifa.toLocaleString()} Kz\n• Pagamento: ${entregador.pagamento}\n• Contacto: ${entregador.contacto}`;
-    }
+  if (desejaEntrega && entregador) {
+    msg += `\n\n🚚 Solicitei entrega com os seguintes dados:\n• Nome: ${entregador.nome}\n• Veículo: ${entregador.veiculo}\n• Local: ${entregador.local}, ${entregador.municipio}, ${entregador.provincia}\n• Tarifa: ${entregador.tarifa.toLocaleString()} Kz\n• Pagamento: ${entregador.pagamento}\n• Contacto: ${entregador.contacto}`;
+  }
 
-    msg += `\n\n🙏 Obrigado pela sua atenção. Fico a aguardar!`;
-    return msg;
-  };
+  msg += `\n\n🙏 Obrigado pela sua atenção. Fico a aguardar!`;
+  return msg;
+};
 
-  // Confirmação de pagamento
+
   const confirmarPagamento = async () => {
-    const vendedoresUnicos = Array.from(
-      new Set(carrinho.map(item => item.vendedor?._id || item.nomeVendedor || "Desconhecido"))
-    );
+    const vendedoresUnicos = Array.from(new Set(carrinho.map(item => item.vendedor?._id || item.nomeVendedor || "Desconhecido")));
 
     for (const vendedorChave of vendedoresUnicos) {
       const itens = carrinho
         .filter(item => (item.vendedor?._id || item.nomeVendedor) === vendedorChave)
         .map(item => ({
-          produto: item.nome, // compatível com o model
+          nome: item.nome,
           quantidade: item.quantidade,
           precoUnitario: item.precoUnitario ?? item.preco ?? 0,
+          total: item.quantidade * (item.precoUnitario ?? item.preco ?? 0),
         }));
 
-      const totalGeral = itens.reduce((acc, cur) => acc + cur.quantidade * cur.precoUnitario, 0);
+      const totalGeral = itens.reduce((acc, cur) => acc + cur.total, 0);
 
-      const nomeVendedor =
-        carrinho.find(item => (item.vendedor?._id || item.nomeVendedor) === vendedorChave)?.vendedor?.nome ||
-        carrinho.find(item => item.nomeVendedor === vendedorChave)?.nomeVendedor ||
-        "Vendedor";
+      const nomeVendedor = carrinho.find(item =>
+        (item.vendedor?._id || item.nomeVendedor) === vendedorChave
+      )?.vendedor?.nome || carrinho.find(item =>
+        item.nomeVendedor === vendedorChave
+      )?.nomeVendedor || "Vendedor";
 
       try {
         const token = localStorage.getItem("token");
 
+        await fetch("http://localhost:5000/api/vendas", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            vendedorId: vendedorChave,
+            produtos: itens,
+            totalGeral,
+            entregador: solicitaEntrega ? entregadorSelecionado : null,
+            factura: solicitaFactura
+  ? { tipo: "autofactura" } // ou "manual", dependendo do contexto
+  : undefined,
+          }),
+        });
+
         const msgAutomatica = gerarMensagemVendedor({
+          comprador,
           desejaFactura: solicitaFactura,
           desejaEntrega: solicitaEntrega,
           entregador: entregadorSelecionado,
           itens,
         });
 
-        // 1️⃣ Criar VENDA
-        await fetch("https://mercadoyangue-i3in.onrender.com/api/vendas", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({
-            compradorId: comprador?._id,
-            vendedorId: vendedorChave,
-            itens,
-            total: totalGeral,
-            mensagem: msgAutomatica,
-            status: "pendente",
-          }),
-        });
-
-        // 2️⃣ Criar COMPRA
-        await fetch("https://mercadoyangue-i3in.onrender.com/api/compras", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({
-            compradorId: comprador?._id,
-            vendedorId: vendedorChave,
-            itens,
-            total: totalGeral,
-            status: "pendente",
-          }),
-        });
-
-        // 3️⃣ Enviar para o chat
         localStorage.setItem("mensagemPreChat", JSON.stringify({
           vendedor: nomeVendedor,
           mensagem: msgAutomatica,
@@ -121,7 +108,7 @@ export default function ConfirmacaoPagamento({ comprador, carrinho, navigateToCh
         navigateToChat(comprador, nomeVendedor, msgAutomatica);
         if (!vendedorPrincipal) setVendedorPrincipal(nomeVendedor);
       } catch (err) {
-        console.error("Erro ao registrar venda/compra:", err);
+        console.error("Erro ao registrar venda:", err);
         alert("Erro ao registrar a venda. Tente novamente.");
       }
     }
@@ -133,13 +120,13 @@ export default function ConfirmacaoPagamento({ comprador, carrinho, navigateToCh
     <div className="p-6 bg-white rounded shadow-md max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold mb-6">Confirmação de Pagamento</h2>
 
-      {/* Opções */}
       <div className="mb-4">
         <label className="flex items-center space-x-2">
           <input type="checkbox" checked={solicitaFactura} onChange={e => setSolicitaFactura(e.target.checked)} />
           <span>Desejo factura</span>
         </label>
       </div>
+
       <div className="mb-4">
         <label className="flex items-center space-x-2">
           <input type="checkbox" checked={solicitaEntrega} onChange={e => setSolicitaEntrega(e.target.checked)} />
@@ -147,7 +134,6 @@ export default function ConfirmacaoPagamento({ comprador, carrinho, navigateToCh
         </label>
       </div>
 
-      {/* Entregador */}
       {solicitaEntrega && (
         <div className="mb-6">
           <h4 className="font-semibold mb-2">Escolher Entregador</h4>
@@ -156,7 +142,6 @@ export default function ConfirmacaoPagamento({ comprador, carrinho, navigateToCh
         </div>
       )}
 
-      {/* Resultado */}
       {pagamentoConfirmado ? (
         <div className="mt-8 bg-green-50 border border-green-400 rounded p-6">
           <h3 className="text-xl font-bold text-green-800 mb-3">🎉 Pagamento confirmado!</h3>
@@ -187,7 +172,6 @@ export default function ConfirmacaoPagamento({ comprador, carrinho, navigateToCh
   );
 }
 
-// Subcomponentes
 function FiltrosEntregadores({ provincias, municipios, veiculos, filtros, setFiltros }) {
   return (
     <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-3">
@@ -230,4 +214,3 @@ function ListaEntregadores({ entregadores, selecionado, onSelecionar }) {
     </ul>
   );
 }
-

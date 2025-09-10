@@ -288,7 +288,7 @@ const [produtosFiltrados, setProdutosFiltrados] = useState([]);
     }
 
     try {
-      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/login", {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
@@ -357,7 +357,7 @@ const [produtosFiltrados, setProdutosFiltrados] = useState([]);
     };
 
     try {
-  const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/cadastro", {
+  const res = await fetch("http://localhost:5000/api/auth/cadastro", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(novoUsuario),
@@ -641,7 +641,7 @@ const [mostrarPainelFBI, setMostrarPainelFBI] = useState(false);
 
 useEffect(() => {
   axios
-    .get("https://mercadoyangue-i3in.onrender.com/api/produtos")
+    .get("http://localhost:5000/api/produtos")
     .then((response) => {
       const dados = response.data;
       if (Array.isArray(dados)) {
@@ -1000,7 +1000,7 @@ if (contemTermoBanido) {
     try {
       const token = localStorage.getItem('token');
 
-      const response = await fetch('https://mercadoyangue-i3in.onrender.com/api/produtos', {
+      const response = await fetch('http://localhost:5000/api/produtos', {
         method: 'POST',
         body: envio,
         headers: {
