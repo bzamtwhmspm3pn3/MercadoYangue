@@ -14,13 +14,14 @@ const app = express();
 
 // 🔹 Middleware: permitir CORS e leitura de JSON
 const allowedOrigins = [
-  'http://localhost:3000',              // Desenvolvimento local
-  process.env.FRONTEND_URL || ''        // Produção (Netlify)
+  'http://localhost:3000',                          // Dev local
+  process.env.FRONTEND_URL || 'https://super-suflê-c9b0fb.netlify.app' // Netlify
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // Postman, server-side
+    // requests sem origin (Postman, servidor) são aceitos
+    if (!origin) return callback(null, true);
 
     if (allowedOrigins.indexOf(origin) === -1) {
       const msg = '❌ O CORS não permite esta origem.';
@@ -44,7 +45,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/vendas', vendasRoutes);
 app.use('/api/compras', comprasRoutes);
 
-// ⚠️ REMOVIDO bloco que tentava servir o frontend
+// ⚠️ Não servir frontend pelo backend, já está no Netlify
 
 // 🔹 Conexão ao MongoDB
 const PORT = process.env.PORT || 5000;
