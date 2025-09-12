@@ -316,26 +316,27 @@ useEffect(() => {
 
 
   // 🔹 Confirmar venda
-  const confirmarVenda = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/vendas/${id}/confirmar`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        setVendasConfirmadas((prev) =>
-          prev.map((v) => (v._id === id ? { ...v, status: "confirmada" } : v))
-        );
-      }
-    } catch (err) {
-      console.error("Erro ao confirmar venda:", err);
-    }
-  };
+const confirmarVenda = async (id) => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`https://mercadoyangue-i3in.onrender.com/api/vendas/${id}/confirmar`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-  const emitirFactura = (id) => {
-    alert(`📑 Factura emitida para venda ${id}`);
-  };
+    if (res.ok) {
+      setVendasConfirmadas((prev) =>
+        prev.map((v) => (v._id === id ? { ...v, status: "confirmada" } : v))
+      );
+    }
+  } catch (err) {
+    console.error("Erro ao confirmar venda:", err);
+  }
+};
+
+const emitirFactura = (id) => {
+  alert(`📑 Factura emitida para venda ${id}`);
+};
 
   // 🔹 Helpers
   const formatarKz = (val) =>
