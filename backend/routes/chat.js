@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Mensagem = require("../models/Mensagem");
+const Mensagem = require("../models/mensagem");
 const { authMiddleware } = require("../middlewares/auth");
 
 // 📩 Enviar mensagem
