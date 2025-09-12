@@ -1,9 +1,12 @@
 require('dotenv').config();
+require('dotenv').config();
 const express = require('express');
+const app = express();        
 const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+;
 
 // Rotas
 const usuariosRoutes = require('./routes/usuarios');
