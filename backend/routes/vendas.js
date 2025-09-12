@@ -1,28 +1,68 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Venda = require('../models/venda');
-const Produto = require('../models/produto');
+const Venda = require("../models/venda");
+const { authMiddleware } = require("../middlewares/auth");
 
-// Confirmar pagamento (checkout)
-router.post('/checkout', async (req, res) => {
+// Criar venda
+router.post("/", authMiddleware, async (req, res) => {
   try {
-    const { vendedor, itens, total } = req.body;
+    const { vendedorId, produtos, entregador, factura } = req.body;
 
-    // Atualizar stock de cada produto
-    for (const item of itens) {
-      await Produto.findByIdAndUpdate(item.produto, {
-        $inc: { quantidade: -item.quantidade }
-      });
+    if (!vendedorId || !produtos?.length) {
+      return res.status(400).json({ msg: "Dados incompletos." });
     }
 
-    // Criar venda
-    const novaVenda = new Venda({ vendedor, itens, total, status: 'concluída' });
-    await novaVenda.save();
+    const novaVenda = new Venda({
+      comprador: req.user.id,
+      vendedor: vendedorId,
+      produtos,
+      entregador,
+      factura
+    });
 
-    res.status(201).json(novaVenda);
+    await novaVenda.save();
+    res.status(201).json({ msg: "Venda registada com sucesso!", venda: novaVenda });
   } catch (err) {
-    res.status(500).json({ message: 'Erro ao confirmar pagamento', error: err.message });
+    console.error("Erro ao registar venda:", err);
+    res.status(500).json({ msg: "Erro interno no servidor" });
   }
 });
 
-module.exports = router;
+// Listar vendas do comprador logado
+router.get("/minhas", authMiddleware, async (req, res) => {
+  try {
+    const vendas = await Venda.find({ comprador: req.user.id }).populate(
+      "vendedor", "nome email"
+    );
+    res.json(vendas);
+  } catch (err) {
+    res.status(500).json({ msg: "Erro ao buscar vendas do comprador" });
+  }
+});
+
+// Listar vendas do vendedor logado
+router.get("/vendedor", authMiddleware, async (req, res) => {
+  try {
+    const vendas = await Venda.find({ vendedor: req.user.id })
+      .populate("comprador", "nome email")
+      .populate("produtos.produto", "nome"); // 🔹 Popula o nome do produto
+
+    res.json(vendas);
+  } catch (err) {
+    res.status(500).json({ msg: "Erro ao buscar vendas do vendedor" });
+  }
+});
+
+// Listar todas as vendas
+router.get("/", authMiddleware, async (req, res) => {
+  try {
+    const vendas = await Venda.find()
+      .populate("comprador", "nome email")
+      .populate("vendedor", "nome email");
+    res.json(vendas);
+  } catch (err) {
+    res.status(500).json({ msg: "Erro ao buscar vendas" });
+  }
+});
+
+module.exports = router;

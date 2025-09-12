@@ -1,7 +1,9 @@
-// src/socket.js
 import { io } from 'socket.io-client';
 
 export const connectSocket = (userId) => {
   if (!userId) return null;
-  return io('https://mercadoyangue-i3in.onrender.com', { query: { userId } });
+
+  return io('http://localhost:5000', { 
+    query: { userId } // 🔹 passa o id para o backend
+  });
 };

@@ -5,22 +5,41 @@ export const AuthContext = createContext();
 
 // Componente provedor do contexto
 export const AuthProvider = ({ children }) => {
-  // Estado simples de usuário para exemplo
+  // Estado do usuário e token
   const [usuario, setUsuario] = useState(null);
+  const [token, setToken] = useState(null);
 
-  // Função para simular login (exemplo)
-  const login = (dadosUsuario) => {
-    setUsuario(dadosUsuario);
+  // Função de login: recebe objeto { usuario, token }
+  const login = ({ usuario, token }) => {
+    setUsuario(usuario);
+    setToken(token);
+    // opcional: salvar no localStorage para persistência
+    localStorage.setItem("usuario", JSON.stringify(usuario));
+    localStorage.setItem("token", token);
   };
 
-  // Função para logout
+  // Função de logout
   const logout = () => {
     setUsuario(null);
+    setToken(null);
+    localStorage.removeItem("usuario");
+    localStorage.removeItem("token");
+  };
+
+  // Função para inicializar estado a partir do localStorage
+  const inicializarAuth = () => {
+    const storedUsuario = localStorage.getItem("usuario");
+    const storedToken = localStorage.getItem("token");
+    if (storedUsuario && storedToken) {
+      setUsuario(JSON.parse(storedUsuario));
+      setToken(storedToken);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ usuario, login, logout }}>
+    <AuthContext.Provider value={{ usuario, token, login, logout, inicializarAuth }}>
       {children}
     </AuthContext.Provider>
   );
 };
+

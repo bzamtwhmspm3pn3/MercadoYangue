@@ -14,7 +14,6 @@ import PainelFBI from "./pages/FBI/PainelFBI";
 export function Header() {
   return (
     <header>
-      <img src={logo} alt="Logo MercadoYangue" style={{ width: '150px', height: 'auto' }} />
       <h1>MercadoYangue</h1>
     </header>
   );
@@ -78,7 +77,7 @@ function AbaQuemSomos() {
         O repasse da comissão é responsabilidade do vendedor/agricultor e deverá ser feito no prazo máximo de 5 dias úteis após a entrega e confirmação da transacção.
       </p>
       <p>
-        O MercadoYangue rege-se pela <strong>boa-fé, legalidade, responsabilidade e respeito ao consumidor</strong>, em conformidade com a Lei nº 5/05 da Defesa do Consumidor e outras normativas aplicáveis.
+        O MercadoYangue rege-se pela <strong>boa-fé, legalidade, responsabilidade e respeito ao consumidor</strong>, em conformidade com a Lei nº 15/03 da Defesa do Consumidor e outras normativas aplicáveis.
       </p>
       <p>
         É <strong>proibida</strong> a utilização da plataforma para práticas ilícitas, fraudulentas ou enganosas, sob pena de sanções legais e expulsão definitiva do sistema.
@@ -363,6 +362,7 @@ const [produtosFiltrados, setProdutosFiltrados] = useState([]);
     body: JSON.stringify(novoUsuario),
   });
 
+
   const texto = await res.text();
   console.log("Resposta do servidor (raw):", texto);
 
@@ -539,7 +539,7 @@ const [produtosFiltrados, setProdutosFiltrados] = useState([]);
 </p>
 
   <p>
-    O uso da plataforma rege-se pelos princípios da boa-fé, honestidade, transparência e respeito às normas legais vigentes na República de Angola, incluindo, mas não se limitando, à Lei nº 5/05 sobre a Defesa do Consumidor e demais legislação aplicável ao comércio electrónico e protecção de dados pessoais.
+    O uso da plataforma rege-se pelos princípios da boa-fé, honestidade, transparência e respeito às normas legais vigentes na República de Angola, incluindo, mas não se limitando, à Lei nº 15/03 sobre a Defesa do Consumidor e demais legislação aplicável ao comércio electrónico e protecção de dados pessoais.
   </p>
 
   <p>
@@ -898,11 +898,13 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
 
 
 {abaAtiva === 'confirmarPagamento' && (
-  <ConfirmacaoPagamento
-    comprador={usuario?.nome}
-    carrinho={carrinho}
-    navigateToChat={navigateToChat}
-  />
+  <AuthProvider>
+    <ConfirmacaoPagamentoProtegido
+      comprador={usuario?.nome}
+      carrinho={carrinho}
+      navigateToChat={navigateToChat}
+    />
+  </AuthProvider>
 )}
 
         {abaAtiva === 'login' && !usuario && <AbaLoginCadastro setUsuario={setUsuario} />}
@@ -1007,6 +1009,7 @@ if (contemTermoBanido) {
           Authorization: `Bearer ${token}`,
         },
       });
+
 
       if (response.ok) {
         alert('Produto cadastrado com sucesso!');

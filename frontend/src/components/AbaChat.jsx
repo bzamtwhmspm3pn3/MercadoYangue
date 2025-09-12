@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { connectSocket } from "../socket";
 
 const emojisDisponiveis = ["😀", "😄", "❤️", "🙏", "👍", "💡", "🔥", "😢"];
 
@@ -33,6 +34,9 @@ export default function AbaChat({ usuario }) {
   const [arquivoTipo, setArquivoTipo] = useState(null);
   const inputFileRef = useRef(null);
   const [usuarioActual, setUsuarioActual] = useState(null);
+
+
+
 useEffect(() => {
   if (usuario && usuario.nome) {
     setUsuarioActual(usuario.nome);
@@ -71,6 +75,34 @@ useEffect(() => {
       // Salva no localStorage
       localStorage.setItem(chave, JSON.stringify(novoHistorico));
       setHistorico(novoHistorico);
+
+// 1. Enviar mensagem para o backend
+fetch("https://mercadoyangue-i3in.onrender.com/api/chat/enviar", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("token")}`, // garante que mandas o JWT
+  },
+  body: JSON.stringify({
+    destinatario,
+    conteudo: novaMsg.texto,
+  }),
+})
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("Mensagem salva no servidor:", data);
+  })
+  .catch((err) => console.error("Erro ao salvar no servidor:", err));
+
+// 2. Emitir via socket para o destinatário
+if (window.socket) {
+  window.socket.emit("novaMensagem", {
+    remetente: usuario.nome,
+    destinatario,
+    conteudo: novaMsg.texto,
+    data: novaMsg.data,
+  });
+}
 
       // Atualiza status de leitura para o vendedor
       const status = JSON.parse(localStorage.getItem("statusMensagens") || "{}");

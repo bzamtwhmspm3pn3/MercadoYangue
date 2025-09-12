@@ -93,7 +93,7 @@ export default function AbaProdutos({
     if (!window.confirm("Deseja mesmo eliminar este produto?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`https://mercadoyangue-i3in.onrender.com/api/produtos/${id}`, {
+      await axios.delete(`http://localhost:5000/api/produtos/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProdutosFiltrados((prev) => prev.filter((prod) => prod._id !== id));
@@ -103,15 +103,32 @@ export default function AbaProdutos({
     }
   };
 
-  const vendedoresUnicos = [
-    ...new Set(produtosFiltrados.map((p) => p.vendedor?.nome || "Desconhecido")),
-  ].sort((a, b) => a.localeCompare(b));
+const produtosVisiveis = usuario?.tipo === "vendedor" 
+  ? produtosFiltrados.filter(p => p.vendedor?.nome === usuario.nome)
+  : produtosFiltrados;
+
+ const vendedoresUnicos = [
+  ...new Set(
+    produtosVisiveis
+      .filter(p => !(usuario?.tipo === "vendedor" && p.vendedor?.nome !== usuario.nome))
+      .map(p => p.vendedor?.nome || "Desconhecido")
+  )
+].sort((a, b) => a.localeCompare(b));
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 bg-gradient-to-b from-green-50 to-yellow-50">
-      <h1 className="text-4xl font-extrabold text-green-800 text-center mb-2">
-        A Praça Digital do Campo à Cidade
-      </h1>
+      <div className="flex flex-col items-center mt-4 mb-4">
+  <img
+    src="/logo-mercado-yangue.png"
+    alt="Mercado Yangue"
+    className="w-64 h-auto mb-2"
+  />
+  <h1 className="text-4xl font-extrabold text-green-800 text-center">
+    A Praça Digital do Campo à Cidade
+  </h1>
+</div>
+
       <MensagemMultilingue />
 
       <div className="bg-[#5C4033] border border-yellow-500 shadow p-4 rounded-lg mb-6">
@@ -137,9 +154,9 @@ export default function AbaProdutos({
         <p className="text-center text-yellow-400">Nenhum produto encontrado.</p>
       ) : (
         vendedoresUnicos.map((vendedor) => {
-          const produtosDoVendedor = produtosFiltrados.filter(
-            (p) => (p.vendedor?.nome || "Desconhecido") === vendedor
-          );
+          const produtosDoVendedor = produtosVisiveis.filter(
+    (p) => (p.vendedor?.nome || "Desconhecido") === vendedor
+  );
 
           return (
             <div key={vendedor} className="mb-10 border-b pb-6">
@@ -172,7 +189,7 @@ export default function AbaProdutos({
                     </button>
 
                     <img
-                      src={`https://mercadoyangue-i3in.onrender.com/uploads/${produto.imagem}`}
+                      src={`http://localhost:5000/uploads/${produto.imagem}`}
                       alt={produto.nome}
                       className="mx-auto h-48 object-contain cursor-pointer"
                       onClick={() => {
@@ -227,71 +244,70 @@ export default function AbaProdutos({
                     </p>
 
                     <div className="flex justify-center mt-3 gap-2 flex-wrap">
-                      <>
-  <button
-    onClick={() => {
-      if (!usuario || usuario?.tipo !== 'cliente') {
-        alert("⚠️ Por favor, inicie sessão como cliente para adicionar ao carrinho.");
-        return;
-      }
-      adicionarNoCarrinho(produto);
-      setAbaAtiva && setAbaAtiva("carrinho");
-    }}
-    disabled={esgotado(produto)}
-    className={`px-3 py-1 text-sm rounded ${
-      esgotado(produto)
-        ? "bg-yellow-400 text-white"
-        : "bg-green-700 text-white hover:bg-green-800"
-    }`}
-  >
-    {esgotado(produto) ? "Indisponível" : "Adicionar ao carrinho"}
-  </button>
+  {/* 🔹 Botões apenas para clientes */}
+  {usuario?.tipo === "cliente" && (
+    <>
+      <button
+        onClick={() => {
+          const itemCarrinho = {
+            ...produto,
+            vendedorId: produto.vendedor?._id,
+          };
+          adicionarNoCarrinho(itemCarrinho);
+          setAbaAtiva && setAbaAtiva("carrinho");
+        }}
+        disabled={esgotado(produto)}
+        className={`px-3 py-1 text-sm rounded ${
+          esgotado(produto)
+            ? "bg-yellow-400 text-white"
+            : "bg-green-700 text-white hover:bg-green-800"
+        }`}
+      >
+        {esgotado(produto) ? "Indisponível" : "Adicionar ao carrinho"}
+      </button>
 
-  <button
-    className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md shadow-md transition duration-200 font-semibold text-sm"
-    onClick={() => {
-      if (!usuario) {
-        alert("⚠️ Por favor, inicie sessão para negociar com o vendedor.");
-        return;
-      }
-      const mensagem = `Olá, estou interessado no seu produto: ${produto.nome}. Podemos negociar?`;
-      localStorage.setItem(
-        "mensagemPreChat",
-        JSON.stringify({
-          vendedor: produto.vendedor?.nome,
-          mensagem,
-          de: usuario.nome,
-        })
-      );
-      setAbaAtiva && setAbaAtiva("chat");
-    }}
-  >
-    🤝 Negociar com o Vendedor
-  </button>
-</>
-                      {(usuario?.tipo === "vendedor" ||
-                        usuario?.tipo === "agricultor") &&
-                        usuario?.nome === produto.vendedor?.nome && (
-                          <>
-                            <button
-                              onClick={(e) => excluirProduto(produto._id, e)}
-                              className="px-3 py-1 bg-yellow-800 text-white rounded text-sm hover:bg-yellow-900"
-                            >
-                              Eliminar
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setProdutoParaEditar(produto);
-                                setMostrarModalEditar(true);
-                              }}
-                              className="px-3 py-1 bg-green-800 text-white rounded text-sm hover:bg-green-900"
-                            >
-                              Editar
-                            </button>
-                          </>
-                        )}
-                    </div>
+      <button
+        className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md shadow-md transition duration-200 font-semibold text-sm"
+        onClick={() => {
+          const mensagem = `Olá, estou interessado no seu produto: ${produto.nome}. Podemos negociar?`;
+          localStorage.setItem(
+            "mensagemPreChat",
+            JSON.stringify({
+              vendedor: produto.vendedor?.nome,
+              mensagem,
+              de: usuario.nome,
+            })
+          );
+          setAbaAtiva && setAbaAtiva("chat");
+        }}
+      >
+        🤝 Negociar com o Vendedor
+      </button>
+    </>
+  )}
+
+  {/* 🔹 Botões apenas para o próprio vendedor */}
+  {usuario?.tipo === "vendedor" && usuario?.nome === produto.vendedor?.nome && (
+    <>
+      <button
+        onClick={(e) => excluirProduto(produto._id, e)}
+        className="px-8 py-1 bg-yellow-800 text-white rounded text-sm hover:bg-yellow-900"
+      >
+        Eliminar
+      </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setProdutoParaEditar(produto);
+          setMostrarModalEditar(true);
+        }}
+        className="px-8 py-1 bg-green-800 text-white rounded text-sm hover:bg-green-900"
+      >
+        Editar
+      </button>
+    </>
+  )}
+</div>
                   </div>
                 ))}
               </Carousel>

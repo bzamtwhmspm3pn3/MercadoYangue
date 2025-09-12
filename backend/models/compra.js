@@ -1,17 +1,43 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const compraSchema = new mongoose.Schema({
-  cliente: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', required: true },
-  itens: [
-    {
-      produto: { type: mongoose.Schema.Types.ObjectId, ref: 'Produto', required: true },
-      quantidade: { type: Number, required: true },
-      precoUnitario: { type: Number, required: true }
-    }
-  ],
-  total: { type: Number, required: true },
-  status: { type: String, enum: ['pendente', 'confirmada'], default: 'pendente' },
-  criadoEm: { type: Date, default: Date.now }
+// Subschema produtos
+const ProdutoCompraSchema = new mongoose.Schema({
+  produto: { type: mongoose.Schema.Types.ObjectId, ref: "Produto", required: true },
+  quantidade: { type: Number, required: true },
+  preco: { type: Number, required: true } // preço unitário
+}, { _id: false });
+
+// Subschema entregador
+const EntregadorSchema = new mongoose.Schema({
+  nome: String,
+  veiculo: String,
+  provincia: String,
+  municipio: String,
+  local: String,
+  pagamento: String,
+  tarifa: Number,
+  contacto: String
+}, { _id: false });
+
+// Subschema factura
+const FacturaSchema = new mongoose.Schema({
+  tipo: { type: String, enum: ["manual", "autofactura"], default: "manual" }
+}, { _id: false });
+
+// Schema principal
+const CompraSchema = new mongoose.Schema({
+  comprador: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario", required: true },
+  vendedor: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario", required: true },
+  produtos: [ProdutoCompraSchema],
+  totalGeral: { type: Number, required: true },
+  entregador: EntregadorSchema,
+  factura: FacturaSchema
+}, { timestamps: true });
+
+// Middleware para calcular totalGeral
+CompraSchema.pre("save", function(next) {
+  this.totalGeral = this.produtos.reduce((acc, p) => acc + p.preco * p.quantidade, 0);
+  next();
 });
 
-module.exports = mongoose.model('Compra', compraSchema);
+module.exports = mongoose.models.Compra || mongoose.model("Compra", CompraSchema);

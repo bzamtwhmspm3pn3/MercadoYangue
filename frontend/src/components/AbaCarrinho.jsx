@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ConfirmacaoPagamento from "./ConfirmacaoPagamento";
+import ConfirmacaoPagamentoProtegido from "./ConfirmacaoPagamentoProtegido";
 import { FaTrashAlt, FaExclamationTriangle, FaMoneyBillWave } from "react-icons/fa";
 
 const formatarKz = (valor) =>
@@ -36,17 +36,17 @@ function AbaCarrinho({ carrinho, setCarrinho, usuario, enviarMensagemChat, navig
     setConfirmarPagamento(false);
   };
 
-  if (confirmarPagamento) {
-    return (
-      <ConfirmacaoPagamento
-        comprador={usuario.nome}
-        carrinho={carrinho}
-        onConfirmar={onPagamentoConfirmado}
-        enviarMensagemChat={enviarMensagemChat}
-        navigateToChat={navigateToChat}
-      />
-    );
-  }
+if (confirmarPagamento) {
+  return (
+    <ConfirmacaoPagamentoProtegido
+      comprador={usuario}
+      carrinho={carrinho}
+      navigateToChat={navigateToChat}
+      onConfirmar={onPagamentoConfirmado} // se precisar passar callback
+    />
+  );
+}
+
 
   return (
     <div className="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-xl text-gray-800 mt-6">

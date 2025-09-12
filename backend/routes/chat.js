@@ -1,25 +1,72 @@
-// backend/routes/chat.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Mensagem = require('../models/mensagem'); // Modelo Mongoose
+const Mensagem = require("../models/Mensagem");
+const { authMiddleware } = require("../middlewares/auth");
 
-// Rota para enviar mensagem
-router.post('/enviar', async (req, res) => {
-  const { remetenteId, destinatarioId, mensagem, data } = req.body;
-
+// 📩 Enviar mensagem
+router.post("/enviar", authMiddleware, async (req, res) => {
   try {
+    const { destinatario, conteudo } = req.body;
+
+    if (!destinatario || !conteudo?.trim()) {
+      return res.status(400).json({ erro: "Destinatário e conteúdo são obrigatórios" });
+    }
+
     const novaMensagem = new Mensagem({
-      remetenteId,
-      destinatarioId,
-      mensagem,
-      data: data || new Date()
+      remetente: req.user.id, // 🔹 vem do token JWT
+      destinatario,
+      conteudo: conteudo.trim(),
+      tipo: "texto"
     });
 
     await novaMensagem.save();
-    res.status(201).json(novaMensagem);
+
+    res.status(201).json({
+      msg: "Mensagem enviada com sucesso!",
+      mensagem: novaMensagem
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ erro: 'Erro ao enviar mensagem' });
+    console.error("Erro ao enviar mensagem:", error);
+    res.status(500).json({ erro: "Erro ao enviar mensagem" });
+  }
+});
+
+// 📥 Buscar mensagens entre dois utilizadores
+router.get("/:userId", authMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const mensagens = await Mensagem.find({
+      $or: [
+        { remetente: req.user.id, destinatario: userId },
+        { remetente: userId, destinatario: req.user.id }
+      ]
+    })
+      .sort({ createdAt: 1 })
+      .populate("remetente", "nome")
+      .populate("destinatario", "nome");
+
+    res.json(mensagens);
+  } catch (error) {
+    console.error("Erro ao carregar mensagens:", error);
+    res.status(500).json({ erro: "Erro ao carregar mensagens" });
+  }
+});
+
+// ✅ Marcar mensagens como lidas
+router.put("/marcar-lidas/:userId", authMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    await Mensagem.updateMany(
+      { remetente: userId, destinatario: req.user.id, lida: false },
+      { $set: { lida: true } }
+    );
+
+    res.json({ msg: "Mensagens marcadas como lidas" });
+  } catch (error) {
+    console.error("Erro ao marcar mensagens:", error);
+    res.status(500).json({ erro: "Erro ao atualizar mensagens" });
   }
 });
 
