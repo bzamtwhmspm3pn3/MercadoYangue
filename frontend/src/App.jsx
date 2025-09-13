@@ -645,18 +645,25 @@ const handleLogin = async () => {
 
 // Antes do componente App
 const usuarioInicial = null;
+
 export default function App() {
   const [produtos, setProdutos] = useState([]);
   const [produtosFiltrados, setProdutosFiltrados] = useState([]);
   const [carrinho, setCarrinho] = useState([]);
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
-const [abaAtiva, setAbaAtiva] = useState(localStorage.getItem("abaAtiva") || "login");
-const [mostrarPainelFBI, setMostrarPainelFBI] = useState(false);
-  const [usuario, setUsuario] = useState(() => {
-  const usuarioSalvo = localStorage.getItem("usuario");
-  return usuarioSalvo ? JSON.parse(usuarioSalvo) : null;
-});
 
+  // 🔹 Estado do usuário (busca no localStorage se já existe)
+  const [usuario, setUsuario] = useState(() => {
+    const usuarioSalvo = localStorage.getItem("usuario");
+    return usuarioSalvo ? JSON.parse(usuarioSalvo) : usuarioInicial;
+  });
+
+  // 🔹 Estado da aba ativa (sempre começa em "produtos")
+  const [abaAtiva, setAbaAtiva] = useState(() => {
+    return "produtos";
+  });
+
+  const [mostrarPainelFBI, setMostrarPainelFBI] = useState(false);
  const [formaPagamento, setFormaPagamento] = useState({
   tipo: "iban", // ou "" vazio, para forçar escolha do usuário
   iban: "",
