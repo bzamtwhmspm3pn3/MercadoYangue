@@ -8,7 +8,7 @@ import {
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable"; 
 
-export default function AbaGestaoCompras({ novasCompras }) {
+export default function AbaGestaoCompras({ novasCompras, usuario }) {
   const [compras, setCompras] = useState([]);
   const [filtroVendedor, setFiltroVendedor] = useState("");
   const [filtroProduto, setFiltroProduto] = useState("");
@@ -113,37 +113,79 @@ export default function AbaGestaoCompras({ novasCompras }) {
   const corProduto = (nome) =>
     cores[Math.abs(nome.split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % cores.length];
 
-  
-
-// Exportar PDF com cabeçalho e bordas verdes
-const exportarPDF = (compras) => {
+  // 🔹 Exportar PDF com cabeçalho completo, totais globais e resumo por produto
+const exportarPDF = async (compras, usuario) => {
   const lista = Array.isArray(compras) ? compras : [];
-
   const doc = new jsPDF();
 
-  // 🔹 Adicionar logo no cabeçalho (troca pelo caminho da tua logo)
-  const logo = "/logo.png"; // garante que está no public/
-  doc.addImage(logo, "PNG", 14, 8, 20, 20);
+  // 🔹 Função utilitária para formatar valores
+  const formatarKz = (valor) =>
+    new Intl.NumberFormat("pt-AO", {
+      style: "currency",
+      currency: "AOA",
+      minimumFractionDigits: 2,
+    }).format(valor);
 
-  // 🔹 Cabeçalho
-  doc.setFontSize(14);
-  doc.text("📑 Relatório de Compras", 40, 15);
+  // 🔹 Logo (Base64)
+  const loadImageAsBase64 = (url) =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+
+  const logoBase64 = await loadImageAsBase64("/logo-mercado-yangue.png");
+  doc.addImage(logoBase64, "PNG", 14, 8, 25, 25);
+
+// 🔹 Cabeçalho
+const dataAtual = new Date();
+const dataFormatada = dataAtual.toISOString().slice(0, 10).replace(/-/g, "");
+
+// Pega o contador salvo
+let ultimoNumero = parseInt(localStorage.getItem("contadorRelatorio") || "0", 10);
+
+// Incrementa para este relatório
+ultimoNumero += 1;
+
+// Salva novamente no localStorage
+localStorage.setItem("contadorRelatorio", ultimoNumero);
+
+// Número sequencial (ex: 20250913-001, 20250913-002...)
+const numeroRelatorio = `${dataFormatada}-${String(ultimoNumero).padStart(3, "0")}`;
+
+
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 128, 0); // verde
+  doc.text("Relatório de Compras", 50, 18);
+
   doc.setFontSize(10);
-  doc.text("Nº Relatório: " + new Date().getTime(), 40, 22);
-  doc.text("Cliente: Mercado Yangue", 40, 28);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 0);
+  doc.text("Nº Relatório: " + numeroRelatorio, 50, 28);
+  doc.text("Cliente: " + (usuario?.nome || "N/A"), 50, 36);
+  doc.text("Emitido em: " + dataAtual.toLocaleString("pt-AO"), 50, 44);
 
-  // 🔹 Tabela
+  // 🔹 Tabela principal
   const tabela = lista.map((c) => [
     c.vendedor?.nome || "Desconhecido",
     (c.produtos || [])
       .map(
         (p) =>
-          `${p.produto?.nome || "??"} (Qtd: ${p.quantidade}, Preço: ${
-            p.preco?.toFixed(2) || "0.00"
-          } Kz)`
+          `${p.produto?.nome || "??"} (Qtd: ${p.quantidade}, Preço: ${formatarKz(
+            p.preco || 0
+          )})`
       )
       .join(", "),
-    (c.totalGeral ?? 0).toFixed(2) + " Kz",
+    formatarKz(c.totalGeral ?? 0),
     c.status || "Confirmada",
     c.createdAt ? new Date(c.createdAt).toLocaleString("pt-AO") : "---",
   ]);
@@ -151,20 +193,85 @@ const exportarPDF = (compras) => {
   autoTable(doc, {
     head: [["Vendedor", "Produtos", "Total", "Status", "Data"]],
     body: tabela,
-    startY: 35,
-    styles: {
-      lineColor: [0, 128, 0], // 🔹 verde
-      lineWidth: 0.5,
-    },
+    startY: 55,
+    styles: { lineColor: [0, 128, 0], lineWidth: 0.5 },
     headStyles: {
-      fillColor: [0, 128, 0], // 🔹 fundo verde
-      textColor: [255, 255, 255], // texto branco
+      fillColor: [0, 128, 0],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+    },
+    alternateRowStyles: { fillColor: [240, 255, 240] },
+    bodyStyles: { fontSize: 9 },
+  });
+
+  // 🔹 Total Global
+  const totalGlobal = lista.reduce((acc, c) => acc + (c.totalGeral ?? 0), 0);
+
+  autoTable(doc, {
+    startY: doc.lastAutoTable.finalY + 10,
+    body: [["Total Global de Compras", formatarKz(totalGlobal)]],
+    theme: "grid",
+    bodyStyles: {
+      fontSize: 11,
+      fontStyle: "bold",
+      halign: "center",
+      textColor: [0, 128, 0],
     },
   });
 
+  // 🔹 Resumo por Produto
+  const produtosResumo = {};
+  lista.forEach((c) => {
+    (c.produtos || []).forEach((p) => {
+      const nome = p.produto?.nome || "??";
+      if (!produtosResumo[nome]) {
+        produtosResumo[nome] = {
+          quantidade: 0,
+          total: 0,
+          vendedores: new Set(),
+        };
+      }
+      produtosResumo[nome].quantidade += p.quantidade;
+      produtosResumo[nome].total += (p.preco || 0) * p.quantidade;
+      if (c.vendedor?.nome) produtosResumo[nome].vendedores.add(c.vendedor.nome);
+    });
+  });
+
+  const tabelaResumo = Object.entries(produtosResumo).map(
+    ([nome, info], i) => [
+      i + 1,
+      nome,
+      info.quantidade,
+      info.vendedores.size > 0
+        ? Array.from(info.vendedores).join(", ")
+        : "—",
+      formatarKz(info.total),
+    ]
+  );
+
+  autoTable(doc, {
+    startY: doc.lastAutoTable.finalY + 20,
+    head: [["#", "Produto", "Qtd Total", "Vendedores", "Total (AOA)"]],
+    body: tabelaResumo,
+    theme: "grid",
+    headStyles: { fillColor: [0, 128, 0], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [242, 242, 242] },
+    bodyStyles: { fontSize: 10, halign: "center" },
+  });
+
+  // 🔹 Rodapé
+  const paginaAltura = doc.internal.pageSize.height;
+  doc.setFontSize(9);
+  doc.text(
+    `Sistema MercadoYangue - Relatório validado automaticamente.`,
+    14,
+    paginaAltura - 10
+  );
+
   // 🔹 Salvar
-  doc.save("relatorio_compras.pdf");
+  doc.save(`relatorio_compras_${numeroRelatorio}.pdf`);
 };
+
 
 
 
@@ -202,12 +309,13 @@ const exportarPDF = (compras) => {
         />
       </div>
 
-      <button
-  onClick={() => exportarPDF(compras)}
+       <button
+  onClick={() => exportarPDF(compras, usuario)}
   className="px-4 py-2 bg-green-600 text-white rounded-lg mt-4 hover:bg-green-700"
 >
   📑 Exportar Relatório PDF
 </button>
+
 
 
       {(!comprasFiltradas || comprasFiltradas.length === 0) ? (
