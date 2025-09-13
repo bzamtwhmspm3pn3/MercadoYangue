@@ -287,112 +287,120 @@ const handleLogin = async () => {
   }
 
   try {
-const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/login", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ email, senha }),
-});
+    const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, senha }),
+    });
 
-const data = await res.json(); // 🔹 só uma vez
-
-if (!res.ok) {
-  alert(data.msg || "Erro no login");
-  return;
-}
-
-if (!data.token || !data.usuario || !data.usuario.nome || !data.usuario.tipo) {
-  alert("Dados incompletos recebidos do servidor.");
-  return;
-}
-
-const usuarioLogado = {
-  nome: data.usuario.nome,
-  email: data.usuario.email || email,
-  tipo: data.usuario.tipo,
-};
-
-localStorage.setItem("token", data.token);
-localStorage.setItem("usuario", JSON.stringify(usuarioLogado));
-
-setUsuario(usuarioLogado);
-alert(`Bem-vindo(a), ${usuarioLogado.nome}!`);
-
-limparCampos();
-
-// 🔹 Redireciona automaticamente para aba Produtos
-setAbaAtiva("produtos");
-
-  } catch (error) {
-    alert("Erro ao conectar com o servidor.");
-    console.error(error);
-  }
-};
-
-
-  const handleCadastro = async () => {
-    if (!email || !senha || !nome) {
-      alert("Preencha nome, email e senha.");
+    let data;
+    try {
+      data = await res.json(); // ✅ só uma vez
+    } catch {
+      alert("Erro inesperado: resposta inválida do servidor.");
       return;
     }
 
-    if (tipoCadastro !== "cliente") {
-      if (!provincia || !municipio || !localizacaoEspecifica) {
-        alert("Preencha todos os campos para vendedor/agricultor.");
-        return;
-      }
-
-      if (!aceitouContrato) {
-        alert("Você deve aceitar o contrato digital para continuar.");
-        return;
-      }
+    if (!res.ok) {
+      alert(data?.msg || "Erro no login");
+      return;
     }
 
-    const novoUsuario = {
-      nome,
-      email,
-      senha,
-      tipo: tipoCadastro,
-      ...(tipoCadastro !== "cliente" && {
-        provincia,
-        municipio,
-        localizacaoEspecifica,
-        aceitouContrato: true,
-      }),
+    if (!data?.token || !data?.usuario) {
+      alert("Dados incompletos recebidos do servidor.");
+      return;
+    }
+
+    const usuarioLogado = {
+      nome: data.usuario.nome || "Usuário",
+      email: data.usuario.email || email,
+      tipo: data.usuario.tipo || "cliente",
     };
 
-    try {
-  const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/cadastro", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(novoUsuario),
-  });
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("usuario", JSON.stringify(usuarioLogado));
+
+    setUsuario(usuarioLogado);
+
+    alert(`Bem-vindo(a), ${usuarioLogado.nome}!`);
+
+    limparCampos();
+
+    // ✅ Redireciona automaticamente para Produtos
+    setAbaAtiva("produtos");
+
+  } catch (error) {
+    console.error("Erro no login:", error);
+    alert("Erro ao conectar com o servidor.");
+  }
+};
 
 
-  const texto = await res.text();
-  console.log("Resposta do servidor (raw):", texto);
 
-  let data;
-  try {
-    data = JSON.parse(texto);
-  } catch (e) {
-    console.error("Resposta inválida (não é JSON):", texto);
-    alert("Erro inesperado no servidor. Resposta inválida.");
+  const handleCadastro = async () => {
+  if (!email || !senha || !nome) {
+    alert("Preencha nome, email e senha.");
     return;
   }
 
-  if (!res.ok) {
-    alert(data.msg || "Erro no cadastro");
-    return;
+  if (tipoCadastro !== "cliente") {
+    if (!provincia || !municipio || !localizacaoEspecifica) {
+      alert("Preencha todos os campos para vendedor/agricultor.");
+      return;
+    }
+
+    if (!aceitouContrato) {
+      alert("Você deve aceitar o contrato digital para continuar.");
+      return;
+    }
   }
 
-  alert("Cadastro realizado com sucesso!");
-  setModo("login");
-  limparCampos();
-} catch (error) {
-  alert("Erro ao conectar com o servidor.");
-  console.error(error);
-}
+  const novoUsuario = {
+    nome,
+    email,
+    senha,
+    tipo: tipoCadastro,
+    ...(tipoCadastro !== "cliente" && {
+      provincia,
+      municipio,
+      localizacaoEspecifica,
+      aceitouContrato: true,
+    }),
   };
+
+  try {
+    const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/cadastro", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(novoUsuario),
+    });
+
+    const texto = await res.text();
+    console.log("Resposta do servidor (raw):", texto);
+
+    let data;
+    try {
+      data = JSON.parse(texto);
+    } catch {
+      alert("Erro inesperado no servidor. Resposta inválida.");
+      return;
+    }
+
+    if (!res.ok) {
+      alert(data?.msg || "Erro no cadastro");
+      return;
+    }
+
+    alert("Cadastro realizado com sucesso!");
+    setModo("login");
+    limparCampos();
+
+  } catch (error) {
+    console.error("Erro no cadastro:", error);
+    alert("Erro ao conectar com o servidor.");
+  }
+};
+
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded shadow-md border border-green-200">
