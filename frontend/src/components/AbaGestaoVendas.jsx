@@ -29,24 +29,24 @@ const GerarFacturaPremium = ({ venda, usuario, formatarKz }) => {
   const [vendedorMorada, setVendedorMorada] = useState(usuario.endereco || "");
   const [localEntrega, setLocalEntrega] = useState(venda.local || "");
   const [desconto, setDesconto] = useState(venda.desconto || 0);
-  const [numeroFactura, setNumeroFactura] = useState(() => {
-    const randomNum = Math.floor(Math.random() * 9000) + 1000;
-    return `${randomNum}/${new Date().getFullYear()}`;
-  });
 
-  const converterExtenso = (valor) => {
-    const unidades = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove"];
-    const especiais = ["dez", "onze", "doze", "treze", "catorze", "quinze", "dezasseis", "dezassete", "dezoito", "dezanove"];
-    const dezenas = ["", "", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"];
-    if (valor < 10) return unidades[valor];
-    if (valor < 20) return especiais[valor - 10];
-    if (valor < 100) {
-      const dez = Math.floor(valor / 10);
-      const uni = valor % 10;
-      return `${dezenas[dez]}${uni > 0 ? " e " + unidades[uni] : ""}`;
-    }
-    return valor.toLocaleString("pt-AO") + " Kz"; // fallback
+  // 🔹 Funções para número sequencial
+  const getUltimoNumero = () => {
+    const ultimo = localStorage.getItem("ultimoNumFactura");
+    return ultimo ? Number(ultimo) : 0;
   };
+
+  const setProximoNumero = (num) => {
+    localStorage.setItem("ultimoNumFactura", num);
+  };
+
+  // 🔹 Número sequencial inicial
+  const [numeroFactura, setNumeroFactura] = useState(() => {
+    const anoAtual = new Date().getFullYear();
+    const numSeq = getUltimoNumero() + 1;
+    setProximoNumero(numSeq);
+    return `FT-MY: ${String(numSeq).padStart(4, "0")}/${anoAtual}`;
+  });
 
   const gerarFactura = async () => {
     try {
@@ -68,17 +68,15 @@ const GerarFacturaPremium = ({ venda, usuario, formatarKz }) => {
           img.onerror = reject;
           img.src = url;
         });
-
       const logoBase64 = await loadImageAsBase64("/logo-mercado-yangue.png");
       const logoSize = 120;
       doc.addImage(logoBase64, "PNG", 40, 30, logoSize, logoSize);
 
-      // 🔹 Cabeçalho Verde
+      // 🔹 Cabeçalho
       doc.setFontSize(22);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor("#008000"); // verde
+      doc.setTextColor("#008000");
       doc.text("Factura MercadoYangue", pageWidth / 2, 70, { align: "center" });
-
       doc.setFontSize(11);
       doc.setFont("helvetica", "normal");
       doc.setTextColor("#000");
@@ -101,104 +99,97 @@ const GerarFacturaPremium = ({ venda, usuario, formatarKz }) => {
       doc.text(`Contactos: ${compradorContactos}`, 120, 220);
       doc.text(`Local de entrega: ${localEntrega}`, 120, 235);
 
-   
-// 🔹 Desconto global vindo do estado (input do modal)
-const descontoGlobal = desconto || 0;
+      // 🔹 Produtos e Totais
+      const descontoGlobal = desconto || 0;
+      const subtotalBruto = venda.produtos.reduce((acc, p) => acc + p.preco * p.quantidade, 0);
+      const produtosComValores = venda.produtos.map(p => {
+        const precoTotal = p.preco * p.quantidade;
+        const descontoProporcional = (precoTotal / subtotalBruto) * descontoGlobal;
+        let taxaIVA = p.categoriaFiscal === "14%" ? 0.14 : p.categoriaFiscal === "5%" ? 0.05 : 0;
+        const valorLiquido = precoTotal - descontoProporcional;
+        const valorIVA = valorLiquido * taxaIVA;
+        return { ...p, descontoProporcional, valorLiquido, valorIVA, totalComIVA: valorLiquido + valorIVA };
+      });
 
-// 🔹 Subtotal bruto (soma total dos produtos antes de desconto)
-const subtotalBruto = venda.produtos.reduce((acc, p) => acc + p.preco * p.quantidade, 0);
+      const tabelaProdutos = produtosComValores.map((p, i) => [
+        i + 1,
+        p.produto?.nome || p.produto,
+        p.quantidade,
+        formatarKz(p.preco),
+        formatarKz(p.valorLiquido),
+        formatarKz(p.valorIVA),
+        formatarKz(p.totalComIVA)
+      ]);
 
-// 🔹 Calcula desconto proporcional, IVA e total por produto
-const produtosComValores = venda.produtos.map(p => {
-  const precoTotal = p.preco * p.quantidade;
+      autoTable(doc, {
+        head: [["#", "Produto", "Qtd", "Preço Unit.", "Subtotal Líquido", "IVA", "Total"]],
+        body: tabelaProdutos,
+        startY: 255,
+        theme: "grid",
+        headStyles: { fillColor: [0, 128, 0], textColor: 255, fontStyle: "bold", halign: "center" },
+        bodyStyles: { fontSize: 10, cellPadding: 6, halign: "center" },
+        alternateRowStyles: { fillColor: [242, 242, 242] },
+        tableLineColor: [0, 0, 0],
+        tableLineWidth: 0.5
+      });
 
-  // ⚡ Desconto proporcional do valor global
-  const descontoProporcional = (precoTotal / subtotalBruto) * descontoGlobal;
+      const valorDesconto = produtosComValores.reduce((acc, p) => acc + p.descontoProporcional, 0);
+      const valorMercadoriaLiquida = produtosComValores.reduce((acc, p) => acc + p.valorLiquido, 0);
+      const valorIVA = produtosComValores.reduce((acc, p) => acc + p.valorIVA, 0);
+      const totalPagar = valorMercadoriaLiquida + valorIVA;
 
-  // Taxa de IVA conforme categoria fiscal
-  let taxaIVA = 0;
-  switch (p.categoriaFiscal) {
-    case "5%": taxaIVA = 0.05; break;
-    case "14%": taxaIVA = 0.14; break;
-    case "Isento":
-    default: taxaIVA = 0; break;
-  }
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 20,
+        body: [
+          ["Subtotal Bruto", formatarKz(subtotalBruto)],
+          ["Desconto Aplicado", formatarKz(valorDesconto)],
+          ["Subtotal Líquido", formatarKz(valorMercadoriaLiquida)],
+          ["IVA Total", formatarKz(valorIVA)],
+          ["Total a Pagar", formatarKz(totalPagar)]
+        ],
+        theme: "grid",
+        bodyStyles: { fontSize: 10, cellPadding: 5, halign: "center" }
+      });
 
-  // Valor líquido após desconto
-  const valorLiquido = precoTotal - descontoProporcional;
-  const valorIVA = valorLiquido * taxaIVA;
-  const totalComIVA = valorLiquido + valorIVA;
-
-  return {
-    ...p,
-    descontoProporcional,
-    valorLiquido,
-    valorIVA,
-    totalComIVA
-  };
-});
-
-// 🔹 Tabela de produtos com valores ajustados
-const tabelaProdutos = produtosComValores.map((p, i) => [
-  i + 1,
-  p.produto?.nome || p.produto,
-  p.quantidade,
-  formatarKz(p.preco),
-  formatarKz(p.valorLiquido),
-  formatarKz(p.valorIVA),
-  formatarKz(p.totalComIVA)
-]);
-
-autoTable(doc, {
-  head: [["#", "Produto", "Qtd", "Preço Unit.", "Subtotal Líquido", "IVA", "Total"]],
-  body: tabelaProdutos,
-  startY: 255,
-  theme: "grid",
-  headStyles: { fillColor: [0, 128, 0], textColor: 255, fontStyle: "bold", halign: "center" },
-  bodyStyles: { fontSize: 10, cellPadding: 6, halign: "center" },
-  alternateRowStyles: { fillColor: [242, 242, 242] },
-  tableLineColor: [0, 0, 0],
-  tableLineWidth: 0.5
-});
-
-// 🔹 Totais finais claros
-const valorDesconto = produtosComValores.reduce((acc, p) => acc + p.descontoProporcional, 0);
-const valorMercadoriaLiquida = produtosComValores.reduce((acc, p) => acc + p.valorLiquido, 0);
-const valorIVA = produtosComValores.reduce((acc, p) => acc + p.valorIVA, 0);
-const totalPagar = valorMercadoriaLiquida + valorIVA;
-
-autoTable(doc, {
-  startY: doc.lastAutoTable.finalY + 20,
-  body: [
-    ["Subtotal Bruto", formatarKz(subtotalBruto)],
-    ["Desconto Aplicado", formatarKz(valorDesconto)],
-    ["Subtotal Líquido", formatarKz(valorMercadoriaLiquida)],
-    ["IVA Total", formatarKz(valorIVA)],
-    ["Total a Pagar", formatarKz(totalPagar)]
-  ],
-  theme: "grid",
-  bodyStyles: { fontSize: 10, cellPadding: 5, halign: "center" }
-});
-
-      // 🔹 Observações fixas abaixo
+      // 🔹 Observações
       doc.setFontSize(10);
       doc.setTextColor("#000");
-      const obsText = "Sistema de Facturação: MercadoYangue, validação pela AGT - Validação v12MY";
+      const obsText = "Sistema de Facturação: MercadoYangue - www.mercadoyangue.com, validação AGT v12MY";
       doc.text(obsText, 40, doc.lastAutoTable.finalY + 20, { maxWidth: pageWidth - 80, align: "justify" });
 
-      // 🔹 QR Code com todos os dados
-      const qrData = `Factura Nº: ${numeroFactura}\nVendedor: ${usuario.nome} | NIF: ${vendedorNif}\nComprador: ${venda.comprador?.nome} | NIF: ${compradorNif}\nTotal: ${formatarKz(totalPagar)}`;
-      const qrBase64 = await QRCode.toDataURL(qrData);
+      // 🔹 QR Code
+      const qrData = {
+        numeroFactura,
+        vendedor: { nome: usuario.nome, nif: vendedorNif, morada: vendedorMorada },
+        comprador: { nome: venda.comprador?.nome, nif: compradorNif, morada: compradorMorada, contactos: compradorContactos },
+        produtos: produtosComValores.map(p => ({
+          nome: p.produto?.nome || p.produto,
+          quantidade: p.quantidade,
+          precoUnit: formatarKz(p.preco),
+          subtotalLiquido: formatarKz(p.valorLiquido),
+          iva: formatarKz(p.valorIVA),
+          total: formatarKz(p.totalComIVA)
+        })),
+        descontoGlobal: formatarKz(valorDesconto),
+        totalPagar: formatarKz(totalPagar),
+        localEntrega
+      };
+      const qrBase64 = await QRCode.toDataURL(JSON.stringify(qrData));
       const qrY = doc.internal.pageSize.getHeight() - 140;
       doc.addImage(qrBase64, "PNG", pageWidth - 140, qrY, 100, 100);
 
       // 🔹 Salvar PDF
-      doc.save(`Factura_${venda._id}.pdf`);
+      const nomePDF = `Factura_${numeroFactura.replace(/[:\/]/g, "_")}.pdf`;
+      doc.save(nomePDF);
       alert("✅ Fatura profissional gerada com sucesso!");
       setShowModal(false);
 
-      // Gera novo número de fatura para próxima emissão
-      setNumeroFactura(`${Math.floor(Math.random() * 9000) + 1000}/${new Date().getFullYear()}`);
+      // 🔹 Incrementa número sequencial para próxima emissão
+      const proxNum = getUltimoNumero() + 1;
+      const anoAtual = new Date().getFullYear();
+      setNumeroFactura(`FT-MY: ${String(proxNum).padStart(4, "0")}/${anoAtual}`);
+      setProximoNumero(proxNum);
+
     } catch (err) {
       console.error(err);
       alert("❌ Falha ao gerar fatura. Ver console.");
@@ -218,25 +209,19 @@ autoTable(doc, {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded shadow-lg w-96">
             <h2 className="text-lg font-bold mb-4 text-center">Completar Dados do Comprador e Vendedor</h2>
-            
+            {/* Inputs */}
             <label className="block mb-1 font-semibold">NIF Vendedor</label>
             <input type="text" value={vendedorNif} onChange={(e) => setVendedorNif(e.target.value)} className="border px-2 py-1 w-full mb-2"/>
-            
             <label className="block mb-1 font-semibold">Morada Vendedor</label>
             <input type="text" value={vendedorMorada} onChange={(e) => setVendedorMorada(e.target.value)} className="border px-2 py-1 w-full mb-2"/>
-            
             <label className="block mb-1 font-semibold">NIF Comprador</label>
             <input type="text" value={compradorNif} onChange={(e) => setCompradorNif(e.target.value)} className="border px-2 py-1 w-full mb-2"/>
-            
             <label className="block mb-1 font-semibold">Morada Comprador</label>
             <input type="text" value={compradorMorada} onChange={(e) => setCompradorMorada(e.target.value)} className="border px-2 py-1 w-full mb-2"/>
-            
             <label className="block mb-1 font-semibold">Contactos Comprador</label>
             <input type="text" value={compradorContactos} onChange={(e) => setCompradorContactos(e.target.value)} className="border px-2 py-1 w-full mb-2"/>
-            
             <label className="block mb-1 font-semibold">Local de Entrega</label>
             <input type="text" value={localEntrega} onChange={(e) => setLocalEntrega(e.target.value)} className="border px-2 py-1 w-full mb-2"/>
-            
             <label className="block mb-1 font-semibold">Desconto</label>
             <input type="number" value={desconto} onChange={(e) => setDesconto(Number(e.target.value))} className="border px-2 py-1 w-full mb-4"/>
 
