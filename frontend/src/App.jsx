@@ -280,49 +280,54 @@ const [produtosFiltrados, setProdutosFiltrados] = useState([]);
     setAceitouContrato(false);
   };
 
-  const handleLogin = async () => {
-    if (!email || !senha) {
-      alert("Preencha email e senha.");
+const handleLogin = async () => {
+  if (!email || !senha) {
+    alert("Preencha email e senha.");
+    return;
+  }
+
+  try {
+    const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, senha }),
+    });
+
+    if (!res.ok) {
+      const erro = await res.json();
+      alert(erro.msg || "Erro no login");
       return;
     }
 
-    try {
-      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha }),
-      });
+    const data = await res.json();
 
-      if (!res.ok) {
-        const erro = await res.json();
-        alert(erro.msg || "Erro no login");
-        return;
-      }
-
-      const data = await res.json();
-
-      if (!data.token || !data.usuario || !data.usuario.nome || !data.usuario.tipo) {
-        alert("Dados incompletos recebidos do servidor.");
-        return;
-      }
-
-      const usuarioLogado = {
-        nome: data.usuario.nome,
-        email: data.usuario.email || email,
-        tipo: data.usuario.tipo,
-      };
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("usuario", JSON.stringify(usuarioLogado));
-
-      setUsuario(usuarioLogado);
-      alert(`Bem-vindo(a), ${usuarioLogado.nome}!`);
-      limparCampos();
-    } catch (error) {
-      alert("Erro ao conectar com o servidor.");
-      console.error(error);
+    if (!data.token || !data.usuario || !data.usuario.nome || !data.usuario.tipo) {
+      alert("Dados incompletos recebidos do servidor.");
+      return;
     }
-  };
+
+    const usuarioLogado = {
+      nome: data.usuario.nome,
+      email: data.usuario.email || email,
+      tipo: data.usuario.tipo,
+    };
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("usuario", JSON.stringify(usuarioLogado));
+
+    setUsuario(usuarioLogado);
+    alert(`Bem-vindo(a), ${usuarioLogado.nome}!`);
+
+    limparCampos();
+
+    // 🔹 Redireciona automaticamente para aba Produtos
+    setModo("produtos");
+  } catch (error) {
+    alert("Erro ao conectar com o servidor.");
+    console.error(error);
+  }
+};
+
 
   const handleCadastro = async () => {
     if (!email || !senha || !nome) {
@@ -425,12 +430,14 @@ const [produtosFiltrados, setProdutosFiltrados] = useState([]);
             className="mb-3 w-full border p-2 rounded"
           />
           <input
-            type="password"
-            placeholder="Senha"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            className="mb-3 w-full border p-2 rounded"
-          />
+  type="password"
+  placeholder="Senha"
+  value={senha}
+  onChange={(e) => setSenha(e.target.value)}
+  className="mb-3 w-full border p-2 rounded"
+  onKeyDown={(e) => e.key === "Enter" && handleLogin()} // 🔹 Login com Enter
+/>
+
           <button
             onClick={handleLogin}
             className="w-full bg-green-700 text-white py-3 rounded font-semibold hover:bg-green-800"
