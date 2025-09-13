@@ -287,41 +287,41 @@ const handleLogin = async () => {
   }
 
   try {
-    const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, senha }),
-    });
+const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email, senha }),
+});
 
-    if (!res.ok) {
-      const erro = await res.json();
-      alert(erro.msg || "Erro no login");
-      return;
-    }
+const data = await res.json(); // 🔹 só uma vez
 
-    const data = await res.json();
+if (!res.ok) {
+  alert(data.msg || "Erro no login");
+  return;
+}
 
-    if (!data.token || !data.usuario || !data.usuario.nome || !data.usuario.tipo) {
-      alert("Dados incompletos recebidos do servidor.");
-      return;
-    }
+if (!data.token || !data.usuario || !data.usuario.nome || !data.usuario.tipo) {
+  alert("Dados incompletos recebidos do servidor.");
+  return;
+}
 
-    const usuarioLogado = {
-      nome: data.usuario.nome,
-      email: data.usuario.email || email,
-      tipo: data.usuario.tipo,
-    };
+const usuarioLogado = {
+  nome: data.usuario.nome,
+  email: data.usuario.email || email,
+  tipo: data.usuario.tipo,
+};
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("usuario", JSON.stringify(usuarioLogado));
+localStorage.setItem("token", data.token);
+localStorage.setItem("usuario", JSON.stringify(usuarioLogado));
 
-    setUsuario(usuarioLogado);
-    alert(`Bem-vindo(a), ${usuarioLogado.nome}!`);
+setUsuario(usuarioLogado);
+alert(`Bem-vindo(a), ${usuarioLogado.nome}!`);
 
-    limparCampos();
+limparCampos();
 
-    // 🔹 Redireciona automaticamente para aba Produtos
-    setAbaAtiva("produtos");
+// 🔹 Redireciona automaticamente para aba Produtos
+setAbaAtiva("produtos");
+
   } catch (error) {
     alert("Erro ao conectar com o servidor.");
     console.error(error);
