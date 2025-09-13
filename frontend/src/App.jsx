@@ -1009,7 +1009,7 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
   <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow text-gray-800">
     <h2 className="text-2xl font-bold mb-4">Cadastrar Produto</h2>
 
-
+<div className="container mx-auto p-4">
 <form
   onSubmit={async (e) => {
     e.preventDefault();
@@ -1065,7 +1065,7 @@ if (contemTermoBanido) {
     try {
       const token = localStorage.getItem('token');
 
-      const response = await fetch('http://localhost:5000/api/produtos', {
+      const response = await fetch("https://mercadoyangue-i3in.onrender.com/api/produtos", {
         method: 'POST',
         body: envio,
         headers: {
