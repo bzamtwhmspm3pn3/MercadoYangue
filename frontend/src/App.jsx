@@ -1060,13 +1060,14 @@ if (contemTermoBanido) {
     try {
       const token = localStorage.getItem('token');
 
-      const response = await await fetch("https://mercadoyangue-i3in.onrender.com/produtos', {
-        method: 'POST',
-        body: envio,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch("https://mercadoyangue-i3in.onrender.com/produtos", {
+  method: 'POST',
+  body: envio,
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
+
 
       if (response.ok) {
         alert('Produto cadastrado com sucesso!');
@@ -1236,7 +1237,3 @@ alert('Erro ao cadastrar produto:\n' + (erro.message || JSON.stringify(erro)));
 </div>
 );
 }
-
-
-
-
