@@ -113,32 +113,59 @@ export default function AbaGestaoCompras({ novasCompras }) {
   const corProduto = (nome) =>
     cores[Math.abs(nome.split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % cores.length];
 
-  // Exportar PDF
- const exportarPDF = (compras) => {
+  
+
+// Exportar PDF com cabeçalho e bordas verdes
+const exportarPDF = (compras) => {
   const lista = Array.isArray(compras) ? compras : [];
 
   const doc = new jsPDF();
-  doc.text("Relatório de Compras", 14, 15);
 
-  const tabela = lista.map(c => [
+  // 🔹 Adicionar logo no cabeçalho (troca pelo caminho da tua logo)
+  const logo = "/logo.png"; // garante que está no public/
+  doc.addImage(logo, "PNG", 14, 8, 20, 20);
+
+  // 🔹 Cabeçalho
+  doc.setFontSize(14);
+  doc.text("📑 Relatório de Compras", 40, 15);
+  doc.setFontSize(10);
+  doc.text("Nº Relatório: " + new Date().getTime(), 40, 22);
+  doc.text("Cliente: Mercado Yangue", 40, 28);
+
+  // 🔹 Tabela
+  const tabela = lista.map((c) => [
     c.vendedor?.nome || "Desconhecido",
     (c.produtos || [])
-      .map(p => `${p.produto?.nome || "??"} (Qtd: ${p.quantidade}, Preço: ${p.preco?.toFixed(2) || "0.00"} Kz)`)
+      .map(
+        (p) =>
+          `${p.produto?.nome || "??"} (Qtd: ${p.quantidade}, Preço: ${
+            p.preco?.toFixed(2) || "0.00"
+          } Kz)`
+      )
       .join(", "),
     (c.totalGeral ?? 0).toFixed(2) + " Kz",
     c.status || "Confirmada",
-    c.createdAt ? new Date(c.createdAt).toLocaleString("pt-AO") : "---"
+    c.createdAt ? new Date(c.createdAt).toLocaleString("pt-AO") : "---",
   ]);
 
-  // ⚡ Usa a função importada autoTable
   autoTable(doc, {
     head: [["Vendedor", "Produtos", "Total", "Status", "Data"]],
     body: tabela,
-    startY: 25,
+    startY: 35,
+    styles: {
+      lineColor: [0, 128, 0], // 🔹 verde
+      lineWidth: 0.5,
+    },
+    headStyles: {
+      fillColor: [0, 128, 0], // 🔹 fundo verde
+      textColor: [255, 255, 255], // texto branco
+    },
   });
 
+  // 🔹 Salvar
   doc.save("relatorio_compras.pdf");
 };
+
 
 
   return (
