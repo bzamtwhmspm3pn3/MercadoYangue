@@ -1236,8 +1236,6 @@ alert('Erro ao cadastrar produto:\n' + (erro.message || JSON.stringify(erro)));
   </button>
 </form>    
   </div>
-)}
-
 </main>
 </div>
 );
