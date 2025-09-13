@@ -17,6 +17,7 @@ router.post('/', authMiddleware, upload.single('imagem'), async (req, res) => {
       nome,
       preco,
       quantidade,
+      unidade,
       provincia,
       municipio,
       localizacaoDetalhada,
@@ -46,6 +47,7 @@ router.post('/', authMiddleware, upload.single('imagem'), async (req, res) => {
       nome,
       preco,
       quantidade,
+      unidade,
       imagem,
       provincia,
       municipio,
@@ -55,6 +57,7 @@ router.post('/', authMiddleware, upload.single('imagem'), async (req, res) => {
       descricao,
       vendedor: req.user.id,
     });
+
 
     await novoProduto.save();
     res.status(201).json({ msg: 'Produto cadastrado com sucesso!' });

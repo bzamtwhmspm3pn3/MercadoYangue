@@ -1005,6 +1005,11 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
     <h2 className="text-2xl font-bold mb-4">Cadastrar Produto</h2>
 
 
+{abaAtiva === 'cadastrar' && usuario && (usuario.tipo === 'vendedor' || usuario.tipo === 'agricultor') && (
+  <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow text-gray-800">
+    <h2 className="text-2xl font-bold mb-4">Cadastrar Produto</h2>
+
+
 <form
   onSubmit={async (e) => {
     e.preventDefault();
@@ -1015,6 +1020,7 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
     const nome = formData.get('nome');
     const preco = parseFloat(formData.get('preco'));
     const quantidade = parseInt(formData.get('quantidade'), 10);
+const unidade = formData.get('unidade');
     const imagem = formData.get('imagem');
 
     const provincia = formData.get('provincia');
@@ -1045,6 +1051,7 @@ if (contemTermoBanido) {
     envio.append('nome', nome);
     envio.append('preco', preco);
     envio.append('quantidade', quantidade);
+    envio.append('unidade', unidade);
     envio.append('imagem', imagem);
     envio.append('provincia', provincia);
     envio.append('municipio', municipio);
@@ -1058,14 +1065,13 @@ if (contemTermoBanido) {
     try {
       const token = localStorage.getItem('token');
 
-      const response = await fetch('https://mercadoyangue-i3in.onrender.com/api/produtos', {
+      const response = await fetch('http://localhost:5000/api/produtos', {
         method: 'POST',
         body: envio,
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
 
       if (response.ok) {
         alert('Produto cadastrado com sucesso!');
@@ -1105,15 +1111,46 @@ alert('Erro ao cadastrar produto:\n' + (erro.message || JSON.stringify(erro)));
   </label>
 
   <label className="flex flex-col">
-    Quantidade:
+  Quantidade:
+  <div className="flex gap-2">
     <input
       type="number"
       name="quantidade"
       min="0"
       required
-      className="border border-gray-300 p-2 rounded"
+      className="border border-gray-300 p-2 rounded flex-1"
     />
-  </label>
+    <select
+      name="unidade"
+      required
+      className="border border-gray-300 p-2 rounded"
+    >
+      <option value="">Selecionar unidade</option>
+      {/* Agricultura */}
+      <option value="kg">Kg</option>
+      <option value="g">g</option>
+      <option value="t">Tonelada</option>
+      <option value="l">Litro</option>
+      <option value="ml">Mililitro</option>
+      <option value="m²">Metro²</option>
+      <option value="ha">Hectare</option>
+      <option value="un">Unidade</option>
+      <option value="caixa">Caixa</option>
+      <option value="saco">Saco</option>
+      <option value="dúzia">Dúzia</option>
+      {/* Pecuária */}
+      <option value="cabeça">Cabeça (gado)</option>
+      {/* Silvicultura */}
+      <option value="m³">Metro cúbico</option>
+      <option value="tronco">Tronco</option>
+      <option value="lenha">Lenha</option>
+      <option value="pedaço">Pedaço</option>
+      <option value="rede">Rede</option>
+      {/* Pesca */}
+      <option value="outra">Outra</option>
+    </select>
+  </div>
+</label>
 
   <label className="flex flex-col">
     Imagem:

@@ -5,6 +5,7 @@ const ProdutoSchema = new mongoose.Schema({
   descricao: { type: String },
   preco: { type: Number, required: true },
   quantidade: { type: Number, required: true, min: 0, default: 0 },
+  unidade: { type: String, default: "un" },
   imagem: { type: String },
   provincia: { type: String },
   municipio: { type: String },
