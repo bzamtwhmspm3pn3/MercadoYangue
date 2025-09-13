@@ -11,21 +11,38 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
+// Middleware para JSON
 app.use(express.json());
-app.use(cors());
 
-// Conectar ao MongoDB com mongoose
+// Middleware CORS personalizado
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://super-souffle-c9b0fb.netlify.app'
+];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true); // permitir Postman ou cURL
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'O CORS não permite essa origem!';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}));
+
+// Rotas
+app.use('/api', authRoutes);
+app.use('/api', usuarioRoutes);
+
+// Conectar ao MongoDB
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/mercadoyangue', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
 .then(() => {
   console.log('Conectado ao MongoDB');
-
-  // Rotas
-  app.use('/api', authRoutes);
-  app.use('/api', usuarioRoutes);
 
   // Iniciar servidor
   app.listen(port, () => {
