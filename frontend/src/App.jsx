@@ -287,53 +287,65 @@ const handleLogin = async () => {
   }
 
   try {
+    console.log("🔹 Enviando requisição de login...");
+
     const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, senha }),
     });
 
-    let data;
-    try {
-      data = await res.json(); // ✅ só uma vez
-    } catch {
-      alert("Erro inesperado: resposta inválida do servidor.");
-      return;
-    }
+    console.log("🔹 Resposta recebida:", res);
+
+    const data = await res.json(); // só uma vez
+    console.log("🔹 JSON parseado:", data);
 
     if (!res.ok) {
-      alert(data?.msg || "Erro no login");
+      alert(data.msg || "Erro no login");
       return;
     }
 
-    if (!data?.token || !data?.usuario) {
+    if (!data.token || !data.usuario || !data.usuario.nome || !data.usuario.tipo) {
       alert("Dados incompletos recebidos do servidor.");
       return;
     }
 
     const usuarioLogado = {
-      nome: data.usuario.nome || "Usuário",
+      nome: data.usuario.nome,
       email: data.usuario.email || email,
-      tipo: data.usuario.tipo || "cliente",
+      tipo: data.usuario.tipo,
     };
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("usuario", JSON.stringify(usuarioLogado));
 
     setUsuario(usuarioLogado);
-
     alert(`Bem-vindo(a), ${usuarioLogado.nome}!`);
 
-    limparCampos();
+    console.log("✅ Usuário logado com sucesso:", usuarioLogado);
 
-    // ✅ Redireciona automaticamente para Produtos
-    setAbaAtiva("produtos");
+    // 🔹 Testar se limparCampos() existe
+    try {
+      console.log("🔹 Limpando campos...");
+      limparCampos();
+    } catch (e) {
+      console.error("⚠️ Erro em limparCampos():", e);
+    }
+
+    // 🔹 Testar se mudar aba funciona
+    try {
+      console.log("🔹 Redirecionando para aba produtos...");
+      setAbaAtiva("produtos");
+    } catch (e) {
+      console.error("⚠️ Erro em setAbaAtiva:", e);
+    }
 
   } catch (error) {
-    console.error("Erro no login:", error);
-    alert("Erro ao conectar com o servidor.");
+    console.error("❌ Erro inesperado no handleLogin:", error);
+    alert("Erro inesperado no login. Veja o console.");
   }
 };
+
 
 
 
