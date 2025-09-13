@@ -321,7 +321,7 @@ const handleLogin = async () => {
     limparCampos();
 
     // 🔹 Redireciona automaticamente para aba Produtos
-    setModo("produtos");
+    setAbaAtiva("produtos");
   } catch (error) {
     alert("Erro ao conectar com o servidor.");
     console.error(error);
@@ -645,6 +645,16 @@ const [mostrarPainelFBI, setMostrarPainelFBI] = useState(false);
   telefone: "",
 });
 
+useEffect(() => {
+  localStorage.setItem("carrinho", JSON.stringify(carrinho));
+}, [carrinho]);
+
+useEffect(() => {
+  const salvo = localStorage.getItem("carrinho");
+  if (salvo) setCarrinho(JSON.parse(salvo));
+}, []);
+
+
 
 useEffect(() => {
   axios
@@ -914,7 +924,13 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
   </AuthProvider>
 )}
 
-        {abaAtiva === 'login' && !usuario && <AbaLoginCadastro setUsuario={setUsuario} />}
+        {abaAtiva === 'login' && !usuario && (
+  <AbaLoginCadastro 
+    setUsuario={setUsuario} 
+    setAbaAtiva={setAbaAtiva} 
+  />
+)}
+
 
 {abaAtiva === 'gestao' &&
   usuario &&
