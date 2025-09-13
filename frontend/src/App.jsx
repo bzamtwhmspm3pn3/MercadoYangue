@@ -1005,11 +1005,6 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
     <h2 className="text-2xl font-bold mb-4">Cadastrar Produto</h2>
 
 
-{abaAtiva === 'cadastrar' && usuario && (usuario.tipo === 'vendedor' || usuario.tipo === 'agricultor') && (
-  <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow text-gray-800">
-    <h2 className="text-2xl font-bold mb-4">Cadastrar Produto</h2>
-
-<div className="container mx-auto p-4">
 <form
   onSubmit={async (e) => {
     e.preventDefault();
@@ -1065,7 +1060,7 @@ if (contemTermoBanido) {
     try {
       const token = localStorage.getItem('token');
 
-      const response = await fetch("https://mercadoyangue-i3in.onrender.com/api/produtos", {
+      const response = await await fetch("https://mercadoyangue-i3in.onrender.com/produtos', {
         method: 'POST',
         body: envio,
         headers: {
@@ -1110,7 +1105,7 @@ alert('Erro ao cadastrar produto:\n' + (erro.message || JSON.stringify(erro)));
     />
   </label>
 
-  <label className="flex flex-col">
+    <label className="flex flex-col">
   Quantidade:
   <div className="flex gap-2">
     <input
@@ -1145,9 +1140,8 @@ alert('Erro ao cadastrar produto:\n' + (erro.message || JSON.stringify(erro)));
       <option value="tronco">Tronco</option>
       <option value="lenha">Lenha</option>
       <option value="pedaço">Pedaço</option>
-      <option value="rede">Rede</option>
       {/* Pesca */}
-      <option value="outra">Outra</option>
+      <option value="dúzia_peixe">Dúzia de Peixes</option>
     </select>
   </div>
 </label>
@@ -1236,6 +1230,8 @@ alert('Erro ao cadastrar produto:\n' + (erro.message || JSON.stringify(erro)));
   </button>
 </form>    
   </div>
+)}
+
 </main>
 </div>
 );
