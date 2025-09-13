@@ -237,6 +237,135 @@ const GerarFacturaPremium = ({ venda, usuario, formatarKz }) => {
 };
 
 
+const exportarPDFVendas = async (vendas, usuario) => {
+  const lista = Array.isArray(vendas) ? vendas : [];
+  const doc = new jsPDF();
+
+  const formatarKz = (valor) =>
+    new Intl.NumberFormat("pt-AO", {
+      style: "currency",
+      currency: "AOA",
+      minimumFractionDigits: 2,
+    }).format(valor);
+
+  const loadImageAsBase64 = (url) =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+
+  const logoBase64 = await loadImageAsBase64("/logo-mercado-yangue.png");
+  doc.addImage(logoBase64, "PNG", 14, 8, 25, 25);
+
+  // Cabeçalho
+  const dataAtual = new Date();
+  const dataFormatada = dataAtual.toISOString().slice(0, 10).replace(/-/g, "");
+  let ultimoNumero = parseInt(localStorage.getItem("contadorRelatorio") || "0", 10);
+  ultimoNumero += 1;
+  localStorage.setItem("contadorRelatorio", ultimoNumero);
+  const numeroRelatorio = `${dataFormatada}-${String(ultimoNumero).padStart(3, "0")}`;
+
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 128, 0);
+  doc.text("Relatório de Vendas", 50, 18);
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Nº Relatório: ${numeroRelatorio}`, 50, 28);
+  doc.text(`Vendedor: ${usuario?.nome || "N/A"}`, 50, 36);
+  doc.text(`Emitido em: ${dataAtual.toLocaleString("pt-AO")}`, 50, 44);
+
+  // Tabela principal
+  const tabela = lista.map((venda) => [
+    venda.comprador?.nome || "N/A",
+    (venda.produtos || [])
+      .map((p) => `${p.produto?.nome || "??"} (Qtd: ${p.quantidade})`)
+      .join("\n"),
+    (venda.produtos || []).map((p) => formatarKz(p.preco)).join("\n"),
+    formatarKz(venda.produtos.reduce((acc, p) => acc + p.preco * p.quantidade, 0)),
+    new Date(venda.createdAt).toLocaleDateString(),
+    venda.status || "Confirmada",
+  ]);
+
+  autoTable(doc, {
+    head: [["Comprador", "Produtos", "Preço Unitário", "Total", "Data", "Status"]],
+    body: tabela,
+    startY: 55,
+    styles: {
+      lineColor: [0, 128, 0],
+      lineWidth: 0.5,
+      cellWidth: 'wrap',
+      overflow: 'linebreak',
+      fontSize: 9
+    },
+    headStyles: { fillColor: [0, 128, 0], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [240, 255, 240] },
+  });
+
+  // Total Global
+  const totalGlobal = lista.reduce(
+    (acc, venda) => acc + venda.produtos.reduce((sum, p) => sum + p.preco * p.quantidade, 0),
+    0
+  );
+
+  autoTable(doc, {
+    startY: doc.lastAutoTable.finalY + 10,
+    body: [["Total Global de Vendas", formatarKz(totalGlobal)]],
+    theme: "grid",
+    bodyStyles: { fontSize: 11, fontStyle: "bold", halign: "center", textColor: [0, 128, 0] },
+  });
+
+  // Resumo por Produto
+  const produtosResumo = {};
+  lista.forEach((venda) => {
+    (venda.produtos || []).forEach((p) => {
+      const nome = p.produto?.nome || "??";
+      if (!produtosResumo[nome]) produtosResumo[nome] = { quantidade: 0, total: 0, compradores: new Set() };
+      produtosResumo[nome].quantidade += p.quantidade;
+      produtosResumo[nome].total += p.preco * p.quantidade;
+      if (venda.comprador?.nome) produtosResumo[nome].compradores.add(venda.comprador.nome);
+    });
+  });
+
+  const tabelaResumo = Object.entries(produtosResumo).map(([nome, info], i) => [
+    i + 1,
+    nome,
+    info.quantidade,
+    info.compradores.size > 0 ? Array.from(info.compradores).join(", ") : "—",
+    formatarKz(info.total),
+  ]);
+
+  autoTable(doc, {
+    startY: doc.lastAutoTable.finalY + 20,
+    head: [["#", "Produto", "Qtd Total", "Compradores", "Total (AOA)"]],
+    body: tabelaResumo,
+    theme: "grid",
+    headStyles: { fillColor: [0, 128, 0], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [242, 242, 242] },
+    bodyStyles: { fontSize: 10, halign: "center" },
+  });
+
+  // Rodapé
+  const paginaAltura = doc.internal.pageSize.height;
+  doc.setFontSize(9);
+  doc.text("Sistema MercadoYangue - Relatório validado automaticamente.", 14, paginaAltura - 10);
+
+  // Salvar
+  doc.save(`relatorio_vendas_${numeroRelatorio}.pdf`);
+};
+
+
 const cores = ["#38a169", "#2b6cb0", "#d69e2e", "#9f7aea", "#ed8936"];
 
 const AbaGestaoVendas = ({ usuario }) => {
@@ -369,17 +498,6 @@ const emitirFactura = (id) => {
   };
 
   
-
-  const imprimir = () => {
-    const janela = window.open("", "_blank");
-    janela.document.write(`
-      <html><head><title>Relatório</title></head><body>${refImpressao.current.innerHTML}</body></html>
-    `);
-    janela.document.close();
-    janela.focus();
-    janela.print();
-  };
-
   // 🔹 Render
   return (
     <div className="max-w-7xl mx-auto bg-white p-6 rounded shadow text-gray-800 space-y-6">
@@ -483,36 +601,115 @@ const emitirFactura = (id) => {
     </table>
   </div>
 
-  {/* Gráfico de Vendas - Pizza */}
-  <div>
-    <h3 className="text-xl font-semibold mt-6">📊 Distribuição de Vendas Realizadas</h3>
-    {vendasConfirmadas.length > 0 ? (
-      <ResponsiveContainer height={350}>
-        <PieChart>
-          <Pie
-            data={vendasConfirmadas.map(venda => ({
-              name: venda.produtos.map(p => p.produto?.nome || p.produto).join(", "),
-              value: venda.produtos.reduce((acc, p) => acc + p.quantidade * p.preco, 0)
-            }))}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            outerRadius={120}
-            fill="#2b6cb0"
-            label={(entry) => `${entry.name}: ${formatarKz(entry.value)}`}
-          >
-            {vendasConfirmadas.map((v, i) => (
-              <Cell key={`cell-pie-${i}`} fill={v.fill || "#38a169"} />
-            ))}
-          </Pie>
-          <Tooltip formatter={(value) => formatarKz(value)} />
-        </PieChart>
-      </ResponsiveContainer>
-    ) : (
-      <p className="text-gray-600 italic">Nenhuma venda registada ainda.</p>
-    )}
-  </div>
+{/* Gráfico de Vendas por Produto (Pizza) */}
+<div>
+  <h3 className="text-xl font-semibold mt-6">Vendas por Produto</h3>
+  {vendasConfirmadas.length > 0 ? (
+    <ResponsiveContainer width="100%" height={400}>
+      <PieChart>
+        <Pie
+          data={(() => {
+            // 🔹 Agrupar produtos e calcular total
+            const resumo = {};
+            vendasConfirmadas.forEach((venda) => {
+              venda.produtos.forEach((p) => {
+                const nome = p.produto?.nome || p.produto;
+                if (!resumo[nome]) resumo[nome] = 0;
+                resumo[nome] += (p.preco || 0) * p.quantidade;
+              });
+            });
+            return Object.entries(resumo).map(([nome, total]) => ({ produto: nome, total }));
+          })()}
+          dataKey="total"
+          nameKey="produto"
+          cx="50%"
+          cy="50%"
+          outerRadius={150}
+          label={(entry) =>
+            `${entry.produto}: ${entry.total.toLocaleString("pt-AO", {
+              style: "currency",
+              currency: "AOA",
+            })}`
+          }
+        >
+          {(() => {
+            const cores = ["#38a169", "#2b6cb0", "#d69e2e", "#e53e3e", "#805ad5", "#dd6b20"];
+            const data = vendasConfirmadas.flatMap((v) =>
+              v.produtos.map((p) => p.produto?.nome || p.produto)
+            );
+            return Object.keys(data.reduce((acc, d) => ({ ...acc, [d]: 0 }), {})).map(
+              (_, i) => <Cell key={i} fill={cores[i % cores.length]} />
+            );
+          })()}
+        </Pie>
+        <Tooltip
+          formatter={(value) =>
+            value.toLocaleString("pt-AO", { style: "currency", currency: "AOA" })
+          }
+        />
+      </PieChart>
+    </ResponsiveContainer>
+  ) : (
+    <p className="text-gray-600 italic">Nenhuma venda registada ainda.</p>
+  )}
+</div>
+
+
+{/* Gráfico de Vendas por Produto (Barras Invertidas) */}
+<div>
+  <h3 className="text-xl font-semibold mt-6">Vendas por Produto</h3>
+  {vendasConfirmadas.length > 0 ? (
+    <ResponsiveContainer width="100%" height={400}>
+      <BarChart
+        layout="vertical"
+        margin={{ top: 20, right: 30, left: 100, bottom: 20 }}
+        data={(() => {
+          // 🔹 Agrupar produtos e calcular total
+          const resumo = {};
+          vendasConfirmadas.forEach((venda) => {
+            venda.produtos.forEach((p) => {
+              const nome = p.produto?.nome || p.produto;
+              if (!resumo[nome]) resumo[nome] = 0;
+              resumo[nome] += (p.preco || 0) * p.quantidade;
+            });
+          });
+          return Object.entries(resumo).map(([nome, total]) => ({ produto: nome, total }));
+        })()}
+      >
+        <XAxis 
+          type="number" 
+          tickFormatter={(val) =>
+            val.toLocaleString("pt-AO", { style: "currency", currency: "AOA" })
+          } 
+        />
+        <YAxis dataKey="produto" type="category" width={150} />
+        <Tooltip 
+          formatter={(value) =>
+            value.toLocaleString("pt-AO", { style: "currency", currency: "AOA" })
+          } 
+        />
+        <Bar 
+          dataKey="total" 
+          fill="#38a169"
+        >
+          {(() => {
+            const cores = ["#38a169", "#2b6cb0", "#d69e2e", "#e53e3e", "#805ad5", "#dd6b20"];
+            return ((() => {
+              const data = vendasConfirmadas.flatMap(v => v.produtos.map(p => ({
+                produto: p.produto?.nome || p.produto,
+              })));
+              return Object.keys(data.reduce((acc, d) => ({ ...acc, [d.produto]: 0 }), {}))
+                .map((_, i) => <Cell key={i} fill={cores[i % cores.length]} />);
+            })());
+          })()}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  ) : (
+    <p className="text-gray-600 italic">Nenhuma venda registada ainda.</p>
+  )}
+</div>
+
 
 {/* Vendas confirmadas */}
   <div>
@@ -658,12 +855,14 @@ const emitirFactura = (id) => {
   })()}
 </div>
 </div>
-      <button
-        onClick={imprimir}
-        className="mt-6 bg-green-700 text-white px-6 py-2 rounded hover:bg-green-800"
-      >
-        📤 Exportar Relatório Completo
-      </button>
+      {/* Botão Exportar PDF */}
+<button
+  onClick={() => exportarPDFVendas(vendasConfirmadas, usuario)}
+  className="px-4 py-2 mt-4 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"
+>
+  Exportar Relatório de Vendas
+</button>
+
     </div>
   );
 };

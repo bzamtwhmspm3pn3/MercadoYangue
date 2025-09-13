@@ -122,7 +122,7 @@ const exportarPDF = async (compras, usuario) => {
   const formatarKz = (valor) =>
     new Intl.NumberFormat("pt-AO", {
       style: "currency",
-      currency: "AOA",
+      currency: "Kz",
       minimumFractionDigits: 2,
     }).format(valor);
 
