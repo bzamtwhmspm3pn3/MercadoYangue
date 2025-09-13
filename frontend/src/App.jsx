@@ -650,12 +650,13 @@ export default function App() {
   const [produtosFiltrados, setProdutosFiltrados] = useState([]);
   const [carrinho, setCarrinho] = useState([]);
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
-  const [abaAtiva, setAbaAtiva] = useState('produtos');
+const [abaAtiva, setAbaAtiva] = useState(localStorage.getItem("abaAtiva") || "login");
 const [mostrarPainelFBI, setMostrarPainelFBI] = useState(false);
   const [usuario, setUsuario] = useState(() => {
   const usuarioSalvo = localStorage.getItem("usuario");
   return usuarioSalvo ? JSON.parse(usuarioSalvo) : null;
 });
+
  const [formaPagamento, setFormaPagamento] = useState({
   tipo: "iban", // ou "" vazio, para forçar escolha do usuário
   iban: "",
@@ -664,6 +665,11 @@ const [mostrarPainelFBI, setMostrarPainelFBI] = useState(false);
   opcao: "multicaixa",
   telefone: "",
 });
+
+useEffect(() => {
+  localStorage.setItem("abaAtiva", abaAtiva);
+}, [abaAtiva]);
+
 
 useEffect(() => {
   localStorage.setItem("carrinho", JSON.stringify(carrinho));
