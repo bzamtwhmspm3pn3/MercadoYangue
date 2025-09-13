@@ -1060,7 +1060,7 @@ if (contemTermoBanido) {
     try {
       const token = localStorage.getItem('token');
 
-      const response = await fetch("https://mercadoyangue-i3in.onrender.com/produtos", {
+      const response = await fetch("https://mercadoyangue-i3in.onrender.com/api/produtos", {
   method: 'POST',
   body: envio,
   headers: {
