@@ -8,16 +8,8 @@ import ConfirmacaoPagamento from "./components/ConfirmacaoPagamento";
 import AbaChat from './components/AbaChat';
 import AbaProdutos from "./components/AbaProdutos";
 import AbaCarrinho from './components/AbaCarrinho';
-import PainelFBI from "./pages/FBI/PainelFBI";
+import PainelFBI from "./pages/dados/dados";
 
-
-export function Header() {
-  return (
-    <header>
-      <h1>MercadoYangue</h1>
-    </header>
-  );
-}
 
 
 
@@ -837,7 +829,15 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
   return (
     <div className="min-h-screen bg-green-50">
       <header className="bg-green-800 py-4 shadow-lg text-white flex justify-between items-center px-6">
-        <h1 className="text-3xl font-bold">MercadoYangue</h1>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+  <img 
+    src="/logmercadoyangue.png" 
+    alt="Logo MercadoYangue" 
+    className="h-16 w-16"
+  />
+  MercadoYangue
+</h1>
+
         <div>
           {!usuario ? (
             <button

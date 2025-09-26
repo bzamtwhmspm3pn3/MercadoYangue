@@ -1,20 +1,20 @@
 const mongoose = require('mongoose');
 
-const UsuarioSchema = new mongoose.Schema({
-  nome: { type: String, required: true },
-  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  senha: { type: String, required: true }, // armazene hash depois
-  tipo: { type: String, enum: ['cliente', 'vendedor', 'agricultor'], required: true },
+const usuarioschema = new mongoose.schema({
+  nome: { type: string, required: true },
+  email: { type: string, required: true, unique: true, lowercase: true, trim: true },
+  senha: { type: string, required: true }, // armazene hash depois
+  tipo: { type: string, enum: ['cliente', 'vendedor', 'agricultor'], required: true },
 
-  // Apenas para vendedores/agricultores
-  provincia: { type: String },
-  municipio: { type: String },
-  localizacaoEspecifica: { type: String },
+  // apenas para vendedores/agricultores
+  provincia: { type: string },
+  municipio: { type: string },
+  localizacaoespecifica: { type: string },
 
-  aceitouContrato: { type: Boolean, default: false },  // Novo campo para aceitar contrato
+  aceitoucontrato: { type: boolean, default: false },  // novo campo para aceitar contrato
 
 }, {
   timestamps: true,
 });
 
-module.exports = mongoose.models.Usuario || mongoose.model('Usuario', UsuarioSchema);
+module.exports = mongoose.models.usuario || mongoose.model('usuario', usuarioschema);

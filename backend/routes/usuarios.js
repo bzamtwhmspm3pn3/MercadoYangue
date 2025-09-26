@@ -1,36 +1,36 @@
 const express = require('express');
-const router = express.Router();
-const Produto = require('../models/produto');
-const Usuario = require('../models/usuario');
+const router = express.router();
+const produto = require('../models/produto');
+const usuario = require('../models/usuario');
 
-// Rota para buscar vendedores que possuem produtos com nome parecido
+// rota para buscar vendedores que possuem produtos com nome parecido
 router.get('/buscar-vendedores', async (req, res) => {
   try {
-    const { nomeProduto } = req.query;
-    if (!nomeProduto) {
-      return res.status(400).json({ msg: 'Parâmetro nomeProduto é obrigatório' });
+    const { nomeproduto } = req.query;
+    if (!nomeproduto) {
+      return res.status(400).json({ msg: 'parâmetro nomeproduto é obrigatório' });
     }
 
-    // Busca produtos que contenham o termo no nome (case insensitive)
-    const produtos = await Produto.find({
-      nome: { $regex: nomeProduto, $options: 'i' },
+    // busca produtos que contenham o termo no nome (case insensitive)
+    const produtos = await produto.find({
+      nome: { $regex: nomeproduto, $options: 'i' },
       quantidade: { $gt: 0 }, // só produtos em estoque
     }).populate('vendedor', 'nome tipo telefone email');
 
-    // Extraí os vendedores únicos
-    const vendedoresMap = new Map();
-    produtos.forEach((produto) => {
+    // extraí os vendedores únicos
+    const vendedoresmap = new map();
+    produtos.foreach((produto) => {
       if (produto.vendedor) {
-        vendedoresMap.set(produto.vendedor._id.toString(), produto.vendedor);
+        vendedoresmap.set(produto.vendedor._id.tostring(), produto.vendedor);
       }
     });
 
-    const vendedores = Array.from(vendedoresMap.values());
+    const vendedores = array.from(vendedoresmap.values());
 
     res.json(vendedores);
   } catch (error) {
-    console.error('Erro buscar vendedores:', error);
-    res.status(500).json({ msg: 'Erro interno no servidor' });
+    console.error('erro buscar vendedores:', error);
+    res.status(500).json({ msg: 'erro interno no servidor' });
   }
 });
 

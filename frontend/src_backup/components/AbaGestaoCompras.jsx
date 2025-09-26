@@ -13,7 +13,7 @@ export default function AbaGestaoCompras({ novasCompras }) {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
-    fetch('http://localhost:5000/api/compras/minhas', { headers: { Authorization: `Bearer ${token}` } })
+    fetch('https://mercadoyangue.netlify.app/api/compras/minhas', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.ok ? r.json() : Promise.reject(r))
       .then(data => setCompras(Array.isArray(data) ? data : []))
       .catch(err => { console.error('Erro compras', err); setCompras([]); });

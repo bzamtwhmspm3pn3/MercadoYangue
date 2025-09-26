@@ -1,54 +1,37 @@
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose'); // usamos mongoose ao invés de MongoClient
+const mongoose = require('mongoose'); // usamos mongoose ao invés de mongoclient
 const dotenv = require('dotenv');
 
-const authRoutes = require('./routes/auth');
-const usuarioRoutes = require('./routes/usuarios');
+const authroutes = require('./routes/auth');
+const usuarioroutes = require('./routes/usuarios');
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.port || 3000;
 
-// Middleware para JSON
+// middleware
 app.use(express.json());
+app.use(cors());
 
-// Middleware CORS personalizado
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://super-souffle-c9b0fb.netlify.app'
-];
-
-app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin) return callback(null, true); // permitir Postman ou cURL
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'O CORS não permite essa origem!';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true
-}));
-
-// Rotas
-app.use('/api', authRoutes);
-app.use('/api', usuarioRoutes);
-
-// Conectar ao MongoDB
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/mercadoyangue', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+// conectar ao mongodb com mongoose
+mongoose.connect(process.env.mongo_uri || 'mongodb://localhost:27017/mercadoyangue', {
+  usenewurlparser: true,
+  useunifiedtopology: true,
 })
 .then(() => {
-  console.log('Conectado ao MongoDB');
+  console.log('conectado ao mongodb');
 
-  // Iniciar servidor
+  // rotas
+  app.use('/api', authroutes);
+  app.use('/api', usuarioroutes);
+
+  // iniciar servidor
   app.listen(port, () => {
-    console.log(`Backend rodando em http://localhost:${port}`);
+    console.log(`backend rodando em http://localhost:${port}`);
   });
 })
 .catch((err) => {
-  console.error('Erro ao conectar ao MongoDB:', err);
+  console.error('erro ao conectar ao mongodb:', err);
 });

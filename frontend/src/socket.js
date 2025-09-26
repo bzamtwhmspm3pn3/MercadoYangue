@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 export const connectSocket = (userId) => {
   if (!userId) return null;
 
-  return io('http://localhost:5000', { 
+  return io('https://mercadoyangue.netlify.app', { 
     query: { userId } // 🔹 passa o id para o backend
   });
 };

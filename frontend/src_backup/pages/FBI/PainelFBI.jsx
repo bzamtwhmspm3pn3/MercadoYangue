@@ -14,7 +14,7 @@ export default function PainelFBI({ usuario }) {
 
     const token = localStorage.getItem("token");
 
-    fetch("http://localhost:5000/api/vendas", {
+    fetch("https://mercadoyangue.netlify.app/api/vendas", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (res) => {
@@ -24,7 +24,7 @@ export default function PainelFBI({ usuario }) {
       .then(setVendas)
       .catch((err) => console.error("Erro ao buscar vendas:", err.message));
 
-    fetch("http://localhost:5000/api/usuarios", {
+    fetch("https://mercadoyangue.netlify.app/api/usuarios", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (res) => {
@@ -34,7 +34,7 @@ export default function PainelFBI({ usuario }) {
       .then(setUsuarios)
       .catch((err) => console.error("Erro ao buscar usuários:", err.message));
 
-    fetch("http://localhost:5000/api/logs", {
+    fetch("https://mercadoyangue.netlify.app/api/logs", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (res) => {
@@ -44,7 +44,7 @@ export default function PainelFBI({ usuario }) {
       .then(setLogs)
       .catch((err) => console.error("Erro ao buscar logs:", err.message));
 
-    fetch("http://localhost:5000/api/cache", {
+    fetch("https://mercadoyangue.netlify.app/api/cache", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (res) => {
@@ -54,7 +54,7 @@ export default function PainelFBI({ usuario }) {
       .then(setCache)
       .catch((err) => console.error("Erro ao buscar cache:", err.message));
 
-    fetch("http://localhost:5000/api/backup/status", {
+    fetch("https://mercadoyangue.netlify.app/api/backup/status", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (res) => {
@@ -148,7 +148,7 @@ export default function PainelFBI({ usuario }) {
     if (!confirmar) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/vendas/${id}`, {
+      const res = await fetch(`https://mercadoyangue.netlify.app/api/vendas/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

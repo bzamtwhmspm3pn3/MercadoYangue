@@ -1,67 +1,67 @@
 const express = require("express");
-const router = express.Router();
-const Venda = require("../models/venda");
-const { authMiddleware } = require("../middlewares/auth");
+const router = express.router();
+const venda = require("../models/venda");
+const { authmiddleware } = require("../middlewares/auth");
 
-// Criar venda
-router.post("/", authMiddleware, async (req, res) => {
+// criar venda
+router.post("/", authmiddleware, async (req, res) => {
   try {
-    const { vendedorId, produtos, entregador, factura } = req.body;
+    const { vendedorid, produtos, entregador, factura } = req.body;
 
-    if (!vendedorId || !produtos?.length) {
-      return res.status(400).json({ msg: "Dados incompletos." });
+    if (!vendedorid || !produtos?.length) {
+      return res.status(400).json({ msg: "dados incompletos." });
     }
 
-    const novaVenda = new Venda({
+    const novavenda = new venda({
       comprador: req.user.id,
-      vendedor: vendedorId,
+      vendedor: vendedorid,
       produtos,
       entregador,
       factura
     });
 
-    await novaVenda.save();
-    res.status(201).json({ msg: "Venda registada com sucesso!", venda: novaVenda });
+    await novavenda.save();
+    res.status(201).json({ msg: "venda registada com sucesso!", venda: novavenda });
   } catch (err) {
-    console.error("Erro ao registar venda:", err);
-    res.status(500).json({ msg: "Erro interno no servidor" });
+    console.error("erro ao registar venda:", err);
+    res.status(500).json({ msg: "erro interno no servidor" });
   }
 });
 
-// Listar vendas do comprador logado
-router.get("/minhas", authMiddleware, async (req, res) => {
+// listar vendas do comprador logado
+router.get("/minhas", authmiddleware, async (req, res) => {
   try {
-    const vendas = await Venda.find({ comprador: req.user.id }).populate(
+    const vendas = await venda.find({ comprador: req.user.id }).populate(
       "vendedor", "nome email"
     );
     res.json(vendas);
   } catch (err) {
-    res.status(500).json({ msg: "Erro ao buscar vendas do comprador" });
+    res.status(500).json({ msg: "erro ao buscar vendas do comprador" });
   }
 });
 
-// Listar vendas do vendedor logado
-router.get("/vendedor", authMiddleware, async (req, res) => {
+// listar vendas do vendedor logado
+router.get("/vendedor", authmiddleware, async (req, res) => {
   try {
-    const vendas = await Venda.find({ vendedor: req.user.id })
+    const vendas = await venda.find({ vendedor: req.user.id })
       .populate("comprador", "nome email")
-      .populate("produtos.produto", "nome"); // 🔹 Popula o nome do produto
+      .populate("produtos.produto", "nome"); // 🔹 popula o nome do produto
 
     res.json(vendas);
   } catch (err) {
-    res.status(500).json({ msg: "Erro ao buscar vendas do vendedor" });
+    res.status(500).json({ msg: "erro ao buscar vendas do vendedor" });
   }
 });
 
-// Listar todas as vendas
-router.get("/", authMiddleware, async (req, res) => {
+// listar todas as vendas
+router.get("/", authmiddleware, async (req, res) => {
   try {
-    const vendas = await Venda.find()
+    const vendas = await venda.find()
       .populate("comprador", "nome email")
       .populate("vendedor", "nome email");
     res.json(vendas);
   } catch (err) {
-    res.status(500).json({ msg: "Erro ao buscar vendas" });
+    res.status(500).json({ msg: "erro ao buscar vendas" });
   }
 });
 

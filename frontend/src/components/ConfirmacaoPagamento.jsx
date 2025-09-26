@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { connectSocket } from "../socket";
 
 export default function ConfirmacaoPagamento({
   comprador,
@@ -26,46 +27,35 @@ export default function ConfirmacaoPagamento({
   }, []);
 
   const confirmarPagamentoLocal = () => {
-    if (!carrinho || carrinho.length === 0) return alert("Carrinho vazio!");
-    if (solicitaEntrega && !entregadorSelecionado) return alert("Selecione um entregador");
+  if (!carrinho || carrinho.length === 0) return alert("Carrinho vazio!");
+  if (solicitaEntrega && !entregadorSelecionado) return alert("Selecione um entregador");
 
-    // Checkout correto
-    const checkoutData = {
-      vendedorId: vendedorPrincipal?._id || carrinho[0]?.vendedorId,
-      produtos: carrinho.map(item => ({
-        produto: item._id || item.produtoId, // ID real pro banco
-        nome: item.nome || item.produto,    // Nome legível pra mensagem
-        quantidade: item.quantidade,
-        preco: item.preco
-      })),
-      entregador: solicitaEntrega ? entregadorSelecionado : null,
-      factura: solicitaFactura ? { tipo: "manual" } : null
-    };
-
-    // Mensagem para o vendedor
-    let msg = `🎉 Pagamento confirmado e mensagem enviada ao vendedor!\n\n`;
-    msg += `👋 Olá ${vendedorPrincipal?.nome || "vendedor"}, acabei de comprar alguns dos seus produtos:\n\n`;
-
-    checkoutData.produtos.forEach(item => {
-      const totalItem = item.preco * item.quantidade;
-      msg += `• ${item.nome} — ${item.quantidade} x ${item.preco.toLocaleString()} Kz = ${totalItem.toLocaleString()} Kz\n`;
-    });
-
-    if (solicitaFactura) msg += `\n📄 Gostaria de receber uma factura.`;
-
-    if (solicitaEntrega && entregadorSelecionado) {
-      const e = entregadorSelecionado;
-      msg += `\n\n🚚 Solicitei entrega com os seguintes dados:\n• Nome: ${e.nome}\n• Veículo: ${e.veiculo}\n• Local: ${e.local}, ${e.municipio}, ${e.provincia}\n• Tarifa: ${e.tarifa.toLocaleString()} Kz\n• Pagamento: ${e.pagamento}\n• Contacto: ${e.contacto}`;
-    }
-
-    msg += `\n\n🙏 Obrigado pela sua atenção. Fico a aguardar!`;
-
-    setMensagemAutomatica(msg);
-
-    if (typeof onConfirmar === "function") {
-      onConfirmar(checkoutData, msg, vendedorPrincipal);
-    }
+  // Monta os dados do checkout
+  const checkoutData = {
+    vendedorId:
+      vendedorPrincipal?._id ||
+      carrinho[0]?.produto?.vendedor?._id ||
+      carrinho[0]?.vendedorId ||
+      null,
+    produtos: carrinho.map(item => {
+      const p = item?.produto || {}; // fallback vazio
+      return {
+        produto: p._id || item._id || null,
+        nome: p.nome || item.nome || "Produto",
+        quantidade: item.quantidade || 1,
+        preco: p.preco ?? item.preco ?? 0
+      };
+    }),
+    entregador: solicitaEntrega ? entregadorSelecionado : null,
+    factura: solicitaFactura ? { tipo: "manual" } : null
   };
+
+  // Dispara callback para gravar no backend
+  if (typeof onConfirmar === "function") {
+    onConfirmar(checkoutData);
+  }
+};
+
 
   // Filtros
   const provincias = [...new Set(entregadores.map(e => e.provincia))];
@@ -113,18 +103,6 @@ export default function ConfirmacaoPagamento({
         {loading ? "A processar..." : "Confirmar Pagamento"}
       </button>
 
-{/* Caixa com mensagem pronta */}
-{mensagemAutomatica && (
-  <div className="mt-6 bg-green-50 border border-green-400 rounded p-4">
-    <h3 className="text-lg font-bold text-green-800 mb-2">
-      🎉 Pagamento confirmado!
-    </h3>
-    <p className="text-green-700">
-      A sua mensagem foi automaticamente enviada ao vendedor.  
-      Pode acompanhar a resposta na área de mensagens.
-    </p>
-  </div>
-)}
 
     </div>
   );

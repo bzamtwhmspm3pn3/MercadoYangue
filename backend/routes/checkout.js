@@ -1,77 +1,106 @@
 const express = require("express");
-const router = express.Router();
-const Venda = require("../models/venda");
-const Compra = require("../models/compra");
-const Mensagem = require("../models/mensagem"); // ✅ modelo atualizado
-const { authMiddleware } = require("../middlewares/auth");
+const router = express.router();
+const venda = require("../models/venda");
+const compra = require("../models/compra");
+const mensagem = require("../models/mensagem");
+const produto = require("../models/produto"); // ✅ para buscar estoque inicial
+const { authmiddleware } = require("../middlewares/auth");
 
-// Checkout: cria venda, compra e dispara mensagem automática
-router.post("/", authMiddleware, async (req, res) => {
+// checkout: cria venda, compra e dispara mensagem automática
+router.post("/", authmiddleware, async (req, res) => {
   try {
-    console.log("🚨 Dados recebidos no backend (req.body):", JSON.stringify(req.body, null, 2));
-    console.log("🚨 Usuário autenticado (req.user):", req.user);
+    console.log("🚨 dados recebidos no backend (req.body):", json.stringify(req.body, null, 2));
+    console.log("🚨 usuário autenticado (req.user):", req.user);
 
-    const { vendedorId, produtos, entregador, factura } = req.body;
+    const { vendedorid, produtos, entregador, factura } = req.body;
 
-    if (!vendedorId || !produtos?.length) {
-      return res.status(400).json({ msg: "Dados incompletos." });
+    if (!vendedorid || !produtos?.length) {
+      return res.status(400).json({ msg: "dados incompletos." });
     }
 
-    // Calcular total de cada produto e totalGeral
-    const produtosComTotal = produtos.map(p => ({
-      ...p,
-      total: p.preco * p.quantidade
+    // busca estoque inicial de cada produto
+    const produtoscomestoque = await promise.all(produtos.map(async (p) => {
+      const produtodb = await produto.findbyid(p._id);
+      const estoqueinicial = produtodb ? produtodb.quantidade : p.quantidade;
+      return {
+        ...p,
+        estoqueinicial,
+        total: p.preco * p.quantidade
+      };
     }));
-    const totalGeral = produtosComTotal.reduce((acc, p) => acc + p.total, 0);
 
-    // Criar Venda
-    const novaVenda = new Venda({
+    const totalgeral = produtoscomestoque.reduce((acc, p) => acc + p.total, 0);
+
+    // criar venda
+    const novavenda = new venda({
       comprador: req.user.id,
-      vendedor: vendedorId,
-      produtos: produtosComTotal,
-      totalGeral,
+      vendedor: vendedorid,
+      produtos: produtoscomestoque,
+      totalgeral,
       entregador,
       factura,
     });
-    await novaVenda.save();
+    await novavenda.save();
 
-    // Criar Compra
-    const novaCompra = new Compra({
+    // criar compra
+    const novacompra = new compra({
       comprador: req.user.id,
-      vendedor: vendedorId,
-      produtos: produtosComTotal,
-      totalGeral,
+      vendedor: vendedorid,
+      produtos: produtoscomestoque,
+      totalgeral,
       entregador,
       factura,
     });
-    await novaCompra.save();
+    await novacompra.save();
 
-  // Criar Mensagem automática para o vendedor
-const mensagem = new Mensagem({
-  remetente: req.user.id,       // comprador
-  destinatario: vendedorId,     // vendedor
-  conteudo: `🛒 Novo pedido registado no valor de ${totalGeral} KZ. Consulte os detalhes na sua área de vendas.`,
-  tipo: "sistema",              // extra, para diferenciar msg automática
-  lida: false
-});
-await mensagem.save();
+    // monta mensagem detalhada
+    let conteudomsg = "🛒 compra confirmada!\n──────────────\n\n";
 
+    produtoscomestoque.foreach(p => {
+      conteudomsg += `• produto: ${p.nome}\n`;
+      conteudomsg += `  quantidade: ${p.quantidade}\n`;
+      conteudomsg += `  estoque inicial: ${p.estoqueinicial}\n`;
+      conteudomsg += `  preço unitário: ${p.preco.tolocalestring()} kz\n\n`;
+    });
 
+    conteudomsg += `total geral: ${totalgeral.tolocalestring()} kz\n\n`;
 
-    // 🔹 Popula os refs antes de enviar
-    const compraPopulada = await Compra.findById(novaCompra._id)
+    if (entregador) {
+      conteudomsg += "🚚 entrega:\n";
+      conteudomsg += `  nome: ${entregador.nome}\n`;
+      conteudomsg += `  veículo: ${entregador.veiculo}\n`;
+      conteudomsg += `  local: ${entregador.local}, ${entregador.municipio}, ${entregador.provincia}\n`;
+      conteudomsg += `  tarifa: ${entregador.tarifa.tolocalestring()} kz\n`;
+      conteudomsg += `  contacto: ${entregador.contacto}\n\n`;
+    }
+
+    conteudomsg += "──────────────\n";
+    conteudomsg += "ℹ️ mensagem enviada automaticamente pelo sistema";
+
+    const mensagem = new mensagem({
+      remetente: req.user.id,
+      destinatario: vendedorid,
+      conteudo: conteudomsg,
+      tipo: "sistema",
+      lida: false
+    });
+
+    await mensagem.save();
+
+    // 🔹 popula os refs antes de enviar
+    const comprapopulada = await compra.findbyid(novacompra._id)
       .populate("vendedor", "nome")
       .populate("produtos.produto", "nome");
 
     res.status(201).json({
-      msg: "✅ Compra e venda registadas com sucesso! Mensagem enviada ao vendedor.",
-      venda: novaVenda,
-      compra: compraPopulada, // com nomes populados
-      mensagemAutomatica: mensagem
+      msg: "✅ compra e venda registadas com sucesso! mensagem enviada ao vendedor.",
+      venda: novavenda,
+      compra: comprapopulada,
+      mensagemautomatica: mensagem
     });
   } catch (err) {
-    console.error("❌ Erro no checkout:", err);
-    res.status(500).json({ msg: "Erro interno no servidor" });
+    console.error("❌ erro no checkout:", err);
+    res.status(500).json({ msg: "erro interno no servidor" });
   }
 });
 

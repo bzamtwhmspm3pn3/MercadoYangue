@@ -1,45 +1,56 @@
-
 const mongoose = require("mongoose");
 
-const mensagemSchema = new mongoose.Schema(
+const mensagemschema = new mongoose.schema(
   {
     remetente: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "Usuario", 
+      type: mongoose.schema.types.objectid, 
+      ref: "usuario", 
       required: true 
     },
     destinatario: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "Usuario", 
+      type: mongoose.schema.types.objectid, 
+      ref: "usuario", 
       required: true 
     },
     conteudo: { 
-      type: String, 
-      trim: true, // 🔹 remove espaços extras
-      required: [true, "A mensagem não pode estar vazia"] 
+  type: string, 
+  trim: true,
+  validate: {
+    validator: function(v) {
+      // se não tiver conteúdo, deve haver arquivo
+      return v?.trim() || this.arquivo;
     },
-    tipo: { 
-      type: String, 
-      enum: ["texto", "imagem", "sistema"], 
-      default: "texto" 
-    },
+    message: "a mensagem não pode estar vazia"
+  }
+},
+
+tipo: { 
+  type: string, 
+  enum: ["texto", "imagem", "arquivo", "sistema"], 
+  default: "texto",
+  required: true
+},
+
+
     lida: { 
-      type: Boolean, 
+      type: boolean,
       default: false 
     },
     apagada: {
-      type: Boolean,
-      default: false // 🔹 caso o usuário apague, mas mantenha no histórico
+      type: boolean,
+      default: false
     },
+    arquivo: string,
+    arquivonome: string,
+    arquivotipo: string,
     data: { 
-      type: Date, 
-      default: Date.now 
+      type: date, 
+      default: date.now 
     }
   },
-  { 
-    timestamps: true // 🔹 cria automaticamente createdAt e updatedAt
-  }
+  { timestamps: true }
 );
 
-// ✅ Correção: evita OverwriteModelError
-module.exports = mongoose.models.Mensagem || mongoose.model("Mensagem", mensagemSchema);
+module.exports = mongoose.models.mensagem || mongoose.model("mensagem", mensagemschema);
+
+

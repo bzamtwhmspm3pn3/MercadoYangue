@@ -1,23 +1,12 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Legend
+import { 
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, LabelList 
 } from "recharts";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable"; 
 import QRCode from "qrcode";
+
 
 
 const GerarFacturaPremium = ({ venda, usuario, formatarKz }) => {
@@ -28,8 +17,7 @@ const GerarFacturaPremium = ({ venda, usuario, formatarKz }) => {
   const [vendedorNif, setVendedorNif] = useState(usuario.nif || "");
   const [vendedorMorada, setVendedorMorada] = useState(usuario.endereco || "");
   const [localEntrega, setLocalEntrega] = useState(venda.local || "");
-  const [desconto, setDesconto] = useState(venda.desconto || 0);
-
+  
   // 🔹 Funções para número sequencial
   const getUltimoNumero = () => {
     const ultimo = localStorage.getItem("ultimoNumFactura");
@@ -41,12 +29,26 @@ const GerarFacturaPremium = ({ venda, usuario, formatarKz }) => {
   };
 
   // 🔹 Número sequencial inicial
-  const [numeroFactura, setNumeroFactura] = useState(() => {
-    const anoAtual = new Date().getFullYear();
-    const numSeq = getUltimoNumero() + 1;
-    setProximoNumero(numSeq);
-    return `FT-MY: ${String(numSeq).padStart(4, "0")}/${anoAtual}`;
-  });
+
+const [numeroFactura, setNumeroFactura] = useState("");
+
+useEffect(() => {
+  const fetchNumero = async () => {
+    try {
+      const res = await fetch("/fatura/proximo-numero", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vendedorId: usuario.id }),
+      });
+      const data = await res.json();
+      setNumeroFactura(data.numeroFactura);
+    } catch (err) {
+      console.error("Erro ao buscar número da fatura:", err);
+    }
+  };
+  fetchNumero();
+}, [usuario.id]);
+
 
   const gerarFactura = async () => {
     try {
@@ -100,7 +102,7 @@ const GerarFacturaPremium = ({ venda, usuario, formatarKz }) => {
       doc.text(`Local de entrega: ${localEntrega}`, 120, 235);
 
       // 🔹 Produtos e Totais
-      const descontoGlobal = desconto || 0;
+      const descontoGlobal = 0;
       const subtotalBruto = venda.produtos.reduce((acc, p) => acc + p.preco * p.quantidade, 0);
       const produtosComValores = venda.produtos.map(p => {
         const precoTotal = p.preco * p.quantidade;
@@ -222,9 +224,7 @@ const GerarFacturaPremium = ({ venda, usuario, formatarKz }) => {
             <input type="text" value={compradorContactos} onChange={(e) => setCompradorContactos(e.target.value)} className="border px-2 py-1 w-full mb-2"/>
             <label className="block mb-1 font-semibold">Local de Entrega</label>
             <input type="text" value={localEntrega} onChange={(e) => setLocalEntrega(e.target.value)} className="border px-2 py-1 w-full mb-2"/>
-            <label className="block mb-1 font-semibold">Desconto</label>
-            <input type="number" value={desconto} onChange={(e) => setDesconto(Number(e.target.value))} className="border px-2 py-1 w-full mb-4"/>
-
+            
             <div className="flex justify-end gap-2">
               <button onClick={() => setShowModal(false)} className="px-3 py-1 bg-gray-400 rounded">Cancelar</button>
               <button onClick={gerarFactura} className="px-3 py-1 bg-green-600 text-white rounded">Gerar PDF</button>
@@ -235,7 +235,6 @@ const GerarFacturaPremium = ({ venda, usuario, formatarKz }) => {
     </>
   );
 };
-
 
 const exportarPDFVendas = async (vendas, usuario) => {
   const lista = Array.isArray(vendas) ? vendas : [];
@@ -366,12 +365,27 @@ const exportarPDFVendas = async (vendas, usuario) => {
 };
 
 
+
+
 const cores = ["#38a169", "#2b6cb0", "#d69e2e", "#9f7aea", "#ed8936"];
+
+const getCorProduto = (nome) => {
+  // garante string, remove espaços extras e padroniza caixa
+  const n = (nome || "").trim().toLowerCase();
+  let hash = 0;
+  for (let i = 0; i < n.length; i++) {
+    hash = n.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = hash % 360;
+  return `hsl(${h}, 65%, 50%)`;
+};
 
 const AbaGestaoVendas = ({ usuario }) => {
   const [produtos, setProdutos] = useState([]);
   const [filtroMes, setFiltroMes] = useState("");
   const [filtroNome, setFiltroNome] = useState("");
+const [estoqueInicial, setEstoqueInicial] = useState({});
+const [filtroComprador, setFiltroComprador] = useState("");
   const [vendasConfirmadas, setVendasConfirmadas] = useState([]);
   const refImpressao = useRef();
 
@@ -391,6 +405,19 @@ const converterExtenso = (valor) => {
   return valor.toLocaleString("pt-AO") + " Kz"; // fallback para valores maiores
 };
 
+
+
+useEffect(() => {
+  if (produtos.length > 0 && Object.keys(estoqueInicial).length === 0) {
+    const inicial = {};
+    produtos.forEach(p => {
+      inicial[p._id] = p.quantidade; // registra quantidade inicial
+    });
+    setEstoqueInicial(inicial);
+  }
+}, [produtos]);
+
+
   // 🔹 Buscar produtos e vendas
 useEffect(() => {
   const token = localStorage.getItem("token");
@@ -398,7 +425,7 @@ useEffect(() => {
 
   const carregarProdutos = async () => {
     try {
-      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/produtos/meus-produtos", {
+      const res = await fetch("https://mercadoyangue.netlify.app/api/produtos/meus-produtos", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Erro ao buscar produtos");
@@ -412,7 +439,7 @@ useEffect(() => {
 
   const carregarVendas = async () => {
     try {
-      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/vendas/vendedor", {
+      const res = await fetch("https://mercadoyangue.netlify.app/api/vendas/vendedor", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Erro ao buscar vendas do vendedor");
@@ -430,27 +457,26 @@ useEffect(() => {
 
 
   // 🔹 Confirmar venda
-const confirmarVenda = async (id) => {
-  try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`https://mercadoyangue-i3in.onrender.com/api/vendas/${id}/confirmar`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (res.ok) {
-      setVendasConfirmadas((prev) =>
-        prev.map((v) => (v._id === id ? { ...v, status: "confirmada" } : v))
-      );
+  const confirmarVenda = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`https://mercadoyangue.netlify.app/api/vendas/${id}/confirmar`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setVendasConfirmadas((prev) =>
+          prev.map((v) => (v._id === id ? { ...v, status: "confirmada" } : v))
+        );
+      }
+    } catch (err) {
+      console.error("Erro ao confirmar venda:", err);
     }
-  } catch (err) {
-    console.error("Erro ao confirmar venda:", err);
-  }
-};
+  };
 
-const emitirFactura = (id) => {
-  alert(`📑 Factura emitida para venda ${id}`);
-};
+  const emitirFactura = (id) => {
+    alert(`📑 Factura emitida para venda ${id}`);
+  };
 
   // 🔹 Helpers
   const formatarKz = (val) =>
@@ -470,6 +496,19 @@ const emitirFactura = (id) => {
       }),
     [produtos, filtroMes, filtroNome]
   );
+
+const vendasFiltradas = useMemo(() => {
+  return vendasConfirmadas.filter((venda) => {
+    const mesVenda = new Date(venda.createdAt).getMonth() + 1;
+    const nomeComprador = venda.comprador?.nome?.toLowerCase() || "";
+    return (
+      (!filtroMes || mesVenda === parseInt(filtroMes)) &&
+      (!filtroNome || venda.produtos.some(p => p.produto?.nome.toLowerCase().includes(filtroNome.toLowerCase()))) &&
+      (!filtroComprador || nomeComprador.includes(filtroComprador.toLowerCase()))
+    );
+  });
+}, [vendasConfirmadas, filtroMes, filtroNome, filtroComprador]);
+
 
   // 🔹 Preparar dados para gráfico
   const dadosGrafico = useMemo(
@@ -523,26 +562,64 @@ const emitirFactura = (id) => {
           onChange={(e) => setFiltroNome(e.target.value)}
           placeholder="Filtrar por nome"
         />
+
+         <input
+  type="text"
+  className="border p-1 w-full"
+  value={filtroComprador}
+  onChange={(e) => setFiltroComprador(e.target.value)}
+  placeholder="Filtrar por comprador"
+/>
+
       </div>
 <div ref={refImpressao} className="space-y-6">
 
-  {/* Gráfico de Estoque */}
-  <div>
-    <h3 className="text-xl font-semibold">📊 Gráfico de Estoque</h3>
-    <ResponsiveContainer height={300}>
-      <BarChart data={dadosGrafico}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="nome" />
-        <YAxis />
-        <Tooltip formatter={(value) => formatarKz(value)} />
-        <Bar dataKey="estoque" name="Estoque">
-          {dadosGrafico.map((entry, index) => (
-            <Cell key={`cell-bar-${index}`} fill={entry.fill || "#38a169"} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  </div>
+{/* Gráfico de Estoque */}
+<div>
+  <h3 className="text-xl font-semibold mt-6">📦 Estoque por Produto</h3>
+
+  <ResponsiveContainer width="100%" height={400}>
+    <BarChart
+      data={[...dadosGrafico].sort((a, b) => b.estoque - a.estoque)} // ordena desc
+      margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+    >
+      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+      <XAxis dataKey="nome" type="category" />
+      <YAxis type="number" />
+
+      {/* Tooltip apenas com valor */}
+      <Tooltip formatter={(value, name) => [value, name]} />
+
+      {/* Barras com cor única por produto */}
+      <Bar dataKey="estoque" radius={[6, 6, 0, 0]}>
+        {dadosGrafico.map((item) => (
+          <Cell
+            key={item.nome}
+            fill={getCorProduto(item.nome)} // cor consistente com vendas
+          />
+        ))}
+
+        {/* Labels apenas com valor */}
+        <LabelList
+          dataKey="estoque"
+          position="top"
+          content={({ value, x, y, width }) => (
+            <text
+              x={x + width / 2}
+              y={y - 5}
+              textAnchor="middle"
+              fill="#1a202c"
+              fontWeight="bold"
+              fontSize={12}
+            >
+              {value}
+            </text>
+          )}
+        />
+      </Bar>
+    </BarChart>
+  </ResponsiveContainer>
+</div>
 
   {/* Tabela de Estoque */}
   <div>
@@ -564,7 +641,7 @@ const emitirFactura = (id) => {
           <tr key={i} className="hover:bg-gray-100">
             <td className="border p-2">
               <img
-                src={`http://localhost:5000/uploads/${p.imagem}`}
+                src={`https://mercadoyangue.netlify.app/uploads/${p.imagem}`}
                 alt={p.nome}
                 className="w-12 h-12 object-cover rounded"
               />
@@ -601,108 +678,93 @@ const emitirFactura = (id) => {
     </table>
   </div>
 
-{/* Gráfico de Vendas por Produto (Pizza) */}
-<div>
-  <h3 className="text-xl font-semibold mt-6">Vendas por Produto</h3>
-  {vendasConfirmadas.length > 0 ? (
-    <ResponsiveContainer width="100%" height={400}>
-      <PieChart>
-        <Pie
-          data={(() => {
-            // 🔹 Agrupar produtos e calcular total
-            const resumo = {};
-            vendasConfirmadas.forEach((venda) => {
-              venda.produtos.forEach((p) => {
-                const nome = p.produto?.nome || p.produto;
-                if (!resumo[nome]) resumo[nome] = 0;
-                resumo[nome] += (p.preco || 0) * p.quantidade;
-              });
-            });
-            return Object.entries(resumo).map(([nome, total]) => ({ produto: nome, total }));
-          })()}
-          dataKey="total"
-          nameKey="produto"
-          cx="50%"
-          cy="50%"
-          outerRadius={150}
-          label={(entry) =>
-            `${entry.produto}: ${entry.total.toLocaleString("pt-AO", {
-              style: "currency",
-              currency: "AOA",
-            })}`
-          }
-        >
-          {(() => {
-            const cores = ["#38a169", "#2b6cb0", "#d69e2e", "#e53e3e", "#805ad5", "#dd6b20"];
-            const data = vendasConfirmadas.flatMap((v) =>
-              v.produtos.map((p) => p.produto?.nome || p.produto)
-            );
-            return Object.keys(data.reduce((acc, d) => ({ ...acc, [d]: 0 }), {})).map(
-              (_, i) => <Cell key={i} fill={cores[i % cores.length]} />
-            );
-          })()}
-        </Pie>
-        <Tooltip
-          formatter={(value) =>
-            value.toLocaleString("pt-AO", { style: "currency", currency: "AOA" })
-          }
-        />
-      </PieChart>
-    </ResponsiveContainer>
-  ) : (
-    <p className="text-gray-600 italic">Nenhuma venda registada ainda.</p>
-  )}
-</div>
-
 
 {/* Gráfico de Vendas por Produto (Barras Invertidas) */}
 <div>
-  <h3 className="text-xl font-semibold mt-6">Vendas por Produto</h3>
+  <h3 className="text-2xl font-bold mt-6 mb-4 text-gray-800">📊 Vendas por Produto</h3>
   {vendasConfirmadas.length > 0 ? (
-    <ResponsiveContainer width="100%" height={400}>
+    <ResponsiveContainer width="100%" height={450}>
       <BarChart
         layout="vertical"
-        margin={{ top: 20, right: 30, left: 100, bottom: 20 }}
+        barCategoryGap="20%"
+        margin={{ top: 20, right: 40, left: 120, bottom: 20 }}
         data={(() => {
-          // 🔹 Agrupar produtos e calcular total
+          // 🔹 Gera dados agregados por produto
           const resumo = {};
           vendasConfirmadas.forEach((venda) => {
             venda.produtos.forEach((p) => {
-              const nome = p.produto?.nome || p.produto;
+              const nome = (p.produto?.nome || p.produto || "desconhecido")
+                .toString()
+                .trim()
+                .toLowerCase(); // normaliza
               if (!resumo[nome]) resumo[nome] = 0;
               resumo[nome] += (p.preco || 0) * p.quantidade;
             });
           });
-          return Object.entries(resumo).map(([nome, total]) => ({ produto: nome, total }));
+          return Object.entries(resumo).map(([produto, total]) => ({ produto, total }));
         })()}
       >
-        <XAxis 
-          type="number" 
+        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+
+        {/* Eixo X: valores monetários */}
+        <XAxis
+          type="number"
+          tick={{ fontSize: 12, fill: "#4a5568" }}
           tickFormatter={(val) =>
             val.toLocaleString("pt-AO", { style: "currency", currency: "AOA" })
-          } 
+          }
         />
-        <YAxis dataKey="produto" type="category" width={150} />
-        <Tooltip 
+
+        {/* Eixo Y: nomes dos produtos */}
+        <YAxis
+          dataKey="produto"
+          type="category"
+          width={150}
+          tick={{ fontSize: 13, fill: "#2d3748", fontWeight: "600" }}
+        />
+
+        {/* Tooltip personalizado */}
+        <Tooltip
+          contentStyle={{
+            backgroundColor: "#ffffff",
+            border: "1px solid #e2e8f0",
+            borderRadius: "8px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          }}
           formatter={(value) =>
             value.toLocaleString("pt-AO", { style: "currency", currency: "AOA" })
-          } 
+          }
         />
-        <Bar 
-          dataKey="total" 
-          fill="#38a169"
-        >
-          {(() => {
-            const cores = ["#38a169", "#2b6cb0", "#d69e2e", "#e53e3e", "#805ad5", "#dd6b20"];
-            return ((() => {
-              const data = vendasConfirmadas.flatMap(v => v.produtos.map(p => ({
-                produto: p.produto?.nome || p.produto,
-              })));
-              return Object.keys(data.reduce((acc, d) => ({ ...acc, [d.produto]: 0 }), {}))
-                .map((_, i) => <Cell key={i} fill={cores[i % cores.length]} />);
-            })());
-          })()}
-        </Bar>
+
+        {/* Barras com cores fixas por nome */}
+       <Bar dataKey="total" radius={[6, 6, 6, 6]}>
+  {(() => {
+    const dadosGrafico = vendasConfirmadas
+      .flatMap(v => v.produtos)
+      .reduce((acc, p) => {
+        const nome = (p.produto?.nome || p.produto || "desconhecido")
+          .toString()
+          .trim()
+          .toLowerCase();
+        const total = (p.preco || 0) * p.quantidade;
+        if (acc[nome]) acc[nome].total += total;
+        else acc[nome] = { produto: nome, total };
+        return acc;
+      }, {});
+      
+    // Convertendo para array **sem perder a ordem original do objeto**
+    return Object.values(dadosGrafico).map(item => (
+      <Cell
+        key={item.produto}
+        fill={getCorProduto(item.produto)}
+        stroke="#fff"
+        strokeWidth={1}
+        style={{ filter: "drop-shadow(1px 2px 2px rgba(0,0,0,0.15))" }}
+      />
+    ));
+  })()}
+</Bar>
+
       </BarChart>
     </ResponsiveContainer>
   ) : (

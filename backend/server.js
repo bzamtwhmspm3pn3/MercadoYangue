@@ -1,131 +1,112 @@
 require('dotenv').config();
-require('dotenv').config();
 const express = require('express');
-const app = express();        
 const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http');
-const { Server } = require('socket.io');
-;
+const { server } = require('socket.io');
 
-// Rotas
-const usuariosRoutes = require('./routes/usuarios');
-const authRoutes = require('./routes/auth');
-const produtoRoutes = require('./routes/produtos');
-const chatRoutes = require('./routes/chat');
-const vendasRoutes = require('./routes/vendas');
-const comprasRoutes = require('./routes/compras');
-const checkoutRoutes = require("./routes/checkout");
+// rotas
+const usuariosroutes = require('./routes/usuarios');
+const authroutes = require('./routes/auth');
+const produtoroutes = require('./routes/produtos');
+const chatroutes = require('./routes/chat');
+const vendasroutes = require('./routes/vendas');
+const comprasroutes = require('./routes/compras');
+const checkoutroutes = require("./routes/checkout");
+const carrinhoroutes = require('./routes/carrinho');
+const faturaroutes = require("./routes/fatura");
 
-// Models
-const Mensagem = require('./models/mensagem'); // para salvar histórico
+// models
+const mensagem = require('./models/mensagem');
+const usuario = require('./models/usuario');
 
-// 🔹 Middleware: permitir CORS e leitura de JSON
-const allowedOrigins = [
-  'http://localhost:3000',                             // Dev local
-  'https://super-souffle-c9b0fb.netlify.app'          // Netlify (corrigido)
-];
+const app = express();
 
+// middleware
 app.use(cors({
-  origin: function (origin, callback) {
-    // requests sem origin (Postman, server-side) são aceitos
-    if (!origin) return callback(null, true);
-
-    if (!allowedOrigins.includes(origin)) {
-      const msg = `❌ O CORS não permite esta origem: ${origin}`;
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
+  origin: 'https://mercadoyangue-i3in.onrender.com',
   credentials: true
 }));
 
-app.use(express.json());
 
+// aumentando limite para 50mb
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// ✅ Servir arquivos estáticos de imagens
 app.use('/uploads', express.static('uploads'));
 
-// ✅ Rotas REST
-app.use('/api/auth', authRoutes);
-app.use('/api/produtos', produtoRoutes);
-app.use('/api', usuariosRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/vendas', vendasRoutes);
-app.use('/api/compras', comprasRoutes);
-app.use("/api/checkout", checkoutRoutes);
+// rotas rest
+app.use('/api/auth', authroutes);
+app.use('/api/produtos', produtoroutes);
+app.use('/api', usuariosroutes);
+app.use('/api/chat', chatroutes);
+app.use('/api/vendas', vendasroutes);
+app.use('/api/compras', comprasroutes);
+app.use("/api/checkout", checkoutroutes);
+app.use('/api/carrinho', carrinhoroutes);
+app.use("/api/fatura", faturaroutes);
 
-// ✅ Configuração Socket.IO
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:3000", // frontend
-    methods: ["GET", "POST"]
-  }
+// configuração socket.io
+const server = http.createserver(app);
+const io = new server(server, {
+  cors: { origin: "https://mercadoyangue-i3in.onrender.com", methods: ["get","post"] }
 });
 
-// Guardar usuários online
-let onlineUsers = {};
+// guardar usuários online
+let onlineusers = {};
 
-// Quando alguém conecta
+// conexão socket
 io.on("connection", (socket) => {
-  console.log("Novo cliente conectado:", socket.id);
+  console.log("cliente conectado:", socket.id);
 
-  const userId = socket.handshake.query.userId;
-  if (userId) {
-    onlineUsers[userId] = socket.id;
-    console.log("Usuário logado:", userId);
+  const userid = socket.handshake.query.userid;
+  if (userid) {
+    onlineusers[userid] = socket.id;
+    socket.join(userid);
   }
 
-  // Receber mensagem
-  socket.on("sendMessage", async ({ senderId, receiverId, conteudo }) => {
-    console.log(`Mensagem de ${senderId} para ${receiverId}: ${conteudo}`);
-
-    // 1. Salvar no banco
+  socket.on("sendmessage", async ({ senderid, receiverid, conteudo, arquivo, arquivonome, arquivotipo }) => {
     try {
-      const novaMsg = new Mensagem({
-        remetente: senderId,
-        destinatario: receiverId,
-        conteudo
-      });
-      await novaMsg.save();
-      console.log("Mensagem salva no MongoDB");
-    } catch (err) {
-      console.error("Erro ao salvar mensagem:", err);
-    }
-
-    // 2. Enviar em tempo real se o destinatário estiver online
-    const receiverSocket = onlineUsers[receiverId];
-    if (receiverSocket) {
-      io.to(receiverSocket).emit("receiveMessage", { senderId, conteudo });
-    }
-  });
-
-  // Quando desconecta
-  socket.on("disconnect", () => {
-    console.log("Cliente desconectado:", socket.id);
-    for (let uid in onlineUsers) {
-      if (onlineUsers[uid] === socket.id) {
-        delete onlineUsers[uid];
+      if (!mongoose.types.objectid.isvalid(senderid) || !mongoose.types.objectid.isvalid(receiverid)) {
+        console.error("ids inválidos:", senderid, receiverid);
+        return;
       }
+
+      const novamsg = await mensagem.create({
+        remetente: senderid,
+        destinatario: receiverid,
+        conteudo,
+        arquivo,
+        arquivonome,
+        arquivotipo
+      });
+
+      const msgpopulada = await mensagem.findbyid(novamsg._id)
+        .populate("remetente", "nome email")
+        .populate("destinatario", "nome email");
+
+      io.to(receiverid).emit("receivemessage", msgpopulada);
+      io.to(senderid).emit("receivemessage", msgpopulada);
+    } catch (err) {
+      console.error("erro ao enviar mensagem socket:", err);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    for (let uid in onlineusers) {
+      if (onlineusers[uid] === socket.id) delete onlineusers[uid];
     }
   });
 });
 
-// 🔹 Conexão ao MongoDB
-const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || process.env.MONGO_URL;
 
-console.log("🔑 MONGO_URI:", MONGO_URI ? "Carregado ✅" : "Não definido ❌");
+// conexão mongodb
+const port = process.env.port || 5000;
+const mongo_uri = process.env.mongo_uri;
 
-mongoose.connect(MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => {
-  console.log(`✅ MongoDB conectado ao banco: ${mongoose.connection.name}`);
-  app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
-})
-.catch(err => {
-  console.error('❌ Erro ao conectar no MongoDB:', err.message);
-});
+mongoose.connect(mongo_uri, { usenewurlparser: true, useunifiedtopology: true })
+  .then(() => {
+    console.log('mongodb conectado no banco:', mongoose.connection.name);
+    server.listen(port, () => console.log(`servidor rodando na porta ${port}`));
+  })
+  .catch(err => console.error('erro ao conectar no mongodb:', err));

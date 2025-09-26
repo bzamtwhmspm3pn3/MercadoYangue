@@ -40,6 +40,11 @@ export default function AbaProdutos({
     () => JSON.parse(localStorage.getItem("favoritos") || "[]")
   );
 
+const [modalAberto, setModalAberto] = useState(false);
+const [produtoSelecionadoModal, setProdutoSelecionadoModal] = useState(null);
+const [quantidadeSelecionada, setQuantidadeSelecionada] = useState(1);
+
+
   const fetchProdutos = async () => {
     const token = localStorage.getItem("token");
     const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/produtos", {
@@ -60,6 +65,38 @@ export default function AbaProdutos({
     setFavoritos(novos);
     localStorage.setItem("favoritos", JSON.stringify(novos));
   };
+
+const abrirModalCarrinho = (produto) => {
+  setProdutoSelecionadoModal(produto);
+  setQuantidadeSelecionada(1);
+  setModalAberto(true);
+};
+
+
+const confirmarAdicionarCarrinho = async () => {
+  if (!produtoSelecionadoModal) return;
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch("https://mercadoyangue.netlify.app/api/carrinho/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        produtoId: produtoSelecionadoModal._id,
+        quantidade: quantidadeSelecionada,
+      }),
+    });
+    if (!res.ok) throw new Error("Erro ao adicionar ao carrinho");
+    const dados = await res.json();
+    adicionarNoCarrinho(dados.carrinho); // atualiza o estado do carrinho
+    setModalAberto(false);
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
 
   useEffect(() => {
     let filtrados = produtos;
@@ -93,7 +130,7 @@ export default function AbaProdutos({
     if (!window.confirm("Deseja mesmo eliminar este produto?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/produtos/${id}`, {
+      await axios.delete(`https://mercadoyangue.netlify.app/api/produtos/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProdutosFiltrados((prev) => prev.filter((prod) => prod._id !== id));
@@ -119,13 +156,8 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 bg-gradient-to-b from-green-50 to-yellow-50">
       <div className="flex flex-col items-center mt-4 mb-4">
-  <img
-    src="/logo-mercado-yangue.png"
-    alt="Mercado Yangue"
-    className="w-64 h-auto mb-2"
-  />
-  <h1 className="text-4xl font-extrabold text-green-800 text-center">
-    A Praça Digital do Campo à Cidade
+    <h1 className="text-4xl font-extrabold text-green-800 text-center">
+    A Praça Digital do Campo à Cidade!
   </h1>
 </div>
 
@@ -189,7 +221,7 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
                     </button>
 
                     <img
-                      src={`http://localhost:5000/uploads/${produto.imagem}`}
+                      src={`https://mercadoyangue.netlify.app/uploads/${produto.imagem}`}
                       alt={produto.nome}
                       className="mx-auto h-48 object-contain cursor-pointer"
                       onClick={() => {
@@ -221,8 +253,9 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
                     </p>
 
                     <p className="text-center text-sm text-green-800">
-                      {produto.quantidade} {produto.unidade || "un"}
-                    </p>
+  Disponível: {produto.quantidade - (produto.reservados || 0)} {produto.unidade || "un"}
+</p>
+
 
                     <p className="text-center text-yellow-600 text-sm mt-1">
                       {renderEstrelas(produto.vendas || 0)}
@@ -244,47 +277,43 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
                     </p>
 
                     <div className="flex justify-center mt-3 gap-2 flex-wrap">
-  {/* 🔹 Botões apenas para clientes */}
-  {usuario?.tipo === "cliente" && (
-    <>
-      <button
-        onClick={() => {
-          const itemCarrinho = {
-            ...produto,
-            vendedorId: produto.vendedor?._id,
-          };
-          adicionarNoCarrinho(itemCarrinho);
-          setAbaAtiva && setAbaAtiva("carrinho");
-        }}
-        disabled={esgotado(produto)}
-        className={`px-3 py-1 text-sm rounded ${
-          esgotado(produto)
-            ? "bg-yellow-400 text-white"
-            : "bg-green-700 text-white hover:bg-green-800"
-        }`}
-      >
-        {esgotado(produto) ? "Indisponível" : "Adicionar ao carrinho"}
-      </button>
+{/* 🔹 Botões apenas para clientes */}
+{usuario?.tipo === "cliente" && (
+  <div className="flex gap-2">
+    <button
+      onClick={() => abrirModalCarrinho(produto)}
+      disabled={esgotado(produto)}
+      className={`px-3 py-1 text-sm rounded ${
+        esgotado(produto)
+          ? "bg-yellow-400 text-white"
+          : "bg-green-700 text-white hover:bg-green-800"
+      }`}
+    >
+      {esgotado(produto) ? "Indisponível" : "Adicionar ao carrinho"}
+    </button>
 
-      <button
-        className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md shadow-md transition duration-200 font-semibold text-sm"
-        onClick={() => {
-          const mensagem = `Olá, estou interessado no seu produto: ${produto.nome}. Podemos negociar?`;
-          localStorage.setItem(
-            "mensagemPreChat",
-            JSON.stringify({
-              vendedor: produto.vendedor?.nome,
-              mensagem,
-              de: usuario.nome,
-            })
-          );
-          setAbaAtiva && setAbaAtiva("chat");
-        }}
-      >
-        🤝 Negociar com o Vendedor
-      </button>
-    </>
-  )}
+        <button
+  className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md shadow-md transition duration-200 font-semibold text-sm"
+  onClick={() => {
+    // Armazena o vendedor selecionado
+    localStorage.setItem(
+      "vendedorSelecionado",
+      JSON.stringify({
+        id: produto.vendedor?._id,
+        nome: produto.vendedor?.nome,
+      })
+    );
+
+    // Abre a aba do chat
+    setAbaAtiva && setAbaAtiva("chat");
+  }}
+>
+  💬 Conversar com o Vendedor
+</button>
+
+  </div>
+)}
+
 
   {/* 🔹 Botões apenas para o próprio vendedor */}
   {usuario?.tipo === "vendedor" && usuario?.nome === produto.vendedor?.nome && (
@@ -316,24 +345,78 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
         })
       )}
 
+
+
+{modalAberto && produtoSelecionadoModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-white p-6 rounded-lg w-96 shadow-lg">
+      <h3 className="text-xl font-bold mb-4">{produtoSelecionadoModal.nome}</h3>
+      <p className="mb-2">
+        Disponível: {produtoSelecionadoModal.quantidade - (produtoSelecionadoModal.reservados || 0)} {produtoSelecionadoModal.unidade || "un"}
+      </p>
+      <input
+        type="number"
+        min="1"
+        max={produtoSelecionadoModal.quantidade - (produtoSelecionadoModal.reservados || 0)}
+        value={quantidadeSelecionada}
+        onChange={(e) => setQuantidadeSelecionada(Number(e.target.value))}
+        className="border p-2 w-full mb-4"
+      />
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setModalAberto(false)}
+          className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+        >
+          Cancelar
+        </button>
+        <button
+          onClick={confirmarAdicionarCarrinho}
+          className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+        >
+          Adicionar ao Carrinho
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       {mostrarModalEditar && produtoParaEditar && (
-        <ModalEditarProduto
-          produto={produtoParaEditar}
-          onClose={() => setMostrarModalEditar(false)}
-          onAtualizar={(produtoAtualizado) => {
-            setProdutos((prev) =>
-              prev.map((p) =>
-                p._id === produtoAtualizado._id ? produtoAtualizado : p
-              )
-            );
-            setProdutosFiltrados((prev) =>
-              prev.map((p) =>
-                p._id === produtoAtualizado._id ? produtoAtualizado : p
-              )
-            );
-          }}
-        />
-      )}
+  <ModalEditarProduto
+    produto={produtoParaEditar}
+    onClose={() => setMostrarModalEditar(false)}
+    onAtualizar={async (produtoAtualizado) => {
+      try {
+        const token = localStorage.getItem("token");
+        // Atualiza no backend
+        const res = await axios.put(
+          `https://mercadoyangue.netlify.app/api/produtos/${produtoAtualizado._id}`,
+          produtoAtualizado,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        const atualizadoDoServidor = res.data;
+
+        // Atualiza estado local
+        setProdutos((prev) =>
+          prev.map((p) =>
+            p._id === atualizadoDoServidor._id ? atualizadoDoServidor : p
+          )
+        );
+        setProdutosFiltrados((prev) =>
+          prev.map((p) =>
+            p._id === atualizadoDoServidor._id ? atualizadoDoServidor : p
+          )
+        );
+
+        setMostrarModalEditar(false);
+        alert("Produto atualizado com sucesso!");
+      } catch (err) {
+        console.error("Erro ao atualizar produto:", err);
+        alert("Falha ao atualizar produto. Ver console.");
+      }
+    }}
+  />
+)}
     </div>
   );
 }
