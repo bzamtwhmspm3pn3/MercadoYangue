@@ -77,13 +77,23 @@ io.on("connection", (socket) => {
   });
 });
 
-// Conectar MongoDB Atlas
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/mercadoyangue', {
+// === Conectar ao MongoDB Atlas ===
+const mongoURI = process.env.MONGO_URI;
+if (!mongoURI) {
+  console.error("❌ ERRO: MONGO_URI não está definido nas variáveis de ambiente!");
+  process.exit(1); // força parar para não tentar localhost em produção
+}
+
+mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
 .then(() => {
-  console.log('✅ MongoDB conectado');
+  console.log('✅ MongoDB conectado ao Atlas');
   server.listen(port, () => console.log(`🚀 Backend rodando na porta ${port}`));
 })
-.catch(err => console.error('❌ Erro MongoDB:', err));
+.catch(err => {
+  console.error('❌ Erro ao conectar MongoDB Atlas:', err.message);
+  process.exit(1);
+});
+
