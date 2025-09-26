@@ -37,7 +37,7 @@ export default function AbaGestaoCompras({ novasCompras, usuario }) {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    fetch("https://mercadoyangue.netlify.app/api/compras/minhas", {
+    fetch("https://mercadoyangue-i3in.onrender.com/api/compras/minhas", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => (r.ok ? r.json() : Promise.reject(r)))

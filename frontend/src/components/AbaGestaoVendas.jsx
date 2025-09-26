@@ -425,7 +425,7 @@ useEffect(() => {
 
   const carregarProdutos = async () => {
     try {
-      const res = await fetch("https://mercadoyangue.netlify.app/api/produtos/meus-produtos", {
+      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/produtos/meus-produtos", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Erro ao buscar produtos");
@@ -439,7 +439,7 @@ useEffect(() => {
 
   const carregarVendas = async () => {
     try {
-      const res = await fetch("https://mercadoyangue.netlify.app/api/vendas/vendedor", {
+      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/vendas/vendedor", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Erro ao buscar vendas do vendedor");
@@ -460,7 +460,7 @@ useEffect(() => {
   const confirmarVenda = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`https://mercadoyangue.netlify.app/api/vendas/${id}/confirmar`, {
+      const res = await fetch(`https://mercadoyangue-i3in.onrender.com/api/vendas/${id}/confirmar`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -641,7 +641,7 @@ const vendasFiltradas = useMemo(() => {
           <tr key={i} className="hover:bg-gray-100">
             <td className="border p-2">
               <img
-                src={`https://mercadoyangue.netlify.app/uploads/${p.imagem}`}
+                src={`https://mercadoyangue-i3in.onrender.com/uploads/${p.imagem}`}
                 alt={p.nome}
                 className="w-12 h-12 object-cover rounded"
               />

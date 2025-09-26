@@ -247,7 +247,7 @@ function FormaPagamentoCampo({ formaPagamento, setFormaPagamento, bancosDisponiv
 
 
 
-function AbaLoginCadastro({ setUsuario }) {
+function AbaLoginCadastro({ setUsuario, setAbaAtiva}) {
   const [modo, setModo] = React.useState("login");
   const [tipoCadastro, setTipoCadastro] = React.useState("cliente");
 
@@ -289,7 +289,7 @@ const handleLogin = async () => {
 
     console.log("🔹 Resposta recebida:", res);
 
-    const data = await res.json(); // só uma vez
+    const data = await res.json();
     console.log("🔹 JSON parseado:", data);
 
     if (!res.ok) {
@@ -308,28 +308,25 @@ const handleLogin = async () => {
       tipo: data.usuario.tipo,
     };
 
+    // salvar no localStorage
     localStorage.setItem("token", data.token);
     localStorage.setItem("usuario", JSON.stringify(usuarioLogado));
 
+    // atualizar estado
     setUsuario(usuarioLogado);
     alert(`Bem-vindo(a), ${usuarioLogado.nome}!`);
-
     console.log("✅ Usuário logado com sucesso:", usuarioLogado);
 
-    // 🔹 Testar se limparCampos() existe
-    try {
+    // limpar os campos se a função existir
+    if (typeof limparCampos === "function") {
       console.log("🔹 Limpando campos...");
       limparCampos();
-    } catch (e) {
-      console.error("⚠️ Erro em limparCampos():", e);
     }
 
-    // 🔹 Testar se mudar aba funciona
-    try {
+    // mudar aba se a função existir
+    if (typeof setAbaAtiva === "function") {
       console.log("🔹 Redirecionando para aba produtos...");
       setAbaAtiva("produtos");
-    } catch (e) {
-      console.error("⚠️ Erro em setAbaAtiva:", e);
     }
 
   } catch (error) {
@@ -337,6 +334,7 @@ const handleLogin = async () => {
     alert("Erro inesperado no login. Veja o console.");
   }
 };
+
 
 
 
@@ -958,10 +956,8 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
 )}
 
         {abaAtiva === 'login' && !usuario && (
-  <AbaLoginCadastro 
-    setUsuario={setUsuario} 
-    setAbaAtiva={setAbaAtiva} 
-  />
+  <AbaLoginCadastro setUsuario={setUsuario} setAbaAtiva={setAbaAtiva} />
+
 )}
 
 

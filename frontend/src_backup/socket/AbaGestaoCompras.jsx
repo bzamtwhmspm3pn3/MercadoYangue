@@ -27,7 +27,7 @@ export default function AbaGestaoCompras({ novasCompras }) {
     const fetchCompras = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("https://mercadoyangue.netlify.app/api/compras", {
+        const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/compras", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Erro ao buscar compras");

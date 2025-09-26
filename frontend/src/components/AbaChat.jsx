@@ -227,7 +227,7 @@ export default function AbaChat({ usuario }) {
     };
 
     try { socketRef.current?.emit("novaMensagem", novaMsg); } catch {}
-    fetch("https://mercadoyangue.netlify.app/api/chat/enviar", {
+    fetch("https://mercadoyangue-i3in.onrender.com/api/chat/enviar", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
       body: JSON.stringify({
@@ -270,7 +270,7 @@ export default function AbaChat({ usuario }) {
     let dados = [];
     try {
       const res = await fetch(
-        `https://mercadoyangue.netlify.app/api/chat/historico/${encodeURIComponent(usuario.nome)}/${encodeURIComponent(nomeTrim)}`,
+        `https://mercadoyangue-i3in.onrender.com/api/chat/historico/${encodeURIComponent(usuario.nome)}/${encodeURIComponent(nomeTrim)}`,
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       dados = res.ok ? await res.json() : pegarHistorico(nomeTrim);
@@ -396,7 +396,7 @@ export default function AbaChat({ usuario }) {
     salvarHistorico(destinatario, novoHistorico);
     setHistorico(novoHistorico);
     socketRef.current?.emit("sendMessage", novaMsg);
-    fetch("https://mercadoyangue.netlify.app/api/chat/enviar", {
+    fetch("https://mercadoyangue-i3in.onrender.com/api/chat/enviar", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
       body: JSON.stringify({ remetente: novaMsg.remetente, destinatario: novaMsg.destinatario, conteudo: novaMsg.texto }),

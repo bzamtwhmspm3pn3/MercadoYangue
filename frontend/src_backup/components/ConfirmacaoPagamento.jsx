@@ -74,7 +74,7 @@ export default function ConfirmacaoPagamento({ comprador, carrinho, navigateToCh
       try {
         const token = localStorage.getItem("token");
 
-        await fetch("https://mercadoyangue.netlify.app/api/vendas", {
+        await fetch("https://mercadoyangue-i3in.onrender.com/api/vendas", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -33,7 +33,7 @@ export default function ConfirmacaoPagamentoProtegido({
       const referencia = checkoutData.referencia || `REF-${Date.now()}`;
 
       // 1) Primeiro: chamar a rota do CARRINHO para descontar stock e finalizar carrinho
-      const resCarrinho = await fetch("https://mercadoyangue.netlify.app/api/carrinho/checkout", {
+      const resCarrinho = await fetch("https://mercadoyangue-i3in.onrender.com/api/carrinho/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json; charset=utf-8",
@@ -49,7 +49,7 @@ export default function ConfirmacaoPagamentoProtegido({
       console.log("✅ Carrinho finalizado:", dataCarrinho);
 
       // 2) Depois: registar venda/compra (sua rota /api/checkout) — opcional mas aparentemente necessária no seu fluxo
-      const resVenda = await fetch("https://mercadoyangue.netlify.app/api/checkout", {
+      const resVenda = await fetch("https://mercadoyangue-i3in.onrender.com/api/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json; charset=utf-8",
@@ -73,7 +73,7 @@ export default function ConfirmacaoPagamentoProtegido({
 
       // 3) Enviar mensagem automática (chat)
       try {
-        const resMsg = await fetch("https://mercadoyangue.netlify.app/api/chat/enviar", {
+        const resMsg = await fetch("https://mercadoyangue-i3in.onrender.com/api/chat/enviar", {
           method: "POST",
           headers: {
             "Content-Type": "application/json; charset=utf-8",

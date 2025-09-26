@@ -77,7 +77,7 @@ const confirmarAdicionarCarrinho = async () => {
   if (!produtoSelecionadoModal) return;
   try {
     const token = localStorage.getItem("token");
-    const res = await fetch("https://mercadoyangue.netlify.app/api/carrinho/add", {
+    const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/carrinho/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -130,7 +130,7 @@ const confirmarAdicionarCarrinho = async () => {
     if (!window.confirm("Deseja mesmo eliminar este produto?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`https://mercadoyangue.netlify.app/api/produtos/${id}`, {
+      await axios.delete(`https://mercadoyangue-i3in.onrender.com/api/produtos/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProdutosFiltrados((prev) => prev.filter((prod) => prod._id !== id));
@@ -221,7 +221,7 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
                     </button>
 
                     <img
-                      src={`https://mercadoyangue.netlify.app/uploads/${produto.imagem}`}
+                      src={`https://mercadoyangue-i3in.onrender.com/uploads/${produto.imagem}`}
                       alt={produto.nome}
                       className="mx-auto h-48 object-contain cursor-pointer"
                       onClick={() => {
@@ -389,7 +389,7 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
         const token = localStorage.getItem("token");
         // Atualiza no backend
         const res = await axios.put(
-          `https://mercadoyangue.netlify.app/api/produtos/${produtoAtualizado._id}`,
+          `https://mercadoyangue-i3in.onrender.com/api/produtos/${produtoAtualizado._id}`,
           produtoAtualizado,
           { headers: { Authorization: `Bearer ${token}` } }
         );

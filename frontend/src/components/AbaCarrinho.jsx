@@ -19,7 +19,7 @@ function AbaCarrinho({ carrinho, setCarrinho, usuario, enviarMensagemChat, navig
   const fetchCarrinho = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("https://mercadoyangue.netlify.app/api/carrinho/meu", {
+      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/carrinho/meu", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Erro ao carregar carrinho");
@@ -33,7 +33,7 @@ function AbaCarrinho({ carrinho, setCarrinho, usuario, enviarMensagemChat, navig
   const fetchHistorico = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("https://mercadoyangue.netlify.app/api/carrinho/historico", {
+      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/carrinho/historico", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Erro ao carregar histórico");
@@ -69,7 +69,7 @@ function AbaCarrinho({ carrinho, setCarrinho, usuario, enviarMensagemChat, navig
   const removerDoCarrinho = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`https://mercadoyangue.netlify.app/api/carrinho/remove/${id}`, {
+      const res = await fetch(`https://mercadoyangue-i3in.onrender.com/api/carrinho/remove/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
