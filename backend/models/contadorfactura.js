@@ -1,9 +1,9 @@
-// models/contadorfactura.js
+// models/ContadorFactura.js
 const mongoose = require("mongoose");
 
-const contadorfacturaschema = new mongoose.schema({
-  vendedorid: { type: string, required: true, unique: true },
-  ultimonumero: { type: number, default: 0 },
+const contadorFacturaSchema = new mongoose.Schema({
+  vendedorId: { type: String, required: true, unique: true },
+  ultimoNumero: { type: Number, default: 0 },
 });
 
-module.exports = mongoose.model("contadorfactura", contadorfacturaschema);
+module.exports = mongoose.model("ContadorFactura", contadorFacturaSchema);

@@ -1,106 +1,106 @@
 const express = require("express");
-const router = express.router();
-const venda = require("../models/venda");
-const compra = require("../models/compra");
-const mensagem = require("../models/mensagem");
-const produto = require("../models/produto"); // ✅ para buscar estoque inicial
-const { authmiddleware } = require("../middlewares/auth");
+const router = express.Router();
+const Venda = require("../models/venda");
+const Compra = require("../models/compra");
+const Mensagem = require("../models/mensagem");
+const Produto = require("../models/produto"); // ✅ para buscar estoque inicial
+const { authMiddleware } = require("../middlewares/auth");
 
-// checkout: cria venda, compra e dispara mensagem automática
-router.post("/", authmiddleware, async (req, res) => {
+// Checkout: cria venda, compra e dispara mensagem automática
+router.post("/", authMiddleware, async (req, res) => {
   try {
-    console.log("🚨 dados recebidos no backend (req.body):", json.stringify(req.body, null, 2));
-    console.log("🚨 usuário autenticado (req.user):", req.user);
+    console.log("🚨 Dados recebidos no backend (req.body):", JSON.stringify(req.body, null, 2));
+    console.log("🚨 Usuário autenticado (req.user):", req.user);
 
-    const { vendedorid, produtos, entregador, factura } = req.body;
+    const { vendedorId, produtos, entregador, factura } = req.body;
 
-    if (!vendedorid || !produtos?.length) {
-      return res.status(400).json({ msg: "dados incompletos." });
+    if (!vendedorId || !produtos?.length) {
+      return res.status(400).json({ msg: "Dados incompletos." });
     }
 
-    // busca estoque inicial de cada produto
-    const produtoscomestoque = await promise.all(produtos.map(async (p) => {
-      const produtodb = await produto.findbyid(p._id);
-      const estoqueinicial = produtodb ? produtodb.quantidade : p.quantidade;
+    // Busca estoque inicial de cada produto
+    const produtosComEstoque = await Promise.all(produtos.map(async (p) => {
+      const produtoDB = await Produto.findById(p._id);
+      const estoqueInicial = produtoDB ? produtoDB.quantidade : p.quantidade;
       return {
         ...p,
-        estoqueinicial,
+        estoqueInicial,
         total: p.preco * p.quantidade
       };
     }));
 
-    const totalgeral = produtoscomestoque.reduce((acc, p) => acc + p.total, 0);
+    const totalGeral = produtosComEstoque.reduce((acc, p) => acc + p.total, 0);
 
-    // criar venda
-    const novavenda = new venda({
+    // Criar Venda
+    const novaVenda = new Venda({
       comprador: req.user.id,
-      vendedor: vendedorid,
-      produtos: produtoscomestoque,
-      totalgeral,
+      vendedor: vendedorId,
+      produtos: produtosComEstoque,
+      totalGeral,
       entregador,
       factura,
     });
-    await novavenda.save();
+    await novaVenda.save();
 
-    // criar compra
-    const novacompra = new compra({
+    // Criar Compra
+    const novaCompra = new Compra({
       comprador: req.user.id,
-      vendedor: vendedorid,
-      produtos: produtoscomestoque,
-      totalgeral,
+      vendedor: vendedorId,
+      produtos: produtosComEstoque,
+      totalGeral,
       entregador,
       factura,
     });
-    await novacompra.save();
+    await novaCompra.save();
 
-    // monta mensagem detalhada
-    let conteudomsg = "🛒 compra confirmada!\n──────────────\n\n";
+    // Monta mensagem detalhada
+    let conteudoMsg = "🛒 Compra confirmada!\n──────────────\n\n";
 
-    produtoscomestoque.foreach(p => {
-      conteudomsg += `• produto: ${p.nome}\n`;
-      conteudomsg += `  quantidade: ${p.quantidade}\n`;
-      conteudomsg += `  estoque inicial: ${p.estoqueinicial}\n`;
-      conteudomsg += `  preço unitário: ${p.preco.tolocalestring()} kz\n\n`;
+    produtosComEstoque.forEach(p => {
+      conteudoMsg += `• Produto: ${p.nome}\n`;
+      conteudoMsg += `  Quantidade: ${p.quantidade}\n`;
+      conteudoMsg += `  Estoque Inicial: ${p.estoqueInicial}\n`;
+      conteudoMsg += `  Preço unitário: ${p.preco.toLocaleString()} Kz\n\n`;
     });
 
-    conteudomsg += `total geral: ${totalgeral.tolocalestring()} kz\n\n`;
+    conteudoMsg += `Total Geral: ${totalGeral.toLocaleString()} Kz\n\n`;
 
     if (entregador) {
-      conteudomsg += "🚚 entrega:\n";
-      conteudomsg += `  nome: ${entregador.nome}\n`;
-      conteudomsg += `  veículo: ${entregador.veiculo}\n`;
-      conteudomsg += `  local: ${entregador.local}, ${entregador.municipio}, ${entregador.provincia}\n`;
-      conteudomsg += `  tarifa: ${entregador.tarifa.tolocalestring()} kz\n`;
-      conteudomsg += `  contacto: ${entregador.contacto}\n\n`;
+      conteudoMsg += "🚚 Entrega:\n";
+      conteudoMsg += `  Nome: ${entregador.nome}\n`;
+      conteudoMsg += `  Veículo: ${entregador.veiculo}\n`;
+      conteudoMsg += `  Local: ${entregador.local}, ${entregador.municipio}, ${entregador.provincia}\n`;
+      conteudoMsg += `  Tarifa: ${entregador.tarifa.toLocaleString()} Kz\n`;
+      conteudoMsg += `  Contacto: ${entregador.contacto}\n\n`;
     }
 
-    conteudomsg += "──────────────\n";
-    conteudomsg += "ℹ️ mensagem enviada automaticamente pelo sistema";
+    conteudoMsg += "──────────────\n";
+    conteudoMsg += "ℹ️ Mensagem enviada automaticamente pelo sistema";
 
-    const mensagem = new mensagem({
+    const mensagem = new Mensagem({
       remetente: req.user.id,
-      destinatario: vendedorid,
-      conteudo: conteudomsg,
+      destinatario: vendedorId,
+      conteudo: conteudoMsg,
       tipo: "sistema",
       lida: false
     });
 
     await mensagem.save();
 
-    // 🔹 popula os refs antes de enviar
-    const comprapopulada = await compra.findbyid(novacompra._id)
+    // 🔹 Popula os refs antes de enviar
+    const compraPopulada = await Compra.findById(novaCompra._id)
       .populate("vendedor", "nome")
       .populate("produtos.produto", "nome");
 
     res.status(201).json({
-      msg: "✅ compra e venda registadas com sucesso! mensagem enviada ao vendedor.",
-      venda: novavenda,
-      compra: comprapopulada,
-      mensagemautomatica: mensagem
+      msg: "✅ Compra e venda registadas com sucesso! Mensagem enviada ao vendedor.",
+      venda: novaVenda,
+      compra: compraPopulada,
+      mensagemAutomatica: mensagem
     });
   } catch (err) {
-    console.error("❌ erro no checkout:", err);
-    res.status(500).json({ msg: "erro interno no servidor" });
+    console.error("❌ Erro no checkout:", err);
+    res.status(500).json({ msg: "Erro interno no servidor" });
   }
 });
 

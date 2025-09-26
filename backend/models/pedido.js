@@ -1,63 +1,63 @@
 const mongoose = require("mongoose");
 
-const pedidoschema = new mongoose.schema({
+const PedidoSchema = new mongoose.Schema({
   usuario: {
-    type: mongoose.schema.types.objectid,
-    ref: "usuario", // quem fez a compra
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Usuario", // quem fez a compra
     required: true,
   },
   itens: [
     {
       produto: {
-        type: mongoose.schema.types.objectid,
-        ref: "produto", // produto comprado
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Produto", // produto comprado
         required: true,
       },
       quantidade: {
-        type: number,
+        type: Number,
         required: true,
         min: 1,
       },
-      precounitario: {
-        type: number,
+      precoUnitario: {
+        type: Number,
         required: true,
         min: 0,
       },
     },
   ],
-  metodopagamento: {
-    type: string,
+  metodoPagamento: {
+    type: String,
     required: true,
-    default: "não informado",
+    default: "Não informado",
   },
   referencia: {
-    type: string,
-    default: "n/a",
+    type: String,
+    default: "N/A",
   },
   vendedor: {
-    type: string, // nome do vendedor (copiado do usuario no momento do checkout)
-    default: "não informado",
+    type: String, // nome do vendedor (copiado do Usuario no momento do checkout)
+    default: "Não informado",
   },
   contacto: {
-    type: string, // contacto do vendedor
-    default: "não informado",
+    type: String, // contacto do vendedor
+    default: "Não informado",
   },
   total: {
-    type: number,
+    type: Number,
     required: true,
     min: 0,
   },
   status: {
-    type: string,
-    enum: ["pendente", "pago", "cancelado"],
-    default: "pendente",
+    type: String,
+    enum: ["Pendente", "Pago", "Cancelado"],
+    default: "Pendente",
   },
-  criadoem: {
-    type: date,
-    default: date.now,
+  criadoEm: {
+    type: Date,
+    default: Date.now,
   },
 });
 
-module.exports = mongoose.model("pedido", pedidoschema);
+module.exports = mongoose.model("Pedido", PedidoSchema);
 
 

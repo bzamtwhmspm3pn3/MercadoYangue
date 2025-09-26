@@ -1,31 +1,31 @@
 const mongoose = require("mongoose");
 
-const mensagemschema = new mongoose.schema(
+const mensagemSchema = new mongoose.Schema(
   {
     remetente: { 
-      type: mongoose.schema.types.objectid, 
-      ref: "usuario", 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Usuario", 
       required: true 
     },
     destinatario: { 
-      type: mongoose.schema.types.objectid, 
-      ref: "usuario", 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Usuario", 
       required: true 
     },
     conteudo: { 
-  type: string, 
+  type: String, 
   trim: true,
   validate: {
     validator: function(v) {
       // se não tiver conteúdo, deve haver arquivo
       return v?.trim() || this.arquivo;
     },
-    message: "a mensagem não pode estar vazia"
+    message: "A mensagem não pode estar vazia"
   }
 },
 
 tipo: { 
-  type: string, 
+  type: String, 
   enum: ["texto", "imagem", "arquivo", "sistema"], 
   default: "texto",
   required: true
@@ -33,24 +33,24 @@ tipo: {
 
 
     lida: { 
-      type: boolean,
+      type: Boolean,
       default: false 
     },
     apagada: {
-      type: boolean,
+      type: Boolean,
       default: false
     },
-    arquivo: string,
-    arquivonome: string,
-    arquivotipo: string,
+    arquivo: String,
+    arquivoNome: String,
+    arquivoTipo: String,
     data: { 
-      type: date, 
-      default: date.now 
+      type: Date, 
+      default: Date.now 
     }
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.models.mensagem || mongoose.model("mensagem", mensagemschema);
+module.exports = mongoose.models.Mensagem || mongoose.model("Mensagem", mensagemSchema);
 
 

@@ -1,83 +1,83 @@
 const express = require("express");
-const router = express.router();
-const compra = require("../models/compra");
-const { authmiddleware } = require("../middlewares/auth");
+const router = express.Router();
+const Compra = require("../models/compra");
+const { authMiddleware } = require("../middlewares/auth");
 
-// criar compra
-router.post("/", authmiddleware, async (req, res) => {
+// Criar compra
+router.post("/", authMiddleware, async (req, res) => {
   try {
-    const { vendedorid, produtos, entregador, factura } = req.body;
+    const { vendedorId, produtos, entregador, factura } = req.body;
 
-    if (!vendedorid || !produtos?.length) {
-      return res.status(400).json({ msg: "dados incompletos." });
+    if (!vendedorId || !produtos?.length) {
+      return res.status(400).json({ msg: "Dados incompletos." });
     }
 
-    const novacompra = new compra({
+    const novaCompra = new Compra({
       comprador: req.user.id,
-      vendedor: vendedorid,
+      vendedor: vendedorId,
       produtos,
       entregador,
       factura
     });
 
-    await novacompra.save();
+    await novaCompra.save();
 
     // popula antes de enviar a resposta
-    await novacompra.populate([
+    await novaCompra.populate([
       { path: "vendedor", select: "nome email" },
       { path: "produtos.produto", select: "nome" }
     ]);
 
-    res.status(201).json({ msg: "compra registada com sucesso!", compra: novacompra });
+    res.status(201).json({ msg: "Compra registada com sucesso!", compra: novaCompra });
   } catch (err) {
-    console.error("erro ao registar compra:", err);
-    res.status(500).json({ msg: "erro interno no servidor" });
+    console.error("Erro ao registar compra:", err);
+    res.status(500).json({ msg: "Erro interno no servidor" });
   }
 });
 
-// listar compras do comprador logado
-router.get("/minhas", authmiddleware, async (req, res) => {
+// Listar compras do comprador logado
+router.get("/minhas", authMiddleware, async (req, res) => {
   try {
-    const compras = await compra.find({ comprador: req.user.id })
+    const compras = await Compra.find({ comprador: req.user.id })
       .populate("vendedor", "nome email")
       .populate("produtos.produto", "nome")
-      .sort({ createdat: -1 });
+      .sort({ createdAt: -1 });
 
     res.json(compras);
   } catch (err) {
-    console.error("erro ao buscar compras do comprador:", err);
-    res.status(500).json({ msg: "erro ao buscar compras do comprador" });
+    console.error("Erro ao buscar compras do comprador:", err);
+    res.status(500).json({ msg: "Erro ao buscar compras do comprador" });
   }
 });
 
-// listar compras do vendedor logado
-router.get("/vendedor", authmiddleware, async (req, res) => {
+// Listar compras do vendedor logado
+router.get("/vendedor", authMiddleware, async (req, res) => {
   try {
-    const compras = await compra.find({ vendedor: req.user.id })
+    const compras = await Compra.find({ vendedor: req.user.id })
       .populate("comprador", "nome email")
       .populate("produtos.produto", "nome")
-      .sort({ createdat: -1 });
+      .sort({ createdAt: -1 });
 
     res.json(compras);
   } catch (err) {
-    console.error("erro ao buscar compras do vendedor:", err);
-    res.status(500).json({ msg: "erro ao buscar compras do vendedor" });
+    console.error("Erro ao buscar compras do vendedor:", err);
+    res.status(500).json({ msg: "Erro ao buscar compras do vendedor" });
   }
 });
 
-// listar todas as compras
-router.get("/", authmiddleware, async (req, res) => {
+// Listar todas as compras
+router.get("/", authMiddleware, async (req, res) => {
   try {
-    const compras = await compra.find()
+    const compras = await Compra.find()
       .populate("comprador", "nome email")
       .populate("vendedor", "nome email")
       .populate("produtos.produto", "nome")
-      .sort({ createdat: -1 });
+      .sort({ createdAt: -1 });
 
     res.json(compras);
   } catch (err) {
-    console.error("erro ao buscar todas as compras:", err);
-    res.status(500).json({ msg: "erro ao buscar compras" });
+    console.error("Erro ao buscar todas as compras:", err);
+    res.status(500).json({ msg: "Erro ao buscar compras" });
   }
 });
 

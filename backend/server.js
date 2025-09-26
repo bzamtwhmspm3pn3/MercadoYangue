@@ -3,9 +3,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http');
-const { server } = require('socket.io');
+const { Server } = require('socket.io');
 
-// rotas
+// Rotas
 const usuariosroutes = require('./routes/usuarios');
 const authroutes = require('./routes/auth');
 const produtoroutes = require('./routes/produtos');
@@ -16,26 +16,22 @@ const checkoutroutes = require("./routes/checkout");
 const carrinhoroutes = require('./routes/carrinho');
 const faturaroutes = require("./routes/fatura");
 
-// models
+// Models
 const mensagem = require('./models/mensagem');
-const usuario = require('./models/usuario');
 
 const app = express();
+const port = process.env.PORT || 5000;
 
-// middleware
+// Middleware
 app.use(cors({
-  origin: 'https://mercadoyangue-i3in.onrender.com',
+  origin: 'https://mercadoyangue.netlify.app', // frontend
   credentials: true
 }));
-
-
-// aumentando limite para 50mb
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
 app.use('/uploads', express.static('uploads'));
 
-// rotas rest
+// Rotas REST
 app.use('/api/auth', authroutes);
 app.use('/api/produtos', produtoroutes);
 app.use('/api', usuariosroutes);
@@ -46,49 +42,31 @@ app.use("/api/checkout", checkoutroutes);
 app.use('/api/carrinho', carrinhoroutes);
 app.use("/api/fatura", faturaroutes);
 
-// configuração socket.io
-const server = http.createserver(app);
-const io = new server(server, {
-  cors: { origin: "https://mercadoyangue-i3in.onrender.com", methods: ["get","post"] }
+// Cria server HTTP + socket.io
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "https://mercadoyangue.netlify.app", methods: ["GET","POST"] }
 });
 
-// guardar usuários online
+// Socket.io
 let onlineusers = {};
 
-// conexão socket
 io.on("connection", (socket) => {
   console.log("cliente conectado:", socket.id);
-
   const userid = socket.handshake.query.userid;
-  if (userid) {
-    onlineusers[userid] = socket.id;
-    socket.join(userid);
-  }
+  if (userid) onlineusers[userid] = socket.id;
 
   socket.on("sendmessage", async ({ senderid, receiverid, conteudo, arquivo, arquivonome, arquivotipo }) => {
     try {
-      if (!mongoose.types.objectid.isvalid(senderid) || !mongoose.types.objectid.isvalid(receiverid)) {
-        console.error("ids inválidos:", senderid, receiverid);
-        return;
-      }
-
-      const novamsg = await mensagem.create({
-        remetente: senderid,
-        destinatario: receiverid,
-        conteudo,
-        arquivo,
-        arquivonome,
-        arquivotipo
-      });
-
-      const msgpopulada = await mensagem.findbyid(novamsg._id)
+      if (!mongoose.Types.ObjectId.isValid(senderid) || !mongoose.Types.ObjectId.isValid(receiverid)) return;
+      const novamsg = await mensagem.create({ remetente: senderid, destinatario: receiverid, conteudo, arquivo, arquivonome, arquivotipo });
+      const msgpopulada = await mensagem.findById(novamsg._id)
         .populate("remetente", "nome email")
         .populate("destinatario", "nome email");
-
       io.to(receiverid).emit("receivemessage", msgpopulada);
       io.to(senderid).emit("receivemessage", msgpopulada);
     } catch (err) {
-      console.error("erro ao enviar mensagem socket:", err);
+      console.error("erro socket:", err);
     }
   });
 
@@ -99,14 +77,13 @@ io.on("connection", (socket) => {
   });
 });
 
-
-// conexão mongodb
-const port = process.env.port || 5000;
-const mongo_uri = process.env.mongo_uri;
-
-mongoose.connect(mongo_uri, { usenewurlparser: true, useunifiedtopology: true })
-  .then(() => {
-    console.log('mongodb conectado no banco:', mongoose.connection.name);
-    server.listen(port, () => console.log(`servidor rodando na porta ${port}`));
-  })
-  .catch(err => console.error('erro ao conectar no mongodb:', err));
+// Conectar MongoDB Atlas
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/mercadoyangue', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => {
+  console.log('✅ MongoDB conectado');
+  server.listen(port, () => console.log(`🚀 Backend rodando na porta ${port}`));
+})
+.catch(err => console.error('❌ Erro MongoDB:', err));

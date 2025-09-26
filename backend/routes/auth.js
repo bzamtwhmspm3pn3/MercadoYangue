@@ -1,10 +1,10 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const router = express.router();
-const usuario = require('../models/usuario'); // seu modelo usuario.js
+const router = express.Router();
+const Usuario = require('../models/usuario'); // seu modelo Usuario.js
 
-// rota de registro
+// Rota de registro
 router.post('/cadastro', async (req, res) => {
   let {
     nome,
@@ -13,39 +13,39 @@ router.post('/cadastro', async (req, res) => {
     tipo,
     provincia,
     municipio,
-    localizacaoespecifica,
-    formapagamento,  // deixa, mas não será validado
-    aceitoucontrato,
+    localizacaoEspecifica,
+    formaPagamento,  // deixa, mas não será validado
+    aceitouContrato,
   } = req.body;
 
   if (!nome || !email || !senha || !tipo) {
-    return res.status(400).json({ msg: 'nome, email, senha e tipo são obrigatórios.' });
+    return res.status(400).json({ msg: 'Nome, email, senha e tipo são obrigatórios.' });
   }
 
   try {
-    // verifica se email já existe
-    const existe = await usuario.findone({ email });
-    if (existe) return res.status(400).json({ msg: 'email já registrado.' });
+    // Verifica se email já existe
+    const existe = await Usuario.findOne({ email });
+    if (existe) return res.status(400).json({ msg: 'Email já registrado.' });
 
-    // hash da senha
-    const hashedsenha = await bcrypt.hash(senha, 10);
+    // Hash da senha
+    const hashedSenha = await bcrypt.hash(senha, 10);
 
-    // ajusta campos para cliente
+    // Ajusta campos para cliente
     if (tipo === 'cliente') {
-      formapagamento = undefined;
+      formaPagamento = undefined;
       provincia = undefined;
       municipio = undefined;
-      localizacaoespecifica = undefined;
-      aceitoucontrato = undefined; // clientes não precisam aceitar contrato
+      localizacaoEspecifica = undefined;
+      aceitouContrato = undefined; // clientes não precisam aceitar contrato
     } else {
-      // remove obrigatoriedade formapagamento para vendedor/agricultor
-      // apenas valida o aceite do contrato
-      if (!aceitoucontrato) {
-        return res.status(400).json({ msg: 'aceite do contrato é obrigatório para vendedores/agricultores.' });
+      // Remove obrigatoriedade formaPagamento para vendedor/agricultor
+      // Apenas valida o aceite do contrato
+      if (!aceitouContrato) {
+        return res.status(400).json({ msg: 'Aceite do contrato é obrigatório para vendedores/agricultores.' });
       }
     }
 
-    // log para debug (não logar senha real)
+    // Log para debug (não logar senha real)
     console.log({
       nome,
       email,
@@ -53,50 +53,50 @@ router.post('/cadastro', async (req, res) => {
       tipo,
       provincia,
       municipio,
-      localizacaoespecifica,
-      formapagamento,
-      aceitoucontrato,
+      localizacaoEspecifica,
+      formaPagamento,
+      aceitouContrato,
     });
 
-    // cria usuário novo
-    const novousuario = new usuario({
+    // Cria usuário novo
+    const novoUsuario = new Usuario({
       nome,
       email,
-      senha: hashedsenha,
+      senha: hashedSenha,
       tipo,
       provincia,
       municipio,
-      localizacaoespecifica,
-      formapagamento,
-      aceitoucontrato,
+      localizacaoEspecifica,
+      formaPagamento,
+      aceitouContrato,
     });
 
-    // validação antes de salvar
-    const errovalidacao = novousuario.validatesync();
-    if (errovalidacao) {
-      console.error('erro de validação completo:', errovalidacao.errors);
-      return res.status(400).json({ msg: 'erro de validação', detalhes: errovalidacao.errors });
+    // Validação antes de salvar
+    const erroValidacao = novoUsuario.validateSync();
+    if (erroValidacao) {
+      console.error('Erro de validação completo:', erroValidacao.errors);
+      return res.status(400).json({ msg: 'Erro de validação', detalhes: erroValidacao.errors });
     }
 
-    await novousuario.save();
+    await novoUsuario.save();
 
-    res.status(201).json({ msg: 'usuário registrado com sucesso!' });
+    res.status(201).json({ msg: 'Usuário registrado com sucesso!' });
   } catch (err) {
-    console.error('erro ao registrar usuário:', err);
-    res.status(500).json({ msg: 'erro no servidor' });
+    console.error('Erro ao registrar usuário:', err);
+    res.status(500).json({ msg: 'Erro no servidor' });
   }
 });
 
-// rota de login
+// Rota de login
 router.post('/login', async (req, res) => {
   const { email, senha } = req.body;
 
   try {
-    const usuario = await usuario.findone({ email });
-    if (!usuario) return res.status(401).json({ msg: 'usuário não encontrado' });
+    const usuario = await Usuario.findOne({ email });
+    if (!usuario) return res.status(401).json({ msg: 'Usuário não encontrado' });
 
-    const senhavalida = await bcrypt.compare(senha, usuario.senha);
-    if (!senhavalida) return res.status(401).json({ msg: 'senha incorreta' });
+    const senhaValida = await bcrypt.compare(senha, usuario.senha);
+    if (!senhaValida) return res.status(401).json({ msg: 'Senha incorreta' });
 
     const payload = {
       id: usuario._id,
@@ -104,12 +104,12 @@ router.post('/login', async (req, res) => {
       tipo: usuario.tipo,
     };
 
-    const token = jwt.sign(payload, process.env.jwt_secret, { expiresin: '1h' });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.json({ token, usuario: payload });
   } catch (err) {
-    console.error('erro no login:', err);
-    res.status(500).json({ msg: 'erro no servidor' });
+    console.error('Erro no login:', err);
+    res.status(500).json({ msg: 'Erro no servidor' });
   }
 });
 

@@ -1,38 +1,38 @@
 const jwt = require('jsonwebtoken');
 
-// middleware obrigatório: exige token válido
-const authmiddleware = (req, res, next) => {
-  const authheader = req.headers.authorization;
+// Middleware obrigatório: exige token válido
+const authMiddleware = (req, res, next) => {
+  const authHeader = req.headers.authorization;
 
-  if (!authheader?.startswith('bearer ')) {
-    return res.status(401).json({ msg: 'token de autenticação não fornecido.' });
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ msg: 'Token de autenticação não fornecido.' });
   }
 
-  const token = authheader.split(' ')[1];
+  const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.jwt_secret || 'segredo-padrao');
-    req.user = decoded; // padrão para guardar info do utilizador autenticado
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'segredo-padrao');
+    req.user = decoded; // Padrão para guardar info do utilizador autenticado
     next();
   } catch (err) {
-    console.error('🔐 token inválido ou expirado:', err);
-    return res.status(403).json({ msg: 'token inválido ou expirado.' });
+    console.error('🔐 Token inválido ou expirado:', err);
+    return res.status(403).json({ msg: 'Token inválido ou expirado.' });
   }
 };
 
-// middleware opcional: tenta decodificar token, se houver
-const authoptionalmiddleware = (req, res, next) => {
-  const authheader = req.headers.authorization;
+// Middleware opcional: tenta decodificar token, se houver
+const authOptionalMiddleware = (req, res, next) => {
+  const authHeader = req.headers.authorization;
 
-  if (authheader?.startswith('bearer ')) {
-    const token = authheader.split(' ')[1];
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
 
     try {
-      const decoded = jwt.verify(token, process.env.jwt_secret || 'segredo-padrao');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'segredo-padrao');
       req.user = decoded;
     } catch (err) {
-      console.warn('⚠️ token inválido em rota opcional:', err.message);
-      // continua como anónimo
+      console.warn('⚠️ Token inválido em rota opcional:', err.message);
+      // Continua como anónimo
     }
   }
 
@@ -40,6 +40,6 @@ const authoptionalmiddleware = (req, res, next) => {
 };
 
 module.exports = {
-  authmiddleware,
-  authoptionalmiddleware,
+  authMiddleware,
+  authOptionalMiddleware,
 };

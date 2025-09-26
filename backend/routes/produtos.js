@@ -1,17 +1,17 @@
 const express = require('express');
-const router = express.router();
-const { authmiddleware } = require('../middlewares/auth');
-const produto = require('../models/produto');
+const router = express.Router();
+const { authMiddleware } = require('../middlewares/auth');
+const Produto = require('../models/produto');
 const multer = require('multer');
 
-const storage = multer.diskstorage({
+const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, './uploads/'),
-  filename: (req, file, cb) => cb(null, date.now() + '-' + file.originalname),
+  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname),
 });
 const upload = multer({ storage });
 
-// post - cadastrar produto
-router.post('/', authmiddleware, upload.single('imagem'), async (req, res) => {
+// POST - Cadastrar produto
+router.post('/', authMiddleware, upload.single('imagem'), async (req, res) => {
   try {
     const {
       nome,
@@ -20,30 +20,30 @@ router.post('/', authmiddleware, upload.single('imagem'), async (req, res) => {
       unidade,
       provincia,
       municipio,
-      localizacaodetalhada,
+      localizacaoDetalhada,
       contactos,
       descricao,
     } = req.body;
 
     const imagem = req.file ? req.file.filename : null;
 
-    // trata o campo formapagamento (que vem como string json do frontend)
-    let formapagamento = req.body.formapagamento;
-    if (typeof formapagamento === 'string') {
+    // Trata o campo formaPagamento (que vem como string JSON do frontend)
+    let formaPagamento = req.body.formaPagamento;
+    if (typeof formaPagamento === 'string') {
       try {
-        formapagamento = json.parse(formapagamento);
+        formaPagamento = JSON.parse(formaPagamento);
       } catch (e) {
-        return res.status(400).json({ msg: 'forma de pagamento inválida (json).' });
+        return res.status(400).json({ msg: 'Forma de pagamento inválida (JSON).' });
       }
     }
 
-    // validação básica
-    if (!nome || !preco || !quantidade || !imagem || !formapagamento?.tipo) {
-      return res.status(400).json({ msg: 'campos obrigatórios faltando.' });
+    // Validação básica
+    if (!nome || !preco || !quantidade || !imagem || !formaPagamento?.tipo) {
+      return res.status(400).json({ msg: 'Campos obrigatórios faltando.' });
     }
 
-    // cria novo produto
-    const novoproduto = new produto({
+    // Cria novo produto
+    const novoProduto = new Produto({
       nome,
       preco,
       quantidade,
@@ -51,78 +51,78 @@ router.post('/', authmiddleware, upload.single('imagem'), async (req, res) => {
       imagem,
       provincia,
       municipio,
-      localizacaoespecifica: localizacaodetalhada,
+      localizacaoEspecifica: localizacaoDetalhada,
       contactos,
-      formapagamento,
+      formaPagamento,
       descricao,
       vendedor: req.user.id,
     });
 
-    await novoproduto.save();
-    res.status(201).json({ msg: 'produto cadastrado com sucesso!' });
+    await novoProduto.save();
+    res.status(201).json({ msg: 'Produto cadastrado com sucesso!' });
   } catch (error) {
-    console.error('erro ao cadastrar produto:', error);
-    res.status(500).json({ msg: 'erro ao cadastrar produto' });
+    console.error('Erro ao cadastrar produto:', error);
+    res.status(500).json({ msg: 'Erro ao cadastrar produto' });
   }
 });
 
-// get - listar todos os produtos com dados do vendedor
+// GET - Listar todos os produtos com dados do vendedor
 router.get('/', async (req, res) => {
   try {
-    const produtos = await produto.find()
-      .populate('vendedor', 'nome contacto formapagamento');
+    const produtos = await Produto.find()
+      .populate('vendedor', 'nome contacto formaPagamento');
     res.json(produtos);
   } catch (err) {
-    console.error('erro ao buscar produtos:', err);
-    res.status(500).json({ msg: 'erro ao buscar produtos' });
+    console.error('Erro ao buscar produtos:', err);
+    res.status(500).json({ msg: 'Erro ao buscar produtos' });
   }
 });
 
-// get - listar produtos do vendedor autenticado
-router.get('/meus-produtos', authmiddleware, async (req, res) => {
+// GET - Listar produtos do vendedor autenticado
+router.get('/meus-produtos', authMiddleware, async (req, res) => {
   try {
-    const produtos = await produto.find({ vendedor: req.user.id })
-      .populate('vendedor', 'nome contacto formapagamento');
+    const produtos = await Produto.find({ vendedor: req.user.id })
+      .populate('vendedor', 'nome contacto formaPagamento');
     res.json(produtos);
   } catch (err) {
-    console.error('erro ao buscar produtos do vendedor:', err);
-    res.status(500).json({ msg: 'erro ao buscar produtos do vendedor' });
+    console.error('Erro ao buscar produtos do vendedor:', err);
+    res.status(500).json({ msg: 'Erro ao buscar produtos do vendedor' });
   }
 });
 
-// delete - excluir produto por id
-router.delete('/:id', authmiddleware, async (req, res) => {
+// DELETE - Excluir produto por ID
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
-    const produto = await produto.findbyid(req.params.id);
+    const produto = await Produto.findById(req.params.id);
 
     if (!produto) {
-      return res.status(404).json({ msg: 'produto não encontrado' });
+      return res.status(404).json({ msg: 'Produto não encontrado' });
     }
 
-    if (produto.vendedor.tostring() !== req.user.id) {
-      return res.status(403).json({ msg: 'você não tem permissão para excluir este produto' });
+    if (produto.vendedor.toString() !== req.user.id) {
+      return res.status(403).json({ msg: 'Você não tem permissão para excluir este produto' });
     }
 
-    await produto.findbyidanddelete(req.params.id);
-    res.json({ msg: 'produto excluído com sucesso' });
+    await Produto.findByIdAndDelete(req.params.id);
+    res.json({ msg: 'Produto excluído com sucesso' });
   } catch (error) {
-    console.error('erro ao excluir produto:', error);
-    res.status(500).json({ msg: 'erro ao excluir produto' });
+    console.error('Erro ao excluir produto:', error);
+    res.status(500).json({ msg: 'Erro ao excluir produto' });
   }
 });
 
-// put - atualizar quantidade e/ou preço
-router.put('/:id', authmiddleware, async (req, res) => {
+// PUT - Atualizar quantidade e/ou preço
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { quantidade, preco } = req.body;
 
-    const produto = await produto.findbyid(req.params.id);
+    const produto = await Produto.findById(req.params.id);
     if (!produto) {
-      return res.status(404).json({ msg: 'produto não encontrado' });
+      return res.status(404).json({ msg: 'Produto não encontrado' });
     }
 
-    if (produto.vendedor.tostring() !== req.user.id) {
-      return res.status(403).json({ msg: 'você não tem permissão para editar este produto' });
+    if (produto.vendedor.toString() !== req.user.id) {
+      return res.status(403).json({ msg: 'Você não tem permissão para editar este produto' });
     }
 
     if (quantidade !== undefined) produto.quantidade = quantidade;
@@ -132,8 +132,8 @@ router.put('/:id', authmiddleware, async (req, res) => {
 
     res.json(produto);
   } catch (error) {
-    console.error('erro ao atualizar produto:', error);
-    res.status(500).json({ msg: 'erro ao atualizar produto' });
+    console.error('Erro ao atualizar produto:', error);
+    res.status(500).json({ msg: 'Erro ao atualizar produto' });
   }
 });
 

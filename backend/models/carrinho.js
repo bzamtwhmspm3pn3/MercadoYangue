@@ -1,24 +1,24 @@
  const mongoose = require("mongoose");
 
-const carrinhoschema = new mongoose.schema({
+const CarrinhoSchema = new mongoose.Schema({
   usuario: {
-    type: mongoose.schema.types.objectid,
-    ref: "usuario",
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Usuario",
     required: true,
   },
   itens: [
     {
       produto: {
-        type: mongoose.schema.types.objectid,
-        ref: "produto",
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Produto",
         required: true,
       },
-      quantidade: { type: number, required: true },
+      quantidade: { type: Number, required: true },
     },
   ],
-  pago: { type: boolean, default: false },
-  criadoem: { type: date, default: date.now },
+  pago: { type: Boolean, default: false },
+  criadoEm: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("carrinho", carrinhoschema);
+module.exports = mongoose.model("Carrinho", CarrinhoSchema);
 
