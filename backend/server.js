@@ -5,6 +5,17 @@ const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 
+const fs = require('fs');
+const path = require('path');
+
+// Criar pasta temp caso não exista
+const tempDir = path.join(__dirname, 'temp');
+if (!fs.existsSync(tempDir)) {
+  fs.mkdirSync(tempDir);
+  console.log('✅ Pasta temp/ criada automaticamente.');
+}
+
+
 // === Rotas ===
 const usuariosroutes = require('./routes/usuarios');
 const authroutes = require('./routes/auth');
