@@ -221,18 +221,19 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
                     </button>
 
                     <img
-                      src={`https://mercadoyangue-i3in.onrender.com/uploads/${produto.imagem}`}
-                      alt={produto.nome}
-                      className="mx-auto h-48 object-contain cursor-pointer"
-                      onClick={() => {
-                        if (usuario) {
-                          setProdutoSelecionado(produto);
-                          setAbaAtiva && setAbaAtiva("detalhes");
-                        } else {
-                          alert("Por favor, inicie sessão para ver os detalhes.");
-                        }
-                      }}
-                    />
+  src={produto.imagem} // URL do Cloudinary
+  alt={produto.nome}
+  className="mx-auto h-48 object-contain cursor-pointer"
+  onClick={() => {
+    if (usuario) {
+      setProdutoSelecionado(produto);
+      setAbaAtiva && setAbaAtiva("detalhes");
+    } else {
+      alert("Por favor, inicie sessão para ver os detalhes.");
+    }
+  }}
+/>
+
 
                     <h4 className="text-lg font-semibold mt-2 text-center text-green-700">
                       {produto.nome}

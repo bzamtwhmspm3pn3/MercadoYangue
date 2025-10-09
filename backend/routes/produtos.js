@@ -3,14 +3,17 @@ const router = express.Router();
 const { authMiddleware } = require('../middlewares/auth');
 const Produto = require('../models/produto');
 const multer = require('multer');
+const cloudinary = require('../config/cloudinary');
+const fs = require('fs');
 
+// Multer salva temporariamente na pasta 'temp'
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, './uploads/'),
+  destination: (req, file, cb) => cb(null, 'temp/'),
   filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname),
 });
 const upload = multer({ storage });
 
-// POST - Cadastrar produto
+// POST - Cadastrar produto com Cloudinary
 router.post('/', authMiddleware, upload.single('imagem'), async (req, res) => {
   try {
     const {
@@ -25,9 +28,7 @@ router.post('/', authMiddleware, upload.single('imagem'), async (req, res) => {
       descricao,
     } = req.body;
 
-    const imagem = req.file ? req.file.filename : null;
-
-    // Trata o campo formaPagamento (que vem como string JSON do frontend)
+    // Forma de pagamento
     let formaPagamento = req.body.formaPagamento;
     if (typeof formaPagamento === 'string') {
       try {
@@ -37,18 +38,26 @@ router.post('/', authMiddleware, upload.single('imagem'), async (req, res) => {
       }
     }
 
-    // Validação básica
-    if (!nome || !preco || !quantidade || !imagem || !formaPagamento?.tipo) {
+    if (!nome || !preco || !quantidade || !formaPagamento?.tipo) {
       return res.status(400).json({ msg: 'Campos obrigatórios faltando.' });
     }
 
-    // Cria novo produto
+    // Upload para Cloudinary
+    let imagemUrl = null;
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: `produtos/${req.user.id}`,
+      });
+      imagemUrl = result.secure_url;
+      fs.unlinkSync(req.file.path); // remove temporário
+    }
+
     const novoProduto = new Produto({
       nome,
       preco,
       quantidade,
       unidade,
-      imagem,
+      imagem: imagemUrl,
       provincia,
       municipio,
       localizacaoEspecifica: localizacaoDetalhada,
@@ -59,18 +68,17 @@ router.post('/', authMiddleware, upload.single('imagem'), async (req, res) => {
     });
 
     await novoProduto.save();
-    res.status(201).json({ msg: 'Produto cadastrado com sucesso!' });
+    res.status(201).json({ msg: 'Produto cadastrado com sucesso!', produto: novoProduto });
   } catch (error) {
     console.error('Erro ao cadastrar produto:', error);
     res.status(500).json({ msg: 'Erro ao cadastrar produto' });
   }
 });
 
-// GET - Listar todos os produtos com dados do vendedor
+// GET - Listar todos os produtos
 router.get('/', async (req, res) => {
   try {
-    const produtos = await Produto.find()
-      .populate('vendedor', 'nome contacto formaPagamento');
+    const produtos = await Produto.find().populate('vendedor', 'nome contacto formaPagamento');
     res.json(produtos);
   } catch (err) {
     console.error('Erro ao buscar produtos:', err);
@@ -78,7 +86,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET - Listar produtos do vendedor autenticado
+// GET - Produtos do vendedor autenticado
 router.get('/meus-produtos', authMiddleware, async (req, res) => {
   try {
     const produtos = await Produto.find({ vendedor: req.user.id })
@@ -90,14 +98,11 @@ router.get('/meus-produtos', authMiddleware, async (req, res) => {
   }
 });
 
-// DELETE - Excluir produto por ID
+// DELETE - Excluir produto
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const produto = await Produto.findById(req.params.id);
-
-    if (!produto) {
-      return res.status(404).json({ msg: 'Produto não encontrado' });
-    }
+    if (!produto) return res.status(404).json({ msg: 'Produto não encontrado' });
 
     if (produto.vendedor.toString() !== req.user.id) {
       return res.status(403).json({ msg: 'Você não tem permissão para excluir este produto' });
@@ -111,15 +116,12 @@ router.delete('/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// PUT - Atualizar quantidade e/ou preço
-router.put('/:id', authMiddleware, async (req, res) => {
+// PUT - Atualizar quantidade, preço ou imagem
+router.put('/:id', authMiddleware, upload.single('imagem'), async (req, res) => {
   try {
     const { quantidade, preco } = req.body;
-
     const produto = await Produto.findById(req.params.id);
-    if (!produto) {
-      return res.status(404).json({ msg: 'Produto não encontrado' });
-    }
+    if (!produto) return res.status(404).json({ msg: 'Produto não encontrado' });
 
     if (produto.vendedor.toString() !== req.user.id) {
       return res.status(403).json({ msg: 'Você não tem permissão para editar este produto' });
@@ -128,8 +130,16 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (quantidade !== undefined) produto.quantidade = quantidade;
     if (preco !== undefined) produto.preco = preco;
 
-    await produto.save();
+    // Se enviar nova imagem
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: `produtos/${req.user.id}`,
+      });
+      produto.imagem = result.secure_url;
+      fs.unlinkSync(req.file.path);
+    }
 
+    await produto.save();
     res.json(produto);
   } catch (error) {
     console.error('Erro ao atualizar produto:', error);
@@ -138,4 +148,3 @@ router.put('/:id', authMiddleware, async (req, res) => {
 });
 
 module.exports = router;
-

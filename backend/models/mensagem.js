@@ -43,6 +43,7 @@ tipo: {
     arquivo: String,
     arquivoNome: String,
     arquivoTipo: String,
+    imagem: String,
     data: { 
       type: Date, 
       default: Date.now 

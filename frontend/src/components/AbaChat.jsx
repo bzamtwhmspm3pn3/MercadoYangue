@@ -156,52 +156,53 @@ export default function AbaChat({ usuario }) {
     if (!usuario?.id) return;
 
     const socket = connectSocket(usuario.id);
-    socketRef.current = socket;
-    window.socket = socket;
+  socketRef.current = socket;
+  window.socket = socket;
 
-    const handleReceive = (msg) => {
-      try {
-        const novoMsg = {
-          ...msg,
-          texto: msg.texto || msg.conteudo || "",
-          remetente: typeof msg.remetente === "object" ? msg.remetente.nome : msg.remetente,
-          destinatario: typeof msg.destinatario === "object" ? msg.destinatario.nome : msg.destinatario,
-          imagem: msg.imagem || null,
-          arquivo: msg.arquivo || null,
-          arquivoNome: msg.arquivoNome || null,
-          arquivoTipo: msg.arquivoTipo || null,
-        };
+  // Função de recebimento de mensagem
+  const handleReceive = (msg) => {
+    try {
+      const novoMsg = {
+        ...msg,
+        texto: msg.texto || msg.conteudo || "",
+        remetente: typeof msg.remetente === "object" ? msg.remetente.nome : msg.remetente,
+        destinatario: typeof msg.destinatario === "object" ? msg.destinatario.nome : msg.destinatario,
+        imagem: msg.imagem || null,
+        arquivo: msg.arquivo || null,
+        arquivoNome: msg.arquivoNome || null,
+        arquivoTipo: msg.arquivoTipo || null,
+      };
 
-        const outro = novoMsg.remetente === usuario.nome ? novoMsg.destinatario : novoMsg.remetente;
-        const historicoAtual = pegarHistorico(outro);
-        const novoHistorico = [...historicoAtual, novoMsg];
-        salvarHistorico(outro, novoHistorico);
+      const outro = novoMsg.remetente === usuario.nome ? novoMsg.destinatario : novoMsg.remetente;
+      const historicoAtual = pegarHistorico(outro);
+      const novoHistorico = [...historicoAtual, novoMsg];
+      salvarHistorico(outro, novoHistorico);
 
-        if (outro === destinatario) setHistorico(novoHistorico);
-        atualizarConversas();
+      if (outro === destinatario) setHistorico(novoHistorico);
+      atualizarConversas();
 
-        if (novoMsg.remetente !== usuario.nome) {
-          if (novoMsg.data && ultimaMsgIdRef.current !== novoMsg.data) {
-            toast.info(`📩 Nova mensagem de ${novoMsg.remetente}`, { toastId: novoMsg.data });
-            ultimaMsgIdRef.current = novoMsg.data;
-          } else {
-            toast.info(`📩 Nova mensagem de ${novoMsg.remetente}`);
-          }
-        }
-      } catch (e) {
-        console.warn("Erro handleReceive:", e);
+      // Notificação
+      if (novoMsg.remetente !== usuario.nome) {
+        const toastOpts = { toastId: novoMsg.data || undefined };
+        toast.info(`📩 Nova mensagem de ${novoMsg.remetente}`, toastOpts);
+        if (novoMsg.data) ultimaMsgIdRef.current = novoMsg.data;
       }
-    };
+    } catch (e) {
+      console.warn("Erro handleReceive:", e);
+    }
+  };
 
-    socket.on("receiveMessage", handleReceive);
+  // Registrar listener de socket
+  socket.on("receiveMessage", handleReceive);
 
-    return () => {
-      socket.off("receiveMessage", handleReceive);
-      try { socket.disconnect(); } catch {}
-      if (window.socket === socket) window.socket = null;
-      socketRef.current = null;
-    };
-  }, [usuario?.id, usuario?.nome, destinatario, pegarHistorico, salvarHistorico, atualizarConversas]);
+  // Cleanup
+  return () => {
+    socket.off("receiveMessage", handleReceive);
+    try { socket.disconnect(); } catch {}
+    if (window.socket === socket) window.socket = null;
+    socketRef.current = null;
+  };
+}, [usuario?.id, usuario?.nome, destinatario, pegarHistorico, salvarHistorico, atualizarConversas]);
 
   // -----------------------
   // Funções principais

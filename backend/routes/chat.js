@@ -21,7 +21,7 @@ async function resolveUsuarioId(input) {
 
 // POST /api/chat/enviar
 router.post("/enviar", async (req, res) => {
-  const { remetente, destinatario, conteudo, arquivo, arquivoNome, arquivoTipo } = req.body;
+  const { remetente, destinatario, conteudo, imagem, arquivo, arquivoNome, arquivoTipo } = req.body;
 
   if (!remetente || !destinatario || (!conteudo && !arquivo)) {
     return res.status(400).json({ erro: "Dados insuficientes" });
@@ -36,25 +36,32 @@ router.post("/enviar", async (req, res) => {
     }
 
     const tipoMsg = arquivo
-  ? (arquivoTipo?.startsWith("image/") ? "imagem" : "arquivo")
-  : "texto";
+      ? (arquivoTipo?.startsWith("image/") ? "imagem" : "arquivo")
+      : "texto";
 
+    const conteudoArquivo = imagem || arquivo || null;
 
-const novaMsg = await Mensagem.create({
-  remetente: remetenteId,
-  destinatario: destinatarioId,
-  conteudo,
-  arquivo,
-  arquivoNome,
-  arquivoTipo,
-  tipo: tipoMsg
-});
-
+    const novaMsg = await Mensagem.create({
+      remetente: remetenteId,
+      destinatario: destinatarioId,
+      conteudo,
+      arquivo: conteudoArquivo,
+      arquivoNome,
+      arquivoTipo,
+      tipo: tipoMsg
+    });
 
     const msgPopulada = await Mensagem.findById(novaMsg._id)
       .populate("remetente", "nome email")
       .populate("destinatario", "nome email");
 
+    // 🔥 Pega o io do app
+    const io = req.app.get("io");
+
+    // 🔥 Envia a mensagem em tempo real pros dois (como WhatsApp)
+    io.emit("receivemessage", msgPopulada);
+
+    // Retorna também pela rota normal
     res.json({ success: true, mensagem: msgPopulada });
   } catch (err) {
     console.error("Erro ao salvar mensagem:", err);
@@ -75,16 +82,15 @@ router.get("/historico/:usuario1/:usuario2", async (req, res) => {
     }
 
     const mensagens = await Mensagem.find({
-  $or: [
-    { remetente: u1Id, destinatario: u2Id },
-    { remetente: u2Id, destinatario: u1Id }
-  ]
-})
-.sort({ data: 1 })
-.populate("remetente", "nome email")
-.populate("destinatario", "nome email")
-.lean(); // deixa como objeto JS simples para envio
-
+      $or: [
+        { remetente: u1Id, destinatario: u2Id },
+        { remetente: u2Id, destinatario: u1Id }
+      ]
+    })
+      .sort({ data: 1 })
+      .populate("remetente", "nome email")
+      .populate("destinatario", "nome email")
+      .lean();
 
     res.json(mensagens);
   } catch (err) {
@@ -94,5 +100,3 @@ router.get("/historico/:usuario1/:usuario2", async (req, res) => {
 });
 
 module.exports = router;
-
-

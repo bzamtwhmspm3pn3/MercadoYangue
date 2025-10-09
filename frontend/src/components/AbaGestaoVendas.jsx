@@ -35,7 +35,7 @@ const [numeroFactura, setNumeroFactura] = useState("");
 useEffect(() => {
   const fetchNumero = async () => {
     try {
-      const res = await fetch("/fatura/proximo-numero", {
+      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/fatura/proximo-numero", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vendedorId: usuario.id }),
