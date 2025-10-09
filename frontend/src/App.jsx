@@ -1000,86 +1000,83 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
   <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow text-gray-800">
     <h2 className="text-2xl font-bold mb-4">Cadastrar Produto</h2>
 
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const form = e.target;
 
-<form
-  onSubmit={async (e) => {
-    e.preventDefault();
-    const form = e.target;
+        const formData = new FormData(form);
 
-    const formData = new FormData(form);
+        const nome = formData.get('nome');
+        const preco = parseFloat(formData.get('preco'));
+        const quantidade = parseInt(formData.get('quantidade'), 10);
+        const unidade = formData.get('unidade');
+        const imagem = formData.get('imagem'); // File
 
-    const nome = formData.get('nome');
-    const preco = parseFloat(formData.get('preco'));
-    const quantidade = parseInt(formData.get('quantidade'), 10);
-const unidade = formData.get('unidade');
-    const imagem = formData.get('imagem');
+        const provincia = formData.get('provincia');
+        const municipio = formData.get('municipio');
+        const localizacaoDetalhada = formData.get('localizacaoDetalhada');
+        const contactos = formData.get('contactos');
+        const descricao = formData.get('descricao');
+        const nomeVendedor = usuario.nome;
 
-    const provincia = formData.get('provincia');
-    const municipio = formData.get('municipio');
-    const localizacaoDetalhada = formData.get('localizacaoDetalhada');
-    const contactos = formData.get('contactos');
-    const descricao = formData.get('descricao');
-    const nomeVendedor = usuario.nome;
+        if (!nome || isNaN(preco) || preco <= 0 || isNaN(quantidade) || quantidade < 0 || !imagem) {
+          alert('Por favor, preencha todos os campos obrigatórios corretamente.');
+          return;
+        }
 
-    if (!nome || isNaN(preco) || preco <= 0 || isNaN(quantidade) || quantidade < 0 || !imagem) {
-      alert('Por favor, preencha todos os campos obrigatórios corretamente.');
-      return;
-    }
+        const termosBanidos = [
+          "carro","carros","automóvel","moto","motorizada","casa","apartamento","roupa","calça","camisa",
+          "tênis","sapato","telefone","smartphone","computador","tv","geladeira","sofá","cadeira","relógio","perfume"
+        ];
 
-const termosBanidos = [
-  "carro", "carros", "automóvel", "moto", "motorizada", "casa", "apartamento", "roupa", "calça", "camisa", "tênis", "sapato", "telefone", "smartphone", "computador", "tv", "geladeira", "sofá", "cadeira", "relógio", "perfume"
-];
+        const textoCompleto = `${nome} ${descricao}`.toLowerCase();
+        const contemTermoBanido = termosBanidos.some(termo => textoCompleto.includes(termo));
 
-const textoCompleto = `${nome} ${descricao}`.toLowerCase();
-const contemTermoBanido = termosBanidos.some(termo => textoCompleto.includes(termo));
+        if (contemTermoBanido) {
+          alert("O produto não está alinhado com a essência do Mercado Yangue. Apenas produtos ligados à agricultura, pesca, criação ou natureza do campo são permitidos.");
+          return;
+        }
 
-if (contemTermoBanido) {
-  alert("O produto não está alinhado com a essência do Mercado Yangue. Apenas produtos ligados à agricultura, pesca, criação ou natureza do campo são permitidos.");
-  return;
-}
+        const envio = new FormData();
+        envio.append('nome', nome);
+        envio.append('preco', preco);
+        envio.append('quantidade', quantidade);
+        envio.append('unidade', unidade);
+        envio.append('imagem', imagem); // envia o arquivo correto
+        envio.append('provincia', provincia);
+        envio.append('municipio', municipio);
+        envio.append('localizacaoDetalhada', localizacaoDetalhada);
+        envio.append('contactos', contactos);
+        envio.append('descricao', descricao);
+        envio.append('nomeVendedor', nomeVendedor);
+        envio.append('formaPagamento', JSON.stringify(formaPagamento));
 
-    const envio = new FormData();
-    envio.append('nome', nome);
-    envio.append('preco', preco);
-    envio.append('quantidade', quantidade);
-    envio.append('unidade', unidade);
-    envio.append('imagem', imagem);
-    envio.append('provincia', provincia);
-    envio.append('municipio', municipio);
-    envio.append('localizacaoDetalhada', localizacaoDetalhada);
-    envio.append('contactos', contactos);
-    envio.append('descricao', descricao);
-    envio.append('nomeVendedor', nomeVendedor);
-    envio.append('formaPagamento', JSON.stringify(formaPagamento));
- // ✅ modo novo
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch("https://mercadoyangue-i3in.onrender.com/api/produtos", {
+            method: 'POST',
+            body: envio,
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
-    try {
-      const token = localStorage.getItem('token');
-
-      const response = await fetch("https://mercadoyangue-i3in.onrender.com/api/produtos", {
-  method: 'POST',
-  body: envio,
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
-
-
-      if (response.ok) {
-        alert('Produto cadastrado com sucesso!');
-        form.reset();
-      } else {
-        const erro = await response.json();
-        console.error('Erro detalhado:', erro);
-alert('Erro ao cadastrar produto:\n' + (erro.message || JSON.stringify(erro)));
-
-      }
-    } catch (error) {
-      alert('Erro de rede ou servidor: ' + error.message);
-    }
-  }}
-  className="flex flex-col gap-4"
->
+          if (response.ok) {
+            alert('Produto cadastrado com sucesso!');
+            form.reset();
+          } else {
+            const erro = await response.json();
+            console.error('Erro detalhado:', erro);
+            alert('Erro ao cadastrar produto:\n' + (erro.message || JSON.stringify(erro)));
+          }
+        } catch (error) {
+          alert('Erro de rede ou servidor: ' + error.message);
+        }
+      }}
+      className="flex flex-col gap-4"
+      encType="multipart/form-data" // ✅ ajuste principal
+    >
   <label className="flex flex-col">
     Nome do Produto:
     <input
