@@ -32,8 +32,12 @@ const GerarFacturaPremium = ({ venda, usuario, formatarKz }) => {
 
 const [numeroFactura, setNumeroFactura] = useState("");
 
+// Inicializa número sequencial de forma segura
 useEffect(() => {
-  const fetchNumero = async () => {
+  const inicializarNumero = async () => {
+    let numero = "";
+
+    // 🔹 Tenta buscar do backend
     try {
       const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/fatura/proximo-numero", {
         method: "POST",
@@ -41,13 +45,33 @@ useEffect(() => {
         body: JSON.stringify({ vendedorId: usuario.id }),
       });
       const data = await res.json();
-      setNumeroFactura(data.numeroFactura);
+      if (data?.numeroFactura) numero = data.numeroFactura;
     } catch (err) {
-      console.error("Erro ao buscar número da fatura:", err);
+      console.warn("API indisponível, usando localStorage:", err);
     }
+
+    // 🔹 Fallback local
+    if (!numero) {
+      const ultimo = localStorage.getItem("ultimoNumFactura");
+      const proxNum = ultimo ? Number(ultimo) + 1 : 1;
+      const anoAtual = new Date().getFullYear();
+      numero = `FT-MY: ${String(proxNum).padStart(4, "0")}/${anoAtual}`;
+    }
+
+    setNumeroFactura(numero);
   };
-  fetchNumero();
+
+  inicializarNumero();
 }, [usuario.id]);
+
+const incrementarNumero = () => {
+  const matches = numeroFactura.match(/(\d+)/); // captura o número
+  const proxNum = matches ? Number(matches[1]) + 1 : 1;
+  const anoAtual = new Date().getFullYear();
+  const novoNumero = `FT-MY: ${String(proxNum).padStart(4, "0")}/${anoAtual}`;
+  setNumeroFactura(novoNumero);
+  localStorage.setItem("ultimoNumFactura", proxNum);
+};
 
 
   const gerarFactura = async () => {
@@ -187,10 +211,7 @@ useEffect(() => {
       setShowModal(false);
 
       // 🔹 Incrementa número sequencial para próxima emissão
-      const proxNum = getUltimoNumero() + 1;
-      const anoAtual = new Date().getFullYear();
-      setNumeroFactura(`FT-MY: ${String(proxNum).padStart(4, "0")}/${anoAtual}`);
-      setProximoNumero(proxNum);
+incrementarNumero();
 
     } catch (err) {
       console.error(err);
@@ -641,10 +662,10 @@ const vendasFiltradas = useMemo(() => {
           <tr key={i} className="hover:bg-gray-100">
             <td className="border p-2">
               <img
-                src={`https://mercadoyangue-i3in.onrender.com/uploads/${p.imagem}`}
-                alt={p.nome}
-                className="w-12 h-12 object-cover rounded"
-              />
+  src={p.imagem} // URL completa da Cloudinary
+  alt={p.nome}
+  className="w-12 h-12 object-cover rounded"
+/>
             </td>
             <td className="border p-2">{p.nome}</td>
             <td className="border p-2">{p.estoque}</td>

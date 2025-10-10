@@ -246,15 +246,14 @@ function FormaPagamentoCampo({ formaPagamento, setFormaPagamento, bancosDisponiv
 }
 
 
-
-function AbaLoginCadastro({ setUsuario, setAbaAtiva}) {
+function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
   const [modo, setModo] = React.useState("login");
   const [tipoCadastro, setTipoCadastro] = React.useState("cliente");
 
   const [email, setEmail] = React.useState("");
   const [senha, setSenha] = React.useState("");
   const [nome, setNome] = React.useState("");
-const [produtosFiltrados, setProdutosFiltrados] = useState([]);
+  const [produtosFiltrados, setProdutosFiltrados] = React.useState([]);
 
   const [provincia, setProvincia] = React.useState("");
   const [municipio, setMunicipio] = React.useState("");
@@ -272,137 +271,150 @@ const [produtosFiltrados, setProdutosFiltrados] = useState([]);
     setAceitouContrato(false);
   };
 
-const handleLogin = async () => {
-  if (!email || !senha) {
-    alert("Preencha email e senha.");
-    return;
-  }
-
-  try {
-    console.log("🔹 Enviando requisição de login...");
-
-    const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, senha }),
-    });
-
-    console.log("🔹 Resposta recebida:", res);
-
-    const data = await res.json();
-    console.log("🔹 JSON parseado:", data);
-
-    if (!res.ok) {
-      alert(data.msg || "Erro no login");
+  // 🔹 LOGIN
+  const handleLogin = async () => {
+    if (!email || !senha) {
+      alert("Preencha email e senha.");
       return;
     }
 
-    if (!data.token || !data.usuario || !data.usuario.nome || !data.usuario.tipo) {
-      alert("Dados incompletos recebidos do servidor.");
-      return;
-    }
+    try {
+      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senha }),
+      });
 
-    const usuarioLogado = {
-      nome: data.usuario.nome,
-      email: data.usuario.email || email,
-      tipo: data.usuario.tipo,
-    };
+      const data = await res.json().catch(() => null);
 
-    // salvar no localStorage
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("usuario", JSON.stringify(usuarioLogado));
+      if (!res.ok) {
+        alert(data?.msg || "Erro no login");
+        return;
+      }
 
-    // atualizar estado
-    setUsuario(usuarioLogado);
-    alert(`Bem-vindo(a), ${usuarioLogado.nome}!`);
-    console.log("✅ Usuário logado com sucesso:", usuarioLogado);
+      if (!data?.token || !data?.usuario?.nome || !data?.usuario?.tipo) {
+        alert("Dados incompletos recebidos do servidor.");
+        return;
+      }
 
-    // limpar os campos se a função existir
-    if (typeof limparCampos === "function") {
-      console.log("🔹 Limpando campos...");
+      const usuarioLogado = {
+        nome: data.usuario.nome,
+        email: data.usuario.email || email,
+        tipo: data.usuario.tipo,
+      };
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("usuario", JSON.stringify(usuarioLogado));
+
+      setUsuario(usuarioLogado);
+      alert(`Bem-vindo(a), ${usuarioLogado.nome}!`);
       limparCampos();
+      setAbaAtiva?.("produtos");
+    } catch (error) {
+      console.error("Erro no login:", error);
+      alert("Erro inesperado no login. Veja o console.");
     }
-
-    // mudar aba se a função existir
-    if (typeof setAbaAtiva === "function") {
-      console.log("🔹 Redirecionando para aba produtos...");
-      setAbaAtiva("produtos");
-    }
-
-  } catch (error) {
-    console.error("❌ Erro inesperado no handleLogin:", error);
-    alert("Erro inesperado no login. Veja o console.");
-  }
-};
-
-
-
-
-
-  const handleCadastro = async () => {
-  if (!email || !senha || !nome) {
-    alert("Preencha nome, email e senha.");
-    return;
-  }
-
-  if (tipoCadastro !== "cliente") {
-    if (!provincia || !municipio || !localizacaoEspecifica) {
-      alert("Preencha todos os campos para vendedor/agricultor.");
-      return;
-    }
-
-    if (!aceitouContrato) {
-      alert("Você deve aceitar o contrato digital para continuar.");
-      return;
-    }
-  }
-
-  const novoUsuario = {
-    nome,
-    email,
-    senha,
-    tipo: tipoCadastro,
-    ...(tipoCadastro !== "cliente" && {
-      provincia,
-      municipio,
-      localizacaoEspecifica,
-      aceitouContrato: true,
-    }),
   };
 
-  try {
-    const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/cadastro", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(novoUsuario),
-    });
+  // 🔹 CADASTRO
+  const handleCadastro = async () => {
+    if (!email || !senha || !nome) {
+      alert("Preencha nome, email e senha.");
+      return;
+    }
 
-    const texto = await res.text();
-    console.log("Resposta do servidor (raw):", texto);
+    if (tipoCadastro !== "cliente") {
+      if (!provincia || !municipio || !localizacaoEspecifica) {
+        alert("Preencha todos os campos para vendedor/agricultor.");
+        return;
+      }
+      if (!aceitouContrato) {
+        alert("Você deve aceitar o contrato digital para continuar.");
+        return;
+      }
+    }
 
-    let data;
+    const novoUsuario = {
+      nome,
+      email,
+      senha,
+      tipo: tipoCadastro,
+      ...(tipoCadastro !== "cliente" && {
+        provincia,
+        municipio,
+        localizacaoEspecifica,
+        aceitouContrato: true,
+      }),
+    };
+
     try {
-      data = JSON.parse(texto);
-    } catch {
-      alert("Erro inesperado no servidor. Resposta inválida.");
+      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/cadastro", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(novoUsuario),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        alert(data?.msg || "Erro no cadastro");
+        return;
+      }
+
+      alert("Cadastro realizado com sucesso!");
+
+      // Enviar email de confirmação
+      try {
+        const emailRes = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/enviar-confirmacao", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+
+        if (!emailRes.ok) {
+          console.warn("Falha ao enviar email de confirmação");
+        } else {
+          console.log("Email de confirmação enviado para:", email);
+        }
+      } catch (err) {
+        console.warn("Erro no envio do email de confirmação:", err);
+      }
+
+      setModo("login");
+      limparCampos();
+    } catch (error) {
+      console.error("Erro no cadastro:", error);
+      alert("Erro ao conectar com o servidor.");
+    }
+  };
+
+  // 🔹 ESQUECI SENHA
+  const handleEsqueciSenha = async () => {
+    if (!email) {
+      alert("Digite seu email para redefinir a senha.");
       return;
     }
 
-    if (!res.ok) {
-      alert(data?.msg || "Erro no cadastro");
-      return;
+    try {
+      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/esqueci-senha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.msg || "Erro ao enviar email de redefinição.");
+        return;
+      }
+
+      alert("Se o email estiver cadastrado e ativo, você receberá instruções para redefinir sua senha.");
+    } catch (error) {
+      console.error("Erro ao solicitar redefinição de senha:", error);
+      alert("Erro inesperado. Tente novamente mais tarde.");
     }
-
-    alert("Cadastro realizado com sucesso!");
-    setModo("login");
-    limparCampos();
-
-  } catch (error) {
-    console.error("Erro no cadastro:", error);
-    alert("Erro ao conectar com o servidor.");
-  }
-};
-
+  };
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded shadow-md border border-green-200">
@@ -410,62 +422,21 @@ const handleLogin = async () => {
       <div className="mb-6 flex justify-center space-x-4">
         <button
           onClick={() => setModo("login")}
-          className={`px-4 py-2 rounded font-semibold ${
-            modo === "login"
-              ? "bg-green-700 text-white"
-              : "bg-green-100 text-green-700 hover:bg-green-200"
-          }`}
+          className={`px-4 py-2 rounded font-semibold ${modo === "login" ? "bg-green-700 text-white" : "bg-green-100 text-green-700 hover:bg-green-200"}`}
         >
           Login
         </button>
         <button
           onClick={() => setModo("cadastro")}
-          className={`px-4 py-2 rounded font-semibold ${
-            modo === "cadastro"
-              ? "bg-green-700 text-white"
-              : "bg-green-100 text-green-700 hover:bg-green-200"
-          }`}
+          className={`px-4 py-2 rounded font-semibold ${modo === "cadastro" ? "bg-green-700 text-white" : "bg-green-100 text-green-700 hover:bg-green-200"}`}
         >
           Cadastro
         </button>
       </div>
 
+      {/* LOGIN */}
       {modo === "login" && (
         <>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mb-3 w-full border p-2 rounded"
-          />
-          <input
-  type="password"
-  placeholder="Senha"
-  value={senha}
-  onChange={(e) => setSenha(e.target.value)}
-  className="mb-3 w-full border p-2 rounded"
-  onKeyDown={(e) => e.key === "Enter" && handleLogin()} // 🔹 Login com Enter
-/>
-
-          <button
-            onClick={handleLogin}
-            className="w-full bg-green-700 text-white py-3 rounded font-semibold hover:bg-green-800"
-          >
-            Entrar
-          </button>
-        </>
-      )}
-
-      {modo === "cadastro" && (
-        <>
-          <input
-            type="text"
-            placeholder="Nome"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            className="mb-3 w-full border p-2 rounded"
-          />
           <input
             type="email"
             placeholder="Email"
@@ -479,15 +450,27 @@ const handleLogin = async () => {
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
             className="mb-3 w-full border p-2 rounded"
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
           />
+          <button onClick={handleLogin} className="w-full bg-green-700 text-white py-3 rounded font-semibold hover:bg-green-800">
+            Entrar
+          </button>
+          <button type="button" onClick={handleEsqueciSenha} className="w-full mt-2 text-sm text-green-700 underline hover:text-green-800">
+            Esqueci minha senha
+          </button>
+        </>
+      )}
+
+      {/* CADASTRO */}
+      {modo === "cadastro" && (
+        <>
+          <input type="text" placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} className="mb-3 w-full border p-2 rounded" />
+          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="mb-3 w-full border p-2 rounded" />
+          <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} className="mb-3 w-full border p-2 rounded" />
 
           <div className="mb-3">
             <label className="block mb-1 font-semibold">Tipo de Cadastro</label>
-            <select
-              value={tipoCadastro}
-              onChange={(e) => setTipoCadastro(e.target.value)}
-              className="w-full border p-2 rounded"
-            >
+            <select value={tipoCadastro} onChange={(e) => setTipoCadastro(e.target.value)} className="w-full border p-2 rounded">
               <option value="cliente">Cliente</option>
               <option value="vendedor">Vendedor/Agricultor</option>
             </select>
@@ -495,136 +478,69 @@ const handleLogin = async () => {
 
           {tipoCadastro !== "cliente" && (
             <>
-              <input
-                type="text"
-                placeholder="Província"
-                value={provincia}
-                onChange={(e) => setProvincia(e.target.value)}
-                className="mb-3 w-full border p-2 rounded"
-              />
-              <input
-                type="text"
-                placeholder="Município"
-                value={municipio}
-                onChange={(e) => setMunicipio(e.target.value)}
-                className="mb-3 w-full border p-2 rounded"
-              />
-              <input
-                type="text"
-                placeholder="Localização específica"
-                value={localizacaoEspecifica}
-                onChange={(e) => setLocalizacaoEspecifica(e.target.value)}
-                className="mb-3 w-full border p-2 rounded"
-              />
-              {(tipoCadastro === "vendedor" || tipoCadastro === "agricultor") && (
-                <>
-                  <div
-  className="mb-4 p-4 border border-green-300 rounded bg-green-50 max-h-60 overflow-y-auto text-sm text-gray-800"
-  id="contrato-digital"
->
-  <h2 className="text-lg font-bold mb-4 text-green-800 text-center">
-    Contrato Digital do Vendedor/Agricultor – MercadoYangue
-  </h2>
+              <input type="text" placeholder="Província" value={provincia} onChange={(e) => setProvincia(e.target.value)} className="mb-3 w-full border p-2 rounded" />
+              <input type="text" placeholder="Município" value={municipio} onChange={(e) => setMunicipio(e.target.value)} className="mb-3 w-full border p-2 rounded" />
+              <input type="text" placeholder="Localização específica" value={localizacaoEspecifica} onChange={(e) => setLocalizacaoEspecifica(e.target.value)} className="mb-3 w-full border p-2 rounded" />
 
-  <p>
-    Ao efectuar o registo como vendedor ou agricultor na plataforma Mercado Yangue, o utilizador compromete-se a fornecer unicamente informações verdadeiras e actualizadas, garantindo a veracidade dos dados pessoais e comerciais submetidos, bem como a qualidade e origem dos produtos anunciados.
-  </p>
+              {/* CONTRATO DIGITAL */}
+              <div id="contrato-digital" className="mb-4 p-6 border border-green-300 rounded bg-green-50 max-h-96 overflow-y-auto text-sm text-gray-800">
+                <div className="flex flex-col items-center mb-6">
+                  <img src="/favicon-32x32.png" alt="MercadoYangue" className="w-12 h-12 mb-2" />
+                  <h2 className="text-xl font-bold text-green-800 text-center">Contrato Digital da Plataforma MercadoYangue</h2>
+                </div>
+                <p>Ao efectuar o registo como vendedor ou agricultor na plataforma Mercado Yangue, o utilizador compromete-se a fornecer unicamente informações verdadeiras e actualizadas, garantindo a veracidade dos dados pessoais e comerciais submetidos, bem como a qualidade e origem dos produtos anunciados.</p>
+                <p>O utilizador declara que cumprirá rigorosamente os prazos acordados para a entrega dos produtos vendidos, bem como manterá uma comunicação clara, cortês e responsável com os compradores, zelando pela satisfação e confiança em todas as transacções realizadas através da plataforma.</p>
+                <p>Fica estabelecido que sobre cada produto vendido será aplicada uma comissão de 0,5% (zero vírgula cinco por cento) sobre o valor total da venda, destinada à manutenção e desenvolvimento da plataforma Mercado Yangue.</p>
+                <p>O pagamento da comissão devida à plataforma Mercado Yangue será realizado por iniciativa e responsabilidade exclusiva do vendedor ou agricultor, através das coordenadas bancárias abaixo indicadas:</p>
+                <p><strong>Domicílio Bancário:</strong> Banco Angolano de Investimento (BAI) – Agência Huambo Centro</p>
+                <p><strong>Nome da Conta:</strong> Mercado Yangue Serviços Digitais</p>
+                <p><strong>IBAN:</strong> AO06 0000 0000 1234 5678 9012 3456 7</p>
+                <p><strong>Número da Conta:</strong> 1234567890</p>
+                <p>Ressalta-se que a comissão será automaticamente estimada no momento da transação, porém o repasse do valor correspondente ao vendedor/agricultor será efetuado pelo próprio, observando as condições estabelecidas nesta plataforma.</p>
+                <p>O prazo máximo para o repasse do valor líquido devido à plataforma é de 5 (cinco) dias úteis contados a partir da confirmação da transacção e da entrega do produto ao comprador, salvo ocorrência de impedimentos devidamente justificados e comunicados previamente à plataforma.</p>
+                <p>O uso da plataforma rege-se pelos princípios da boa-fé, honestidade, transparência e respeito às normas legais vigentes na República de Angola, incluindo a Lei nº 15/03 sobre a Defesa do Consumidor e demais legislação aplicável ao comércio electrónico e protecção de dados pessoais.</p>
+                <p>É expressamente proibida a utilização da plataforma para fins ilícitos, fraudulentos, enganosos ou que violem direitos de terceiros. O incumprimento destas disposições poderá resultar na suspensão temporária ou cancelamento definitivo do acesso do utilizador, sem prejuízo das medidas legais cabíveis.</p>
+                <p>O vendedor/agricultor compromete-se a respeitar as normas sanitárias, ambientais e comerciais aplicáveis, respondendo integralmente por eventuais danos ou prejuízos causados por produtos defeituosos, vencidos ou em desacordo com as especificações anunciadas.</p>
+                <p>Ao assinalar a opção de aceite do presente contrato, o utilizador declara, para todos os efeitos legais, que leu, compreendeu, aceitou e concordou integralmente com todos os termos e condições ora estabelecidos.</p>
+              </div>
 
-  <p>
-    O utilizador declara que cumprirá rigorosamente os prazos acordados para a entrega dos produtos vendidos, bem como manterá uma comunicação clara, cortês e responsável com os compradores, zelando pela satisfação e confiança em todas as transacções realizadas através da plataforma.
-  </p>
+              <button
+                type="button"
+                onClick={() => {
+                  const conteudo = document.getElementById("contrato-digital");
+                  if (!conteudo) return;
+                  const printWindow = window.open("", "Print", "width=700,height=900");
+                  printWindow.document.write(`
+                    <html>
+                      <head>
+                        <title>Contrato Digital</title>
+                        <style>
+                          body { font-family: Arial, sans-serif; padding: 20px; }
+                          h2 { text-align: center; margin-bottom: 20px; }
+                          p { margin-bottom: 12px; line-height: 1.5; }
+                        </style>
+                      </head>
+                      <body>${conteudo.innerHTML}</body>
+                    </html>
+                  `);
+                  printWindow.document.close();
+                  printWindow.focus();
+                  printWindow.print();
+                  printWindow.close();
+                }}
+                className="text-green-700 underline mb-2"
+              >
+                Imprimir Contrato
+              </button>
 
-  <p>
-    Fica estabelecido que sobre cada produto vendido será aplicada uma comissão de 0,5% (zero virgula cinco por cento) sobre o valor total da venda, destinada à manutenção e desenvolvimento da plataforma Mercado Yangue.
-  O pagamento da comissão devida à plataforma Mercado Yangue será realizado por iniciativa e responsabilidade exclusiva do vendedor ou agricultor, através das coordenadas bancárias abaixo indicadas:  
-  <br />
-  <strong>Domicílio Bancário:</strong> Banco Angolano de Investimeot (BAI) – Agência Huambo Centro  
-  <br />
-  <strong>Nome da Conta:</strong> Mercado Yangue Serviços Digitais  
-  <br />
-  <strong>IBAN:</strong> AO06 0000 0000 1234 5678 9012 3456 7  
-  <br />
-  <strong>Número da Conta:</strong> 1234567890  
-</p>
-
-<p>
-  Ressalta-se que a comissão será automaticamente estimada no momento da transação, porém o repasse do valor correspondente ao vendedor/agricultor será efetuado pelo próprio, observando as condições estabelecidas nesta plataforma.
-</p>
-
-<p>
-  O prazo máximo para o repasse do valor líquido devido a Plataforma, é de 5 (cinco) dias úteis contados a partir da confirmação da transacção e da entrega do produto ao comprador, salvo ocorrência de impedimentos devidamente justificados e comunicados previamente à plataforma.
-</p>
-
-  <p>
-    O uso da plataforma rege-se pelos princípios da boa-fé, honestidade, transparência e respeito às normas legais vigentes na República de Angola, incluindo, mas não se limitando, à Lei nº 15/03 sobre a Defesa do Consumidor e demais legislação aplicável ao comércio electrónico e protecção de dados pessoais.
-  </p>
-
-  <p>
-    É expressamente proibida a utilização da plataforma para fins ilícitos, fraudulentos, enganosos ou que violem direitos de terceiros. O incumprimento destas disposições poderá resultar na suspensão temporária ou cancelamento definitivo do acesso do utilizador, sem prejuízo das medidas legais cabíveis, incluindo responsabilização civil e criminal.
-  </p>
-
-  <p>
-    O vendedor/agricultor compromete-se a respeitar as normas sanitárias, ambientais e comerciais aplicáveis, respondendo integralmente por eventuais danos ou prejuízos causados por produtos defeituosos, vencidos ou em desacordo com as especificações anunciadas.
-  </p>
-
-  <p>
-    Ao assinalar a opção de aceite do presente contrato, o utilizador declara, para todos os efeitos legais, que leu, compreendeu, aceitou e concordou integralmente com todos os termos e condições ora estabelecidos, obrigando-se ao seu fiel cumprimento.
-  </p>
-</div>
-
-                  {/* Botão para imprimir o contrato */}
-                  <div className="mb-4">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const conteudo = document.getElementById("contrato-digital");
-                        if (!conteudo) return;
-                        const printWindow = window.open("", "Print", "width=600,height=600");
-                        printWindow.document.write(`<html><head><title>Contrato Digital</title></head><body>${conteudo.innerHTML}</body></html>`);
-                        printWindow.document.close();
-                        printWindow.focus();
-                        printWindow.print();
-                        printWindow.close();
-                      }}
-                      className="text-green-700 underline mb-2"
-                    >
-                      Imprimir Contrato
-                    </button>
-                  </div>
-
-                  <label className="inline-flex items-center mb-6 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={aceitouContrato}
-                      onChange={(e) => setAceitouContrato(e.target.checked)}
-                      className="form-checkbox h-5 w-5 text-green-600"
-                    />
-                    <span className="ml-2 text-gray-700">
-                      Li e aceito o{" "}
-                      <a
-                        href="#contrato-digital"
-                        className="text-green-600 underline"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          document.getElementById("contrato-digital")?.scrollIntoView({ behavior: "smooth" });
-                        }}
-                      >
-                        contrato digital
-                      </a>
-                      .
-                    </span>
-                  </label>
-                </>
-              )}
+              <label className="inline-flex items-center mb-6 cursor-pointer">
+                <input type="checkbox" checked={aceitouContrato} onChange={(e) => setAceitouContrato(e.target.checked)} className="form-checkbox h-5 w-5 text-green-600" />
+                <span className="ml-2 text-gray-700">Li e aceito o <a href="#contrato-digital" className="text-green-600 underline" onClick={(e) => { e.preventDefault(); document.getElementById("contrato-digital")?.scrollIntoView({ behavior: "smooth" }); }}>contrato digital</a>.</span>
+              </label>
             </>
           )}
 
-          <button
-            onClick={handleCadastro}
-            className="w-full bg-green-700 text-white py-3 rounded font-semibold hover:bg-green-800"
-          >
-            Cadastrar
-          </button>
+          <button onClick={handleCadastro} className="w-full bg-green-700 text-white py-3 rounded font-semibold hover:bg-green-800">Cadastrar</button>
         </>
       )}
     </div>

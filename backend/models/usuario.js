@@ -5,6 +5,9 @@ const UsuarioSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   senha: { type: String, required: true }, // armazene hash depois
   tipo: { type: String, enum: ['cliente', 'vendedor', 'agricultor'], required: true },
+senhaResetToken: { type: String },
+senhaResetExp: { type: Date },
+
 
   // Apenas para vendedores/agricultores
   provincia: { type: String },

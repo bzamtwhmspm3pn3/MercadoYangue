@@ -37,129 +37,131 @@ export default function AbaChat({ usuario }) {
   const socketRef = useRef(null);
 
   // -----------------------
-  // Helpers
-  // -----------------------
-  const gerarChaveChat = useCallback((nome1, nome2) => {
-    if (!nome1 || !nome2) return null;
-    return [String(nome1), String(nome2)].sort().join("_");
-  }, []);
+// Helpers
+// -----------------------
+const gerarChaveChat = useCallback((nome1, nome2) => {
+  if (!nome1 || !nome2) return null;
+  return [String(nome1), String(nome2)].sort().join("_");
+}, []);
 
-  const pegarHistorico = useCallback(
-    (outro) => {
-      if (!usuario?.nome || !outro) return [];
-      const chave = gerarChaveChat(usuario.nome, outro);
-      try {
-        const dados = JSON.parse(localStorage.getItem(chave)) || [];
-        if (!Array.isArray(dados)) return [];
-        return dados.map((m) => ({
-          ...m,
-          texto: m.texto || m.conteudo || "",
-          remetente: typeof m.remetente === "object" ? m.remetente.nome : m.remetente,
-          destinatario: typeof m.destinatario === "object" ? m.destinatario.nome : m.destinatario,
-        }));
-      } catch {
-        return [];
-      }
-    },
-    [usuario?.nome, gerarChaveChat]
-  );
-
-  const salvarHistorico = useCallback(
-    (outro, novoHistorico) => {
-      if (!usuario?.nome || !outro) return;
-      const chave = gerarChaveChat(usuario.nome, outro);
-      try {
-        localStorage.setItem(chave, JSON.stringify(novoHistorico));
-      } catch (e) {
-        console.warn("Erro ao salvar historico:", e);
-      }
-    },
-    [usuario?.nome, gerarChaveChat]
-  );
-
-  const marcarComoLida = useCallback(
-    (outro) => {
-      if (!usuario?.nome || !outro) return;
-      const chave = gerarChaveChat(usuario.nome, outro);
-      try {
-        const status = JSON.parse(localStorage.getItem("statusMensagens") || "{}");
-        if (!status[chave]) status[chave] = {};
-        status[chave][usuario.nome] = 0;
-        status[chave].vistoPor = status[chave].vistoPor || {};
-        status[chave].vistoPor[usuario.nome] = true;
-        localStorage.setItem("statusMensagens", JSON.stringify(status));
-
-        setConversasRecentes((prev) =>
-          prev.map((c) =>
-            c.nome === outro ? { ...c, temNaoLidas: false, countNaoLidas: 0 } : c
-          )
-        );
-      } catch {}
-    },
-    [usuario?.nome, gerarChaveChat]
-  );
-
-  const atualizarConversas = useCallback(() => {
-    if (!usuario?.nome) {
-      setConversasRecentes([]);
-      return;
-    }
+const pegarHistorico = useCallback(
+  (outro) => {
+    if (!usuario?.nome || !outro) return [];
+    const chave = gerarChaveChat(usuario.nome, outro);
     try {
-      const chaves = Object.keys(localStorage);
-      const status = JSON.parse(localStorage.getItem("statusMensagens") || "{}");
-      const conversas = [];
+      const dados = JSON.parse(localStorage.getItem(chave)) || [];
+      if (!Array.isArray(dados)) return [];
+      return dados.map((m) => ({
+        ...m,
+        texto: m.texto || m.conteudo || "",
+        remetente: typeof m.remetente === "object" ? m.remetente.nome : m.remetente,
+        destinatario: typeof m.destinatario === "object" ? m.destinatario.nome : m.destinatario,
+      }));
+    } catch {
+      return [];
+    }
+  },
+  [usuario?.nome, gerarChaveChat]
+);
 
-      chaves.forEach((chave) => {
-        if (!chave.includes("_")) return;
-        const [n1, n2] = chave.split("_");
-        if (n1 !== usuario.nome && n2 !== usuario.nome) return;
-        const outro = n1 === usuario.nome ? n2 : n1;
-        const histor = pegarHistorico(outro);
-        if (!Array.isArray(histor)) return;
-        const ultimaMensagem = [...histor].reverse().find((m) => !!m.texto || !!m.imagem || !!m.arquivo) || {};
-
-        conversas.push({
-          nome: outro,
-          ultimaMensagem:
-            ultimaMensagem?.texto ||
-            (ultimaMensagem?.imagem ? "📷 Imagem" : "") ||
-            (ultimaMensagem?.arquivo ? `📎 ${ultimaMensagem.arquivoNome}` : ""),
-          temNaoLidas: (status[chave]?.[usuario.nome] || 0) > 0,
-          countNaoLidas: status[chave]?.[usuario.nome] || 0,
-          data: ultimaMensagem?.data || "1970-01-01",
-        });
-      });
-
-      conversas.sort((a, b) => new Date(b.data) - new Date(a.data));
-      setConversasRecentes(conversas);
+const salvarHistorico = useCallback(
+  (outro, novoHistorico) => {
+    if (!usuario?.nome || !outro) return;
+    const chave = gerarChaveChat(usuario.nome, outro);
+    try {
+      localStorage.setItem(chave, JSON.stringify(novoHistorico));
     } catch (e) {
-      console.warn("Erro atualizarConversas:", e);
-      setConversasRecentes([]);
+      console.warn("Erro ao salvar historico:", e);
     }
-  }, [usuario?.nome, pegarHistorico]);
+  },
+  [usuario?.nome, gerarChaveChat]
+);
 
-  // -----------------------
-  // Efeitos iniciais
-  // -----------------------
-  useEffect(() => {
+const marcarComoLida = useCallback(
+  (outro) => {
+    if (!usuario?.nome || !outro) return;
+    const chave = gerarChaveChat(usuario.nome, outro);
     try {
-      const vendedor = JSON.parse(localStorage.getItem("vendedorSelecionado"));
-      if (vendedor) setRemetente(vendedor);
+      const status = JSON.parse(localStorage.getItem("statusMensagens") || "{}");
+      if (!status[chave]) status[chave] = {};
+      status[chave][usuario.nome] = 0;
+      status[chave].vistoPor = status[chave].vistoPor || {};
+      status[chave].vistoPor[usuario.nome] = true;
+      localStorage.setItem("statusMensagens", JSON.stringify(status));
+
+      setConversasRecentes((prev) =>
+        prev.map((c) =>
+          c.nome === outro ? { ...c, temNaoLidas: false, countNaoLidas: 0 } : c
+        )
+      );
     } catch {}
-  }, []);
+  },
+  [usuario?.nome, gerarChaveChat]
+);
 
-  useEffect(() => {
-    if (usuario && usuario.nome) setUsuarioActual(usuario.nome);
-  }, [usuario]);
+const atualizarConversas = useCallback(() => {
+  if (!usuario?.nome) {
+    setConversasRecentes([]);
+    return;
+  }
+  try {
+    const chaves = Object.keys(localStorage);
+    const status = JSON.parse(localStorage.getItem("statusMensagens") || "{}");
+    const conversas = [];
 
-  useEffect(() => {
-    if (!usuario?.id) return;
+    chaves.forEach((chave) => {
+      if (!chave.includes("_")) return;
+      const [n1, n2] = chave.split("_");
+      if (n1 !== usuario.nome && n2 !== usuario.nome) return;
+      const outro = n1 === usuario.nome ? n2 : n1;
+      const histor = pegarHistorico(outro);
+      if (!Array.isArray(histor)) return;
+      const ultimaMensagem = [...histor].reverse().find((m) => !!m.texto || !!m.imagem || !!m.arquivo) || {};
 
-    const socket = connectSocket(usuario.id);
+      conversas.push({
+        nome: outro,
+        ultimaMensagem:
+          ultimaMensagem?.texto ||
+          (ultimaMensagem?.imagem ? "📷 Imagem" : "") ||
+          (ultimaMensagem?.arquivo ? `📎 ${ultimaMensagem.arquivoNome}` : ""),
+        temNaoLidas: (status[chave]?.[usuario.nome] || 0) > 0,
+        countNaoLidas: status[chave]?.[usuario.nome] || 0,
+        data: ultimaMensagem?.data || "1970-01-01",
+      });
+    });
+
+    conversas.sort((a, b) => new Date(b.data) - new Date(a.data));
+    setConversasRecentes(conversas);
+  } catch (e) {
+    console.warn("Erro atualizarConversas:", e);
+    setConversasRecentes([]);
+  }
+}, [usuario?.nome, pegarHistorico]);
+
+// -----------------------
+// Efeitos iniciais
+// -----------------------
+useEffect(() => {
+  try {
+    const vendedor = JSON.parse(localStorage.getItem("vendedorSelecionado"));
+    if (vendedor) setRemetente(vendedor);
+  } catch {}
+}, []);
+
+useEffect(() => {
+  if (usuario && usuario.nome) setUsuarioActual(usuario.nome);
+}, [usuario]);
+
+// -----------------------
+// Socket & Recebimento
+// -----------------------
+useEffect(() => {
+  if (!usuario?.id) return;
+
+  const socket = connectSocket(usuario.id);
   socketRef.current = socket;
   window.socket = socket;
 
-  // Função de recebimento de mensagem
   const handleReceive = (msg) => {
     try {
       const novoMsg = {
@@ -181,10 +183,17 @@ export default function AbaChat({ usuario }) {
       if (outro === destinatario) setHistorico(novoHistorico);
       atualizarConversas();
 
-      // Notificação
+      // Notificação real e contagem de não lidas
       if (novoMsg.remetente !== usuario.nome) {
         const toastOpts = { toastId: novoMsg.data || undefined };
         toast.info(`📩 Nova mensagem de ${novoMsg.remetente}`, toastOpts);
+
+        const chave = gerarChaveChat(usuario.nome, outro);
+        const status = JSON.parse(localStorage.getItem("statusMensagens") || "{}");
+        if (!status[chave]) status[chave] = {};
+        status[chave][usuario.nome] = (status[chave][usuario.nome] || 0) + 1;
+        localStorage.setItem("statusMensagens", JSON.stringify(status));
+
         if (novoMsg.data) ultimaMsgIdRef.current = novoMsg.data;
       }
     } catch (e) {
@@ -192,10 +201,8 @@ export default function AbaChat({ usuario }) {
     }
   };
 
-  // Registrar listener de socket
   socket.on("receiveMessage", handleReceive);
 
-  // Cleanup
   return () => {
     socket.off("receiveMessage", handleReceive);
     try { socket.disconnect(); } catch {}
@@ -204,129 +211,130 @@ export default function AbaChat({ usuario }) {
   };
 }, [usuario?.id, usuario?.nome, destinatario, pegarHistorico, salvarHistorico, atualizarConversas]);
 
-  // -----------------------
-  // Funções principais
-  // -----------------------
-  const enviarMensagem = useCallback(() => {
-    if ((!mensagem || !mensagem.trim()) && !arquivoBase64) return toast.error("Mensagem vazia.");
-    if (!destinatario || !destinatario.trim()) return toast.error("Selecione uma conversa");
+// -----------------------
+// Funções principais
+// -----------------------
+const enviarMensagem = useCallback(() => {
+  if ((!mensagem || !mensagem.trim()) && !arquivoBase64) return toast.error("Mensagem vazia.");
+  if (!destinatario || !destinatario.trim()) return toast.error("Selecione uma conversa");
 
-    const novaMsg = {
-      id: Date.now(),
-      texto: mensagem?.trim() || null,
-      conteudo: mensagem?.trim() || null,
-      remetente: usuario?._id || usuario?.nome || "Anon",
-      destinatario,
-      data: new Date().toISOString(),
-      tipo: arquivoBase64
-        ? arquivoTipo?.startsWith("image/") ? "imagem" : "arquivo"
-        : "texto",
-      imagem: arquivoBase64 && arquivoTipo?.startsWith("image/") ? arquivoBase64.split(",")[1] || arquivoBase64 : null,
-      arquivo: arquivoBase64 && !arquivoTipo?.startsWith("image/") ? arquivoBase64.split(",")[1] || arquivoBase64 : null,
-      arquivoNome,
-      arquivoTipo,
-    };
-
-    try { socketRef.current?.emit("novaMensagem", novaMsg); } catch {}
-    fetch("https://mercadoyangue-i3in.onrender.com/api/chat/enviar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
-      body: JSON.stringify({
-        remetente: novaMsg.remetente,
-        destinatario: novaMsg.destinatario,
-        conteudo: novaMsg.texto,
-        imagem: novaMsg.imagem,
-        arquivo: novaMsg.arquivo,
-        arquivoNome: novaMsg.arquivoNome,
-        arquivoTipo: novaMsg.arquivoTipo,
-      }),
-    }).catch(() => {});
-
-    const historicoAtual = pegarHistorico(destinatario) || [];
-    const novoHistorico = [...historicoAtual, novaMsg];
-    salvarHistorico(destinatario, novoHistorico);
-    setHistorico(novoHistorico);
-    atualizarConversas();
-
-    try {
-      const chave = gerarChaveChat(usuario?.nome || "Anon", destinatario);
-      const status = JSON.parse(localStorage.getItem("statusMensagens") || "{}");
-      if (!status[chave]) status[chave] = {};
-      status[chave][destinatario] = (status[chave][destinatario] || 0) + 1;
-      localStorage.setItem("statusMensagens", JSON.stringify(status));
-    } catch {}
-
-    setMensagem(""); setArquivoBase64(null); setArquivoNome(null); setArquivoTipo(null);
-    if (inputFileRef.current) inputFileRef.current.value = "";
-    setStatusDigitando(false);
-  }, [mensagem, destinatario, arquivoBase64, arquivoTipo, arquivoNome, usuario, pegarHistorico, salvarHistorico, atualizarConversas]);
-
-  const abrirConversa = useCallback(async (nomeContato) => {
-    if (!nomeContato || !usuario?.nome) return;
-    const nomeTrim = String(nomeContato).trim();
-    if (!nomeTrim) return;
-
-    setDestinatario(nomeTrim); setAtual(nomeTrim);
-
-    let dados = [];
-    try {
-      const res = await fetch(
-        `https://mercadoyangue-i3in.onrender.com/api/chat/historico/${encodeURIComponent(usuario.nome)}/${encodeURIComponent(nomeTrim)}`,
-        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-      );
-      dados = res.ok ? await res.json() : pegarHistorico(nomeTrim);
-    } catch { dados = pegarHistorico(nomeTrim); }
-
-    const msgsNormalizadas = dados.map((m) => ({
-      ...m,
-      texto: m.texto || m.conteudo || "",
-      remetente: typeof m.remetente === "object" ? m.remetente.nome : m.remetente,
-      destinatario: typeof m.destinatario === "object" ? m.destinatario.nome : m.destinatario,
-      arquivo: m.arquivo || null,
-      imagem: m.imagem || null,
-      arquivoNome: m.arquivoNome || null,
-      arquivoTipo: m.arquivoTipo || null,
-    }));
-
-    setHistorico(msgsNormalizadas);
-    salvarHistorico(nomeTrim, msgsNormalizadas);
-    marcarComoLida(nomeTrim);
-    atualizarConversas();
-  }, [usuario?.nome, pegarHistorico, salvarHistorico, marcarComoLida, atualizarConversas]);
-
-  // -----------------------
-  // Digitando
-  // -----------------------
-  const setStatusDigitando = useCallback((digitandoBool) => {
-    if (!destinatario || !usuario?.nome) return;
-    const key = `digitando_${gerarChaveChat(usuario.nome, destinatario)}`;
-    try {
-      localStorage.setItem(key, JSON.stringify({ digitando: Boolean(digitandoBool), usuario: usuario.nome, data: new Date().toISOString() }));
-    } catch {}
-  }, [destinatario, usuario?.nome, gerarChaveChat]);
-
-  useEffect(() => {
-    if (!destinatario || !usuario?.nome) { setDigitandoDe(null); return; }
-    const key = `digitando_${gerarChaveChat(usuario.nome, destinatario)}`;
-    const interval = setInterval(() => {
-      try {
-        const s = JSON.parse(localStorage.getItem(key));
-        if (s?.digitando && s?.usuario === destinatario) setDigitandoDe(destinatario);
-        else setDigitandoDe(null);
-      } catch { setDigitandoDe(null); }
-    }, 800);
-    return () => clearInterval(interval);
-  }, [destinatario, usuario?.nome, gerarChaveChat]);
-
-  // -----------------------
-  // Inputs
-  // -----------------------
-  const handleMensagemChange = (e) => {
-    setMensagem(e.target.value);
-    setStatusDigitando(true);
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => setStatusDigitando(false), 1500);
+  const novaMsg = {
+    id: Date.now(),
+    texto: mensagem?.trim() || null,
+    conteudo: mensagem?.trim() || null,
+    remetente: usuario?._id || usuario?.nome || "Anon",
+    destinatario,
+    data: new Date().toISOString(),
+    tipo: arquivoBase64
+      ? arquivoTipo?.startsWith("image/") ? "imagem" : "arquivo"
+      : "texto",
+    imagem: arquivoBase64 && arquivoTipo?.startsWith("image/") ? arquivoBase64.split(",")[1] || arquivoBase64 : null,
+    arquivo: arquivoBase64 && !arquivoTipo?.startsWith("image/") ? arquivoBase64.split(",")[1] || arquivoBase64 : null,
+    arquivoNome,
+    arquivoTipo,
   };
+
+  try { socketRef.current?.emit("novaMensagem", novaMsg); } catch {}
+  fetch("https://mercadoyangue-i3in.onrender.com/api/chat/enviar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
+    body: JSON.stringify({
+      remetente: novaMsg.remetente,
+      destinatario: novaMsg.destinatario,
+      conteudo: novaMsg.texto,
+      imagem: novaMsg.imagem,
+      arquivo: novaMsg.arquivo,
+      arquivoNome: novaMsg.arquivoNome,
+      arquivoTipo: novaMsg.arquivoTipo,
+    }),
+  }).catch(() => {});
+
+  const historicoAtual = pegarHistorico(destinatario) || [];
+  const novoHistorico = [...historicoAtual, novaMsg];
+  salvarHistorico(destinatario, novoHistorico);
+  setHistorico(novoHistorico);
+  atualizarConversas();
+
+  try {
+    const chave = gerarChaveChat(usuario?.nome || "Anon", destinatario);
+    const status = JSON.parse(localStorage.getItem("statusMensagens") || "{}");
+    if (!status[chave]) status[chave] = {};
+    status[chave][destinatario] = (status[chave][destinatario] || 0) + 1;
+    localStorage.setItem("statusMensagens", JSON.stringify(status));
+  } catch {}
+
+  setMensagem(""); setArquivoBase64(null); setArquivoNome(null); setArquivoTipo(null);
+  if (inputFileRef.current) inputFileRef.current.value = "";
+  setStatusDigitando(false);
+}, [mensagem, destinatario, arquivoBase64, arquivoTipo, arquivoNome, usuario, pegarHistorico, salvarHistorico, atualizarConversas]);
+
+const abrirConversa = useCallback(async (nomeContato) => {
+  if (!nomeContato || !usuario?.nome) return;
+  const nomeTrim = String(nomeContato).trim();
+  if (!nomeTrim) return;
+
+  setDestinatario(nomeTrim); setAtual(nomeTrim);
+
+  let dados = [];
+  try {
+    const res = await fetch(
+      `https://mercadoyangue-i3in.onrender.com/api/chat/historico/${encodeURIComponent(usuario.nome)}/${encodeURIComponent(nomeTrim)}`,
+      { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+    );
+    dados = res.ok ? await res.json() : pegarHistorico(nomeTrim);
+  } catch { dados = pegarHistorico(nomeTrim); }
+
+  const msgsNormalizadas = dados.map((m) => ({
+    ...m,
+    texto: m.texto || m.conteudo || "",
+    remetente: typeof m.remetente === "object" ? m.remetente.nome : m.remetente,
+    destinatario: typeof m.destinatario === "object" ? m.destinatario.nome : m.destinatario,
+    arquivo: m.arquivo || null,
+    imagem: m.imagem || null,
+    arquivoNome: m.arquivoNome || null,
+    arquivoTipo: m.arquivoTipo || null,
+  }));
+
+  setHistorico(msgsNormalizadas);
+  salvarHistorico(nomeTrim, msgsNormalizadas);
+  marcarComoLida(nomeTrim);
+  atualizarConversas();
+}, [usuario?.nome, pegarHistorico, salvarHistorico, marcarComoLida, atualizarConversas]);
+
+// -----------------------
+// Digitando
+// -----------------------
+const setStatusDigitando = useCallback((digitandoBool) => {
+  if (!destinatario || !usuario?.nome) return;
+  const key = `digitando_${gerarChaveChat(usuario.nome, destinatario)}`;
+  try {
+    localStorage.setItem(
+      key,
+      JSON.stringify({ digitando: Boolean(digitandoBool), usuario: usuario.nome, data: new Date().toISOString() })
+    );
+  } catch {}
+}, [destinatario, usuario?.nome, gerarChaveChat]);
+
+useEffect(() => {
+  if (!destinatario || !usuario?.nome) { setDigitandoDe(null); return; }
+  const key = `digitando_${gerarChaveChat(usuario.nome, destinatario)}`;
+  const interval = setInterval(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem(key));
+      if (s?.digitando && s?.usuario === destinatario) setDigitandoDe(destinatario);
+      else setDigitandoDe(null);
+    } catch { setDigitandoDe(null); }
+  }, 500); // mais responsivo
+  return () => clearInterval(interval);
+}, [destinatario, usuario?.nome, gerarChaveChat]);
+
+// Inputs
+const handleMensagemChange = (e) => {
+  setMensagem(e.target.value);
+  setStatusDigitando(true);
+  if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  typingTimeoutRef.current = setTimeout(() => setStatusDigitando(false), 1500);
+};
 
   const handleArquivoChange = (event) => {
     const file = event.target?.files?.[0]; if (!file) return;

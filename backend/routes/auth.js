@@ -1,10 +1,14 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto'); // Para gerar token de redefinição
+const nodemailer = require('nodemailer'); // Para enviar email
 const router = express.Router();
-const Usuario = require('../models/usuario'); // seu modelo Usuario.js
+const Usuario = require('../models/usuario'); // Modelo Usuario.js
 
-// Rota de registro
+// ==========================
+// Cadastro de usuário
+// ==========================
 router.post('/cadastro', async (req, res) => {
   let {
     nome,
@@ -14,7 +18,7 @@ router.post('/cadastro', async (req, res) => {
     provincia,
     municipio,
     localizacaoEspecifica,
-    formaPagamento,  // deixa, mas não será validado
+    formaPagamento,
     aceitouContrato,
   } = req.body;
 
@@ -23,29 +27,23 @@ router.post('/cadastro', async (req, res) => {
   }
 
   try {
-    // Verifica se email já existe
     const existe = await Usuario.findOne({ email });
     if (existe) return res.status(400).json({ msg: 'Email já registrado.' });
 
-    // Hash da senha
     const hashedSenha = await bcrypt.hash(senha, 10);
 
-    // Ajusta campos para cliente
     if (tipo === 'cliente') {
       formaPagamento = undefined;
       provincia = undefined;
       municipio = undefined;
       localizacaoEspecifica = undefined;
-      aceitouContrato = undefined; // clientes não precisam aceitar contrato
+      aceitouContrato = undefined;
     } else {
-      // Remove obrigatoriedade formaPagamento para vendedor/agricultor
-      // Apenas valida o aceite do contrato
       if (!aceitouContrato) {
         return res.status(400).json({ msg: 'Aceite do contrato é obrigatório para vendedores/agricultores.' });
       }
     }
 
-    // Log para debug (não logar senha real)
     console.log({
       nome,
       email,
@@ -58,7 +56,6 @@ router.post('/cadastro', async (req, res) => {
       aceitouContrato,
     });
 
-    // Cria usuário novo
     const novoUsuario = new Usuario({
       nome,
       email,
@@ -71,7 +68,6 @@ router.post('/cadastro', async (req, res) => {
       aceitouContrato,
     });
 
-    // Validação antes de salvar
     const erroValidacao = novoUsuario.validateSync();
     if (erroValidacao) {
       console.error('Erro de validação completo:', erroValidacao.errors);
@@ -79,15 +75,17 @@ router.post('/cadastro', async (req, res) => {
     }
 
     await novoUsuario.save();
-
     res.status(201).json({ msg: 'Usuário registrado com sucesso!' });
+
   } catch (err) {
     console.error('Erro ao registrar usuário:', err);
     res.status(500).json({ msg: 'Erro no servidor' });
   }
 });
 
-// Rota de login
+// ==========================
+// Login de usuário
+// ==========================
 router.post('/login', async (req, res) => {
   const { email, senha } = req.body;
 
@@ -105,12 +103,83 @@ router.post('/login', async (req, res) => {
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-
     res.json({ token, usuario: payload });
+
   } catch (err) {
     console.error('Erro no login:', err);
     res.status(500).json({ msg: 'Erro no servidor' });
   }
 });
 
+// ==========================
+// Solicitar redefinição de senha
+// ==========================
+router.post('/solicitar-redefinicao', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ msg: 'Email é obrigatório' });
+
+  try {
+    const usuario = await Usuario.findOne({ email });
+    if (!usuario) return res.status(404).json({ msg: 'Usuário não encontrado' });
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiracao = Date.now() + 3600 * 1000; // 1 hora
+    usuario.senhaResetToken = token;
+    usuario.senhaResetExp = expiracao;
+    await usuario.save();
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    const link = `${process.env.FRONTEND_URL}/redefinir-senha?token=${token}&email=${email}`;
+    await transporter.sendMail({
+      from: `"MercadoYangue" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Redefinição de senha",
+      html: `<p>Você solicitou redefinição de senha.</p>
+             <p>Clique no link abaixo para criar uma nova senha (válido 1h):</p>
+             <a href="${link}">${link}</a>`
+    });
+
+    res.json({ msg: 'Email de redefinição enviado com sucesso.' });
+
+  } catch (err) {
+    console.error('Erro ao enviar email de redefinição:', err);
+    res.status(500).json({ msg: 'Erro no servidor' });
+  }
+});
+
+// ==========================
+// Redefinir senha
+// ==========================
+router.post('/redefinir-senha', async (req, res) => {
+  const { email, token, novaSenha } = req.body;
+  if (!email || !token || !novaSenha) return res.status(400).json({ msg: 'Todos os campos são obrigatórios' });
+
+  try {
+    const usuario = await Usuario.findOne({ email, senhaResetToken: token });
+    if (!usuario) return res.status(400).json({ msg: 'Token inválido ou email incorreto' });
+    if (Date.now() > usuario.senhaResetExp) return res.status(400).json({ msg: 'Token expirado' });
+
+    usuario.senha = await bcrypt.hash(novaSenha, 10);
+    usuario.senhaResetToken = undefined;
+    usuario.senhaResetExp = undefined;
+    await usuario.save();
+
+    res.json({ msg: 'Senha redefinida com sucesso!' });
+
+  } catch (err) {
+    console.error('Erro ao redefinir senha:', err);
+    res.status(500).json({ msg: 'Erro no servidor' });
+  }
+});
+
 module.exports = router;
+
