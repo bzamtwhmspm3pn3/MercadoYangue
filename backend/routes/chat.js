@@ -99,4 +99,48 @@ router.get("/historico/:usuario1/:usuario2", async (req, res) => {
   }
 });
 
+// GET /api/chat/conversas/:usuarioId
+router.get("/conversas/:usuarioId", async (req, res) => {
+  const { usuarioId } = req.params;
+
+  try {
+    const uId = await resolveUsuarioId(usuarioId);
+    if (!uId) {
+      return res.status(404).json({ erro: "Usuário não encontrado" });
+    }
+
+    // Busca todas as mensagens onde o usuário é remetente ou destinatário
+    const mensagens = await Mensagem.find({
+      $or: [{ remetente: uId }, { destinatario: uId }]
+    })
+      .sort({ data: -1 })
+      .populate("remetente", "nome email")
+      .populate("destinatario", "nome email")
+      .lean();
+
+    // Agrupa por usuário (tipo lista de conversas)
+    const conversas = {};
+    mensagens.forEach(msg => {
+      const outro = msg.remetente._id.toString() === uId.toString()
+        ? msg.destinatario
+        : msg.remetente;
+
+      if (!conversas[outro._id]) {
+        conversas[outro._id] = {
+          usuario: outro,
+          ultimaMensagem: msg.conteudo || msg.arquivoNome || "(Arquivo enviado)",
+          data: msg.data,
+          tipo: msg.tipo
+        };
+      }
+    });
+
+    res.json(Object.values(conversas));
+  } catch (err) {
+    console.error("Erro ao buscar conversas:", err);
+    res.status(500).json({ erro: "Erro ao buscar conversas" });
+  }
+});
+
+
 module.exports = router;

@@ -7,6 +7,26 @@ const router = express.Router();
 const Usuario = require('../models/usuario');
 
 // ==========================
+// Função auxiliar: cria transporte de e-mail
+// ==========================
+function criarTransporter() {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.EMAIL_HOST || !process.env.EMAIL_PORT) {
+    console.warn('⚠️ Configuração de e-mail ausente. EMAIL_USER, EMAIL_PASS, EMAIL_HOST e EMAIL_PORT são obrigatórios.');
+    return null;
+  }
+
+  return nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT),
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+}
+
+// ==========================
 // Cadastro de usuário
 // ==========================
 router.post('/cadastro', async (req, res) => {
@@ -17,35 +37,32 @@ router.post('/cadastro', async (req, res) => {
   }
 
   try {
-    if (await Usuario.findOne({ email })) return res.status(400).json({ msg: 'Email já registrado.' });
+    if (await Usuario.findOne({ email })) {
+      return res.status(400).json({ msg: 'Email já registrado.' });
+    }
 
     const hashedSenha = await bcrypt.hash(senha, 10);
-    const dadosUsuario = {
-      nome,
-      email,
-      senha: hashedSenha,
-      tipo,
-    };
+    const dadosUsuario = { nome, email, senha: hashedSenha, tipo };
 
     if (tipo !== 'cliente') {
-      if (!aceitouContrato) return res.status(400).json({ msg: 'Aceite do contrato é obrigatório para vendedores/agricultores.' });
-      dadosUsuario.provincia = provincia;
-      dadosUsuario.municipio = municipio;
-      dadosUsuario.localizacaoEspecifica = localizacaoEspecifica;
-      dadosUsuario.formaPagamento = formaPagamento;
-      dadosUsuario.aceitouContrato = aceitouContrato;
+      if (!aceitouContrato) {
+        return res.status(400).json({ msg: 'Aceite do contrato é obrigatório para vendedores/agricultores.' });
+      }
+      Object.assign(dadosUsuario, { provincia, municipio, localizacaoEspecifica, formaPagamento, aceitouContrato });
     }
 
     const novoUsuario = new Usuario(dadosUsuario);
 
     const erroValidacao = novoUsuario.validateSync();
-    if (erroValidacao) return res.status(400).json({ msg: 'Erro de validação', detalhes: erroValidacao.errors });
+    if (erroValidacao) {
+      return res.status(400).json({ msg: 'Erro de validação', detalhes: erroValidacao.errors });
+    }
 
     await novoUsuario.save();
-    res.status(201).json({ msg: 'Usuário registrado com sucesso!' });
 
+    res.status(201).json({ msg: 'Usuário registrado com sucesso!' });
   } catch (err) {
-    console.error('Erro ao registrar usuário:', err);
+    console.error('❌ Erro ao registrar usuário:', err);
     res.status(500).json({ msg: 'Erro no servidor' });
   }
 });
@@ -68,9 +85,8 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.json({ token, usuario: payload });
-
   } catch (err) {
-    console.error('Erro no login:', err);
+    console.error('❌ Erro no login:', err);
     res.status(500).json({ msg: 'Erro no servidor' });
   }
 });
@@ -87,39 +103,31 @@ router.post('/esqueci-senha', async (req, res) => {
     if (!usuario) return res.status(404).json({ msg: 'Usuário não encontrado.' });
 
     const token = crypto.randomBytes(32).toString('hex');
-    const expiracao = Date.now() + 3600 * 1000; // 1 hora
     usuario.senhaResetToken = token;
-    usuario.senhaResetExp = expiracao;
+    usuario.senhaResetExp = Date.now() + 3600 * 1000; // 1 hora
     await usuario.save();
 
-    // Só tenta enviar email se variáveis existirem
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS && process.env.EMAIL_HOST && process.env.EMAIL_PORT) {
-      const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: parseInt(process.env.EMAIL_PORT),
-        secure: false,
-        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-      });
+    const transporter = criarTransporter();
 
+    if (transporter) {
       const link = `${process.env.FRONTEND_URL}/redefinir-senha?token=${token}&email=${email}`;
       await transporter.sendMail({
         from: `"MercadoYangue" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: "Redefinição de senha",
-        html: `<p>Você solicitou redefinição de senha.</p>
-               <p>Clique no link abaixo para criar uma nova senha (válido 1h):</p>
-               <a href="${link}">${link}</a>`,
+        html: `
+          <p>Você solicitou a redefinição de senha.</p>
+          <p>Clique no link abaixo para criar uma nova senha (válido por 1h):</p>
+          <a href="${link}">${link}</a>
+        `,
       });
-
       return res.json({ msg: 'Email de redefinição enviado com sucesso.' });
     } else {
-      // Fallback Render: só retorna token no corpo (não envia email)
-      console.warn('⚠️ Email não configurado, token retornado no corpo (apenas teste).');
-      return res.json({ msg: 'Token gerado, mas email não enviado. Use o token abaixo para testes.', token });
+      console.warn('⚠️ Email não configurado — token retornado apenas para teste.');
+      return res.json({ msg: 'Token gerado, mas email não enviado.', token });
     }
-
   } catch (err) {
-    console.error('Erro ao processar redefinição de senha:', err);
+    console.error('❌ Erro ao processar redefinição de senha:', err);
     res.status(500).json({ msg: 'Erro no servidor' });
   }
 });
@@ -129,7 +137,9 @@ router.post('/esqueci-senha', async (req, res) => {
 // ==========================
 router.post('/redefinir-senha', async (req, res) => {
   const { email, token, novaSenha } = req.body;
-  if (!email || !token || !novaSenha) return res.status(400).json({ msg: 'Todos os campos são obrigatórios.' });
+  if (!email || !token || !novaSenha) {
+    return res.status(400).json({ msg: 'Todos os campos são obrigatórios.' });
+  }
 
   try {
     const usuario = await Usuario.findOne({ email, senhaResetToken: token });
@@ -142,12 +152,44 @@ router.post('/redefinir-senha', async (req, res) => {
     await usuario.save();
 
     res.json({ msg: 'Senha redefinida com sucesso!' });
-
   } catch (err) {
-    console.error('Erro ao redefinir senha:', err);
+    console.error('❌ Erro ao redefinir senha:', err);
     res.status(500).json({ msg: 'Erro no servidor' });
   }
 });
 
+// ==========================
+// Enviar email de confirmação pós-cadastro
+// ==========================
+router.post('/enviar-confirmacao', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ msg: 'Email é obrigatório.' });
+
+  try {
+    const transporter = criarTransporter();
+
+    if (!transporter) {
+      return res.status(500).json({ msg: 'Serviço de email não configurado.' });
+    }
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: email,
+      subject: "Confirmação de cadastro",
+      html: `
+        <p>Bem-vindo(a) ao <b>Mercado Yangue</b>!</p>
+        <p>Seu cadastro foi concluído com sucesso.</p>
+        <p>Agora você pode fazer login e começar a usar a plataforma.</p>
+      `,
+    });
+
+    res.json({ msg: 'Email de confirmação enviado.' });
+  } catch (err) {
+    console.error('❌ Erro ao enviar email de confirmação:', err);
+    res.status(500).json({ msg: 'Falha ao enviar email.' });
+  }
+});
+
 module.exports = router;
+
 

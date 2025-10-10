@@ -163,43 +163,45 @@ useEffect(() => {
   window.socket = socket;
 
   const handleReceive = (msg) => {
-    try {
-      const novoMsg = {
-        ...msg,
-        texto: msg.texto || msg.conteudo || "",
-        remetente: typeof msg.remetente === "object" ? msg.remetente.nome : msg.remetente,
-        destinatario: typeof msg.destinatario === "object" ? msg.destinatario.nome : msg.destinatario,
-        imagem: msg.imagem || null,
-        arquivo: msg.arquivo || null,
-        arquivoNome: msg.arquivoNome || null,
-        arquivoTipo: msg.arquivoTipo || null,
-      };
+  try {
+    const novoMsg = {
+      ...msg,
+      texto: msg.texto || msg.conteudo || "",
+      remetente: typeof msg.remetente === "object" ? msg.remetente.nome : msg.remetente,
+      destinatario: typeof msg.destinatario === "object" ? msg.destinatario.nome : msg.destinatario,
+      imagem: msg.imagem || null,
+      arquivo: msg.arquivo || null,
+      arquivoNome: msg.arquivoNome || null,
+      arquivoTipo: msg.arquivoTipo || null,
+    };
 
-      const outro = novoMsg.remetente === usuario.nome ? novoMsg.destinatario : novoMsg.remetente;
-      const historicoAtual = pegarHistorico(outro);
-      const novoHistorico = [...historicoAtual, novoMsg];
-      salvarHistorico(outro, novoHistorico);
+    const outro = novoMsg.remetente === usuario.nome ? novoMsg.destinatario : novoMsg.remetente;
 
-      if (outro === destinatario) setHistorico(novoHistorico);
-      atualizarConversas();
+    // ✅ Adiciona sempre no histórico local
+    const historicoAtual = pegarHistorico(outro);
+    const novoHistorico = [...historicoAtual, novoMsg];
+    salvarHistorico(outro, novoHistorico);
 
-      // Notificação real e contagem de não lidas
-      if (novoMsg.remetente !== usuario.nome) {
-        const toastOpts = { toastId: novoMsg.data || undefined };
-        toast.info(`📩 Nova mensagem de ${novoMsg.remetente}`, toastOpts);
+    // ✅ Atualiza histórico se estiver visualizando a conversa
+    if (outro === destinatario) setHistorico(novoHistorico);
 
-        const chave = gerarChaveChat(usuario.nome, outro);
-        const status = JSON.parse(localStorage.getItem("statusMensagens") || "{}");
-        if (!status[chave]) status[chave] = {};
-        status[chave][usuario.nome] = (status[chave][usuario.nome] || 0) + 1;
-        localStorage.setItem("statusMensagens", JSON.stringify(status));
+    // ✅ Atualiza a lista de conversas sempre
+    atualizarConversas();
 
-        if (novoMsg.data) ultimaMsgIdRef.current = novoMsg.data;
-      }
-    } catch (e) {
-      console.warn("Erro handleReceive:", e);
+    // Notificação e contagem de não lidas
+    if (novoMsg.remetente !== usuario.nome) {
+      toast.info(`📩 Nova mensagem de ${novoMsg.remetente}`, { toastId: novoMsg.data || undefined });
+
+      const chave = gerarChaveChat(usuario.nome, outro);
+      const status = JSON.parse(localStorage.getItem("statusMensagens") || "{}");
+      if (!status[chave]) status[chave] = {};
+      status[chave][usuario.nome] = (status[chave][usuario.nome] || 0) + 1;
+      localStorage.setItem("statusMensagens", JSON.stringify(status));
     }
-  };
+  } catch (e) {
+    console.warn("Erro handleReceive:", e);
+  }
+};
 
   socket.on("receiveMessage", handleReceive);
 
