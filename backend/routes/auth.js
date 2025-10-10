@@ -44,18 +44,6 @@ router.post('/cadastro', async (req, res) => {
       }
     }
 
-    console.log({
-      nome,
-      email,
-      senha: '***',
-      tipo,
-      provincia,
-      municipio,
-      localizacaoEspecifica,
-      formaPagamento,
-      aceitouContrato,
-    });
-
     const novoUsuario = new Usuario({
       nome,
       email,
@@ -70,7 +58,6 @@ router.post('/cadastro', async (req, res) => {
 
     const erroValidacao = novoUsuario.validateSync();
     if (erroValidacao) {
-      console.error('Erro de validação completo:', erroValidacao.errors);
       return res.status(400).json({ msg: 'Erro de validação', detalhes: erroValidacao.errors });
     }
 
@@ -114,7 +101,7 @@ router.post('/login', async (req, res) => {
 // ==========================
 // Solicitar redefinição de senha
 // ==========================
-router.post('/solicitar-redefinicao', async (req, res) => {
+router.post('/esqueci-senha', async (req, res) => { // alterado para /esqueci-senha
   const { email } = req.body;
   if (!email) return res.status(400).json({ msg: 'Email é obrigatório' });
 
@@ -182,4 +169,3 @@ router.post('/redefinir-senha', async (req, res) => {
 });
 
 module.exports = router;
-
