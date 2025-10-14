@@ -485,10 +485,10 @@ const vendedoresDoMes = Object.keys(cadastrosPorVendedor).filter(
             try {
               const token = localStorage.getItem("token");
               const res = await axios.put(
-                ` `https://mercadoyangue-i3in.onrender.com/api/produtos/${produtoAtualizado._id}`,
-                produtoAtualizado,
-                { headers: { Authorization: `Bearer ${token}` } }
-              );
+  `https://mercadoyangue-i3in.onrender.com/api/produtos/${produtoAtualizado._id}`,
+  produtoAtualizado,
+  { headers: { Authorization: `Bearer ${token}` } }
+);
 
               const atualizadoDoServidor = res.data;
 
