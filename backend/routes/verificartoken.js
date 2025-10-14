@@ -10,11 +10,10 @@ function verificarToken(req, res, next) {
   const token = authHeader.split(' ')[1];
 
   try {
-    // Verifica o token com a chave secreta
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Ajusta req.user para usar nas rotas protegidas
-    req.user = { id: decoded._id, nome: decoded.nome, email: decoded.email };
+    // Corrigido: usar 'id' do payload do token
+    req.user = { _id: decoded.id, nome: decoded.nome, tipo: decoded.tipo, email: decoded.email };
 
     next();
   } catch (err) {
@@ -23,4 +22,3 @@ function verificarToken(req, res, next) {
 }
 
 module.exports = verificarToken;
-

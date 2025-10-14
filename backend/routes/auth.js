@@ -27,6 +27,26 @@ function criarTransporter() {
 }
 
 // ==========================
+// Middleware de autenticação
+// ==========================
+function authMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ msg: 'Token não fornecido' });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = { _id: decoded.id, nome: decoded.nome, tipo: decoded.tipo };
+    next();
+  } catch (err) {
+    return res.status(401).json({ msg: 'Token inválido' });
+  }
+}
+
+// ==========================
 // Cadastro de usuário
 // ==========================
 router.post('/cadastro', async (req, res) => {
@@ -88,6 +108,31 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     console.error('❌ Erro no login:', err);
     res.status(500).json({ msg: 'Erro no servidor' });
+  }
+});
+
+// ==========================
+// Solicitar selo de confiança
+// ==========================
+router.post('/solicitar-selo', authMiddleware, async (req, res) => {
+  try {
+    const vendedor = await Usuario.findById(req.user._id);
+
+    if (!vendedor || !['vendedor', 'agricultor'].includes(vendedor.tipo)) {
+      return res.status(404).json({ msg: "Usuário inválido para solicitar selo" });
+    }
+
+    if (vendedor.seloSolicitado) {
+      return res.status(400).json({ msg: "Selo já solicitado" });
+    }
+
+    vendedor.seloSolicitado = true;
+    await vendedor.save();
+
+    return res.status(200).json({ msg: "Selo solicitado com sucesso!" });
+  } catch (err) {
+    console.error("Erro ao solicitar selo:", err);
+    return res.status(500).json({ msg: "Erro interno" });
   }
 });
 

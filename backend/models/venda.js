@@ -21,21 +21,24 @@ const EntregadorSchema = new mongoose.Schema({
 
 // Subschema factura
 const FacturaSchema = new mongoose.Schema({
-  tipo: { type: String, enum: ["manual", "autofactura"], default: "manual" }
+  tipo: { type: String, enum: ["manual", "autofactura"], default: "manual" },
+  numero: { type: String },
+  dataEmissao: { type: Date, default: Date.now }
 }, { _id: false });
 
 // Schema principal
 const VendaSchema = new mongoose.Schema({
   comprador: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario", required: true },
   vendedor: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario", required: true },
-  produtos: [ProdutoVendaSchema],
-  totalGeral: { type: Number, required: true },
+  produtos: { type: [ProdutoVendaSchema], required: true },
+  totalGeral: { type: Number, default: 0 },
   entregador: EntregadorSchema,
-  factura: FacturaSchema
+  factura: FacturaSchema,
+  estado: { type: String, enum: ["pendente", "concluída", "cancelada"], default: "pendente" }
 }, { timestamps: true });
 
 // Middleware para calcular totalGeral
-VendaSchema.pre("save", function(next) {
+VendaSchema.pre("save", function (next) {
   this.totalGeral = this.produtos.reduce((acc, p) => acc + p.preco * p.quantidade, 0);
   next();
 });

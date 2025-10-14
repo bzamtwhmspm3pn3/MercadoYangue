@@ -40,19 +40,9 @@ export default function AbaProdutos({
     () => JSON.parse(localStorage.getItem("favoritos") || "[]")
   );
 
-const [modalAberto, setModalAberto] = useState(false);
-const [produtoSelecionadoModal, setProdutoSelecionadoModal] = useState(null);
-const [quantidadeSelecionada, setQuantidadeSelecionada] = useState(1);
-
-
-  const fetchProdutos = async () => {
-    const token = localStorage.getItem("token");
-    const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/produtos", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const dados = await res.json();
-    setProdutos(dados);
-  };
+  const [modalAberto, setModalAberto] = useState(false);
+  const [produtoSelecionadoModal, setProdutoSelecionadoModal] = useState(null);
+  const [quantidadeSelecionada, setQuantidadeSelecionada] = useState(1);
 
   const handleChange = (e) => {
     setFiltros({ ...filtros, [e.target.name]: e.target.value });
@@ -66,37 +56,48 @@ const [quantidadeSelecionada, setQuantidadeSelecionada] = useState(1);
     localStorage.setItem("favoritos", JSON.stringify(novos));
   };
 
-const abrirModalCarrinho = (produto) => {
-  setProdutoSelecionadoModal(produto);
-  setQuantidadeSelecionada(1);
-  setModalAberto(true);
-};
+  const abrirModalCarrinho = (produto) => {
+    if (!usuario) {
+      if (
+        window.confirm(
+          "Para adicionar ao carrinho precisa iniciar sessão. Deseja iniciar sessão agora?"
+        )
+      ) {
+        setAbaAtiva && setAbaAtiva("login");
+      }
+      return;
+    }
 
+    if (usuario.tipo !== "cliente") return;
 
-const confirmarAdicionarCarrinho = async () => {
-  if (!produtoSelecionadoModal) return;
-  try {
-    const token = localStorage.getItem("token");
-    const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/carrinho/add", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        produtoId: produtoSelecionadoModal._id,
-        quantidade: quantidadeSelecionada,
-      }),
-    });
-    if (!res.ok) throw new Error("Erro ao adicionar ao carrinho");
-    const dados = await res.json();
-    adicionarNoCarrinho(dados.carrinho); // atualiza o estado do carrinho
-    setModalAberto(false);
-  } catch (err) {
-    alert(err.message);
-  }
-};
+    setProdutoSelecionadoModal(produto);
+    setQuantidadeSelecionada(1);
+    setModalAberto(true);
+  };
 
+  const confirmarAdicionarCarrinho = async () => {
+    if (!produtoSelecionadoModal) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/carrinho/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          produtoId: produtoSelecionadoModal._id,
+          quantidade: quantidadeSelecionada,
+        }),
+      });
+      if (!res.ok) throw new Error("Erro ao adicionar ao carrinho");
+      const dados = await res.json();
+      adicionarNoCarrinho(dados.carrinho);
+      setModalAberto(false);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
   useEffect(() => {
     let filtrados = produtos;
@@ -140,11 +141,11 @@ const confirmarAdicionarCarrinho = async () => {
     }
   };
 
-const produtosVisiveis = usuario?.tipo === "vendedor" 
-  ? produtosFiltrados.filter(p => p.vendedor?.nome === usuario.nome)
-  : produtosFiltrados;
+  const produtosVisiveis = usuario?.tipo === "vendedor" 
+    ? produtosFiltrados.filter(p => p.vendedor?.nome === usuario.nome)
+    : produtosFiltrados;
 
- const vendedoresUnicos = [
+  const vendedoresUnicos = [
   ...new Set(
     produtosVisiveis
       .filter(p => !(usuario?.tipo === "vendedor" && p.vendedor?.nome !== usuario.nome))
@@ -152,18 +153,133 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
   )
 ].sort((a, b) => a.localeCompare(b));
 
+// 🔹 Limites para selo e vendedor do mês
+const LIMITE_SELO_VENDAS = 5;    // mínimo de vendas no mês para selo
+const LIMITE_SELO_CADASTRO = 4;  // mínimo de produtos cadastrados no mês para selo
+
+// 🔹 Total de vendas por vendedor
+const vendasPorVendedor = produtosFiltrados.reduce((acc, p) => {
+  const nome = p.vendedor?.nome || "Desconhecido";
+  acc[nome] = (acc[nome] || 0) + (p.vendas || 0);
+  return acc;
+}, {});
+
+// 🔹 Total de produtos cadastrados por vendedor
+const cadastrosPorVendedor = produtosFiltrados.reduce((acc, p) => {
+  const nome = p.vendedor?.nome || "Desconhecido";
+  acc[nome] = (acc[nome] || 0) + 1;
+  return acc;
+}, {});
+
+// 🔹 Produtos mais comprados (para aba destaque)
+const produtosMaisComprados = [...produtosFiltrados]
+  .sort((a, b) => (b.vendas || 0) - (a.vendas || 0))
+  .slice(0, 5);
+
+// 🔹 Vendedores do mês (quem bate o mínimo de cadastros ou vendas)
+const vendedoresDoMes = Object.keys(cadastrosPorVendedor).filter(
+  (vendedor) =>
+    (cadastrosPorVendedor[vendedor] || 0) >= LIMITE_SELO_CADASTRO ||
+    (vendasPorVendedor[vendedor] || 0) >= LIMITE_SELO_VENDAS
+);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 bg-gradient-to-b from-green-50 to-yellow-50">
+    <div className="max-w-7xl mx-auto px-4 py-6 bg-gradient-to-b from-green-100 to-yellow-100">
       <div className="flex flex-col items-center mt-4 mb-4">
-    <h1 className="text-4xl font-extrabold text-green-800 text-center">
-    A Praça Digital do Campo à Cidade!
-  </h1>
-</div>
+        <h1 className="text-4xl font-extrabold text-green-900 text-center">
+          A Praça Digital do Campo à Cidade!
+        </h1>
+      </div>
 
       <MensagemMultilingue />
 
-      <div className="bg-[#5C4033] border border-yellow-500 shadow p-4 rounded-lg mb-6">
+      {/* 🔹 Produtos em Destaque */}
+<div className="mb-8 p-4 bg-green-700 rounded-lg shadow-lg text-white">
+  <h2 className="text-2xl font-bold mb-4 text-center">
+    ⭐ Produtos Mais Comprados e Vendedores do Mês
+  </h2>
+
+  <Carousel showThumbs={false} infiniteLoop autoPlay showStatus={false} showArrows>
+    {produtosMaisComprados.map((produto) => (
+      <div key={produto._id} className="bg-green-600 p-4 rounded shadow hover:shadow-lg relative">
+        <h4 className="text-lg font-semibold text-center">{produto.nome}</h4>
+        <img
+           src={produto.imagem} // URL do Cloudinary
+  alt={produto.nome}
+          alt={produto.nome}
+          className="mx-auto h-48 object-contain cursor-pointer"
+          onClick={() => {
+            if (usuario) {
+              setProdutoSelecionado(produto);
+              setAbaAtiva && setAbaAtiva("detalhes");
+            } else {
+              setAbaAtiva && setAbaAtiva("login");
+            }
+          }}
+        />
+        <p className="text-center font-bold">{formatarKz(produto.preco)}</p>
+      </div>
+    ))}
+  </Carousel>
+
+  {/* 🔹 Vendedores do Mês - Ticker Reversível */}
+  <div className="mt-6 text-center overflow-hidden relative h-16">
+    <h3 className="text-lg font-semibold mb-2 text-white">Vendedores do Mês</h3>
+    {vendedoresDoMes.length === 0 ? (
+      <p className="text-yellow-400">Nenhum vendedor elegível este mês.</p>
+    ) : (
+      <div className="absolute whitespace-nowrap animate-marquee-back-forth">
+        <span className="inline-block mx-8 text-xl font-bold text-white">
+          🎉 Parabéns ao {vendedoresDoMes.length === 1 ? "nosso vendedor do mês" : "nossos vendedores do mês"}{" "}
+          <span className="underline">{vendedoresDoMes.join(", ")}</span>! 🏅
+        </span>
+      </div>
+    )}
+  </div>
+
+  {/* 🔹 Dica Motivacional */}
+  <div className="mt-4 text-center overflow-hidden relative h-12">
+    <div className="absolute whitespace-nowrap animate-marquee-slow">
+      <span className="inline-block text-lg font-semibold text-yellow-300 animate-glow-slow">
+        💡 Desejas também ser vendedor do mês? Continue a cadastrar e vender mais produtos! 🚀
+      </span>
+    </div>
+  </div>
+
+  <style jsx>{`
+    /* Ticker Vendedores - vai e volta */
+    @keyframes marquee-back-forth {
+      0% { transform: translateX(100%); }
+      50% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .animate-marquee-back-forth {
+      display: inline-block;
+      animation: marquee-back-forth 10s linear infinite;
+    }
+
+    /* Ticker Motivacional - contínuo da direita para a esquerda */
+    @keyframes marquee-slow {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    .animate-marquee-slow {
+      display: inline-block;
+      animation: marquee-slow 20s linear infinite;
+    }
+
+    /* Glow Motivacional bem discreto */
+    @keyframes glow-slow {
+      0%, 100% { text-shadow: 0 0 1px #fff; }
+      50% { text-shadow: 0 0 3px #fff, 0 0 5px #ffea00; }
+    }
+    .animate-glow-slow {
+      animation: glow-slow 3s ease-in-out infinite;
+    }
+  `}</style>
+</div>
+
+<div className="bg-[#5C4033] border border-yellow-500 shadow p-4 rounded-lg mb-6">
         <h2 className="text-lg font-semibold text-yellow-400 mb-2 text-center">
           Filtros de Busca
         </h2>
@@ -182,22 +298,32 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
         </div>
       </div>
 
+      {/* 🔹 Produtos por vendedor */}
       {vendedoresUnicos.length === 0 ? (
-        <p className="text-center text-yellow-400">Nenhum produto encontrado.</p>
+        <p className="text-center text-yellow-600">Nenhum produto encontrado.</p>
       ) : (
         vendedoresUnicos.map((vendedor) => {
           const produtosDoVendedor = produtosVisiveis.filter(
-    (p) => (p.vendedor?.nome || "Desconhecido") === vendedor
-  );
+            (p) => (p.vendedor?.nome || "Desconhecido") === vendedor
+          );
+
+          const seloPorVenda = (vendasPorVendedor[vendedor] || 0) >= LIMITE_SELO_VENDAS;
+          const seloPorCadastro = (cadastrosPorVendedor[vendedor] || 0) >= LIMITE_SELO_CADASTRO;
 
           return (
             <div key={vendedor} className="mb-10 border-b pb-6">
-              <h3 className="text-xl font-bold text-green-800 mb-2">
+              <h3 className="text-xl font-bold text-green-800 mb-2 flex items-center gap-2">
                 🧑🏿‍🌾{" "}
                 {(produtosDoVendedor[0]?.vendedor?.genero === "feminino"
                   ? "Vendedora"
                   : "Vendedor") + ": "}{" "}
                 {vendedor}
+                {seloPorCadastro && (
+                  <span title="Selo de Cadastro">🏅</span>
+                )}
+                {seloPorVenda && (
+                  <span title="Selo de Vendas">💎</span>
+                )}
               </h3>
 
               <Carousel
@@ -211,7 +337,7 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
                 {produtosDoVendedor.map((produto) => (
                   <div
                     key={produto._id}
-                    className="bg-white p-4 rounded shadow hover:shadow-md transition relative"
+                    className="bg-white p-4 rounded shadow hover:shadow-lg transition relative"
                   >
                     <button
                       onClick={() => toggleFavorito(produto._id)}
@@ -221,19 +347,18 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
                     </button>
 
                     <img
-  src={produto.imagem} // URL do Cloudinary
+                      src={produto.imagem} // URL do Cloudinary
   alt={produto.nome}
-  className="mx-auto h-48 object-contain cursor-pointer"
-  onClick={() => {
-    if (usuario) {
-      setProdutoSelecionado(produto);
-      setAbaAtiva && setAbaAtiva("detalhes");
-    } else {
-      alert("Por favor, inicie sessão para ver os detalhes.");
-    }
-  }}
-/>
-
+                      className="mx-auto h-48 object-contain cursor-pointer"
+                      onClick={() => {
+                        if (usuario) {
+                          setProdutoSelecionado(produto);
+                          setAbaAtiva && setAbaAtiva("detalhes");
+                        } else {
+                          alert("Por favor, inicie sessão para ver os detalhes.");
+                        }
+                      }}
+                    />
 
                     <h4 className="text-lg font-semibold mt-2 text-center text-green-700">
                       {produto.nome}
@@ -254,9 +379,8 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
                     </p>
 
                     <p className="text-center text-sm text-green-800">
-  Disponível: {produto.quantidade - (produto.reservados || 0)} {produto.unidade || "un"}
-</p>
-
+                      Disponível: {produto.quantidade - (produto.reservados || 0)} {produto.unidade || "un"}
+                    </p>
 
                     <p className="text-center text-yellow-600 text-sm mt-1">
                       {renderEstrelas(produto.vendas || 0)}
@@ -269,8 +393,7 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
                     )}
 
                     <p className="text-center text-sm text-green-800">
-                      {produto.localizacaoDetalhada ||
-                        `${produto.provincia} - ${produto.municipio}`}
+                      {produto.localizacaoDetalhada || `${produto.provincia} - ${produto.municipio}`}
                     </p>
 
                     <p className="text-xs text-center text-green-900 line-clamp-2 mt-1">
@@ -278,66 +401,41 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
                     </p>
 
                     <div className="flex justify-center mt-3 gap-2 flex-wrap">
-{/* 🔹 Botões apenas para clientes */}
-{usuario?.tipo === "cliente" && (
-  <div className="flex gap-2">
-    <button
-      onClick={() => abrirModalCarrinho(produto)}
-      disabled={esgotado(produto)}
-      className={`px-3 py-1 text-sm rounded ${
-        esgotado(produto)
-          ? "bg-yellow-400 text-white"
-          : "bg-green-700 text-white hover:bg-green-800"
-      }`}
-    >
-      {esgotado(produto) ? "Indisponível" : "Adicionar ao carrinho"}
-    </button>
+                      {(usuario?.tipo === "cliente" || !usuario) && (
+                        <button
+                          onClick={() => abrirModalCarrinho(produto)}
+                          disabled={esgotado(produto)}
+                          className={`px-3 py-1 text-sm rounded ${
+                            esgotado(produto)
+                              ? "bg-yellow-400 text-white"
+                              : "bg-green-700 text-white hover:bg-green-800"
+                          }`}
+                        >
+                          {usuario ? (esgotado(produto) ? "Indisponível" : "Adicionar ao carrinho") : "Inicie sessão para adicionar ao carrinho"}
+                        </button>
+                      )}
 
-        <button
-  className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md shadow-md transition duration-200 font-semibold text-sm"
-  onClick={() => {
-    // Armazena o vendedor selecionado
-    localStorage.setItem(
-      "vendedorSelecionado",
-      JSON.stringify({
-        id: produto.vendedor?._id,
-        nome: produto.vendedor?.nome,
-      })
-    );
-
-    // Abre a aba do chat
-    setAbaAtiva && setAbaAtiva("chat");
-  }}
->
-  💬 Conversar com o Vendedor
-</button>
-
-  </div>
-)}
-
-
-  {/* 🔹 Botões apenas para o próprio vendedor */}
-  {usuario?.tipo === "vendedor" && usuario?.nome === produto.vendedor?.nome && (
-    <>
-      <button
-        onClick={(e) => excluirProduto(produto._id, e)}
-        className="px-8 py-1 bg-yellow-800 text-white rounded text-sm hover:bg-yellow-900"
-      >
-        Eliminar
-      </button>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setProdutoParaEditar(produto);
-          setMostrarModalEditar(true);
-        }}
-        className="px-8 py-1 bg-green-800 text-white rounded text-sm hover:bg-green-900"
-      >
-        Editar
-      </button>
-    </>
-  )}
-</div>
+                      {usuario?.tipo === "vendedor" && usuario?.nome === produto.vendedor?.nome && (
+                        <>
+                          <button
+                            onClick={(e) => excluirProduto(produto._id, e)}
+                            className="px-8 py-1 bg-yellow-800 text-white rounded text-sm hover:bg-yellow-900"
+                          >
+                            Eliminar
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setProdutoParaEditar(produto);
+                              setMostrarModalEditar(true);
+                            }}
+                            className="px-8 py-1 bg-green-800 text-white rounded text-sm hover:bg-green-900"
+                          >
+                            Editar
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 ))}
               </Carousel>
@@ -346,78 +444,75 @@ const produtosVisiveis = usuario?.tipo === "vendedor"
         })
       )}
 
-
-
-{modalAberto && produtoSelecionadoModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-    <div className="bg-white p-6 rounded-lg w-96 shadow-lg">
-      <h3 className="text-xl font-bold mb-4">{produtoSelecionadoModal.nome}</h3>
-      <p className="mb-2">
-        Disponível: {produtoSelecionadoModal.quantidade - (produtoSelecionadoModal.reservados || 0)} {produtoSelecionadoModal.unidade || "un"}
-      </p>
-      <input
-        type="number"
-        min="1"
-        max={produtoSelecionadoModal.quantidade - (produtoSelecionadoModal.reservados || 0)}
-        value={quantidadeSelecionada}
-        onChange={(e) => setQuantidadeSelecionada(Number(e.target.value))}
-        className="border p-2 w-full mb-4"
-      />
-      <div className="flex justify-end gap-2">
-        <button
-          onClick={() => setModalAberto(false)}
-          className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
-        >
-          Cancelar
-        </button>
-        <button
-          onClick={confirmarAdicionarCarrinho}
-          className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
-        >
-          Adicionar ao Carrinho
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      {modalAberto && produtoSelecionadoModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg w-96 shadow-lg">
+            <h3 className="text-xl font-bold mb-4">{produtoSelecionadoModal.nome}</h3>
+            <p className="mb-2">
+              Disponível: {produtoSelecionadoModal.quantidade - (produtoSelecionadoModal.reservados || 0)} {produtoSelecionadoModal.unidade || "un"}
+            </p>
+            <input
+              type="number"
+              min="1"
+              max={produtoSelecionadoModal.quantidade - (produtoSelecionadoModal.reservados || 0)}
+              value={quantidadeSelecionada}
+              onChange={(e) => setQuantidadeSelecionada(Number(e.target.value))}
+              className="border p-2 w-full mb-4"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setModalAberto(false)}
+                className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarAdicionarCarrinho}
+                className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+              >
+                Adicionar ao Carrinho
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {mostrarModalEditar && produtoParaEditar && (
-  <ModalEditarProduto
-    produto={produtoParaEditar}
-    onClose={() => setMostrarModalEditar(false)}
-    onAtualizar={async (produtoAtualizado) => {
-      try {
-        const token = localStorage.getItem("token");
-        // Atualiza no backend
-        const res = await axios.put(
-          `https://mercadoyangue-i3in.onrender.com/api/produtos/${produtoAtualizado._id}`,
-          produtoAtualizado,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        <ModalEditarProduto
+          produto={produtoParaEditar}
+          onClose={() => setMostrarModalEditar(false)}
+          onAtualizar={async (produtoAtualizado) => {
+            try {
+              const token = localStorage.getItem("token");
+              const res = await axios.put(
+                ` `https://mercadoyangue-i3in.onrender.com/api/produtos/${produtoAtualizado._id}`,
+                produtoAtualizado,
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
 
-        const atualizadoDoServidor = res.data;
+              const atualizadoDoServidor = res.data;
 
-        // Atualiza estado local
-        setProdutos((prev) =>
-          prev.map((p) =>
-            p._id === atualizadoDoServidor._id ? atualizadoDoServidor : p
-          )
-        );
-        setProdutosFiltrados((prev) =>
-          prev.map((p) =>
-            p._id === atualizadoDoServidor._id ? atualizadoDoServidor : p
-          )
-        );
+              setProdutos((prev) =>
+                prev.map((p) =>
+                  p._id === atualizadoDoServidor._id ? atualizadoDoServidor : p
+                )
+              );
+              setProdutosFiltrados((prev) =>
+                prev.map((p) =>
+                  p._id === atualizadoDoServidor._id ? atualizadoDoServidor : p
+                )
+              );
 
-        setMostrarModalEditar(false);
-        alert("Produto atualizado com sucesso!");
-      } catch (err) {
-        console.error("Erro ao atualizar produto:", err);
-        alert("Falha ao atualizar produto. Ver console.");
-      }
-    }}
-  />
-)}
+              setMostrarModalEditar(false);
+              alert("Produto atualizado com sucesso!");
+            } catch (err) {
+              console.error("Erro ao atualizar produto:", err);
+              alert("Falha ao atualizar produto. Ver console.");
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
+

@@ -11,7 +11,7 @@ const formatarKz = (valor) =>
     maximumFractionDigits: 2,
   }).format(valor);
 
-function AbaCarrinho({ carrinho, setCarrinho, usuario, enviarMensagemChat, navigateToChat }) {
+function AbaCarrinho({ carrinho, setCarrinho, usuario, enviarMensagemChat, navigateToChat,setAbaAtiva }) {
   const [confirmarPagamento, setConfirmarPagamento] = useState(false);
   const [historicoCarrinhos, setHistoricoCarrinhos] = useState([]);
 
@@ -193,8 +193,20 @@ function AbaCarrinho({ carrinho, setCarrinho, usuario, enviarMensagemChat, navig
   )}
 </div>
 
-      {/* Carrinho ativo (direita) */}
-      <div className="w-2/3 bg-white p-8 rounded-2xl shadow-xl text-gray-800">
+     {/* Carrinho ativo (direita) */}
+<div className="w-2/3 bg-white p-8 rounded-2xl shadow-xl text-gray-800">
+
+   {/* 🔹 Botão Voltar à Praça */}
+<div className="mb-4">
+  <button
+    onClick={() => setAbaAtiva("produtos")} // volta para a praça
+    className="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded-2xl shadow-md transition flex items-center gap-2"
+  >
+    🌾 Voltar à Praça
+  </button>
+</div>
+
+
         <h2 className="text-3xl font-extrabold text-green-700 mb-6 text-center">🛒 Carrinho de Compras</h2>
         {carrinho.length === 0 ? (
           <p className="text-center text-gray-600 text-lg">O carrinho está vazio.</p>

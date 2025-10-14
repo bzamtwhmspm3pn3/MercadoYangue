@@ -9,8 +9,9 @@ import AbaChat from './components/AbaChat';
 import AbaProdutos from "./components/AbaProdutos";
 import AbaCarrinho from './components/AbaCarrinho';
 import PainelFBI from "./pages/dados/dados";
-
-
+import AbaAjuda from "./components/AbaAjuda";
+import AbaGuiaUtilizacao from "./components/AbaGuiaUtilizacao";
+import FooterMercadoYangue from "./components/FooterMercadoYangue";
 
 
 // Componente AbaQuemSomos
@@ -758,7 +759,7 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
               onClick={() => setAbaAtiva('login')}
               className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded transition"
             >
-              Login/Cadastro
+              Iniciar Sessão/Cadastrar-se
             </button>
           ) : (
             <div className="flex items-center gap-4">
@@ -846,20 +847,18 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
   usuario={usuario}
   setAbaAtiva={setAbaAtiva}
 />
-
         )}
 
         {abaAtiva === 'carrinho' && (
   <AbaCarrinho
-  carrinho={carrinho}
-  setCarrinho={setCarrinho}
-  usuario={usuario}
-  enviarMensagemChat={enviarMensagemChat}
-  navigateToChat={navigateToChat} // 
-/>
-
+    carrinho={carrinho}
+    setCarrinho={setCarrinho}
+    usuario={usuario}
+    enviarMensagemChat={enviarMensagemChat}
+    navigateToChat={navigateToChat}
+    setAbaAtiva={setAbaAtiva} 
+  />
 )}
-
 
 {abaAtiva === 'confirmarPagamento' && (
   <AuthProvider>
@@ -900,6 +899,8 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
   <AbaChat usuario={usuario} />
 )}
 
+{abaAtiva === "ajuda" && <AbaAjuda />}
+{abaAtiva === "guia" && <AbaGuiaUtilizacao />}
 
 
         {abaAtiva === 'quemSomos' && <AbaQuemSomos />}
@@ -917,89 +918,89 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
     <h2 className="text-2xl font-bold mb-4">Cadastrar Produto</h2>
 
     <form
-      onSubmit={async (e) => {
-        e.preventDefault();
-        const form = e.target;
+  onSubmit={async (e) => {
+    e.preventDefault();
+    const form = e.target;
 
-        const formData = new FormData(form);
+    const formData = new FormData(form);
 
-        const nome = formData.get('nome');
-        const preco = parseFloat(formData.get('preco'));
-        const quantidade = parseInt(formData.get('quantidade'), 10);
-        const unidade = formData.get('unidade');
-        const imagem = formData.get('imagem'); // File
+    const nome = formData.get('nome');
+    const preco = parseFloat(formData.get('preco'));
+    const quantidade = parseInt(formData.get('quantidade'), 10);
+    const unidade = formData.get('unidade');
+    const imagem = formData.get('imagem');
+    const provincia = formData.get('provincia');
+    const municipio = formData.get('municipio');
+    const localizacaoDetalhada = formData.get('localizacaoDetalhada');
+    const contactos = formData.get('contactos');
+    const descricao = formData.get('descricao');
+    const nomeVendedor = usuario.nome;
 
-        const provincia = formData.get('provincia');
-        const municipio = formData.get('municipio');
-        const localizacaoDetalhada = formData.get('localizacaoDetalhada');
-        const contactos = formData.get('contactos');
-        const descricao = formData.get('descricao');
-        const nomeVendedor = usuario.nome;
+    if (!nome || isNaN(preco) || preco <= 0 || isNaN(quantidade) || quantidade < 0 || !imagem) {
+      alert('Por favor, preencha todos os campos obrigatórios corretamente.');
+      return;
+    }
 
-        if (!nome || isNaN(preco) || preco <= 0 || isNaN(quantidade) || quantidade < 0 || !imagem) {
-          alert('Por favor, preencha todos os campos obrigatórios corretamente.');
-          return;
-        }
+    const termosBanidos = [
+      "carro","carros","automóvel","moto","motorizada","casa","apartamento","roupa","calça","camisa",
+      "tênis","sapato","telefone","smartphone","computador","tv","geladeira","sofá","cadeira","relógio","perfume"
+    ];
 
-        const termosBanidos = [
-          "carro","carros","automóvel","moto","motorizada","casa","apartamento","roupa","calça","camisa",
-          "tênis","sapato","telefone","smartphone","computador","tv","geladeira","sofá","cadeira","relógio","perfume"
-        ];
+    const textoCompleto = `${nome} ${descricao}`.toLowerCase();
+    const contemTermoBanido = termosBanidos.some(termo => textoCompleto.includes(termo));
 
-        const textoCompleto = `${nome} ${descricao}`.toLowerCase();
-        const contemTermoBanido = termosBanidos.some(termo => textoCompleto.includes(termo));
+    if (contemTermoBanido) {
+      alert("O produto não está alinhado com a essência do Mercado Yangue. Apenas produtos ligados à agricultura, pesca, criação ou natureza do campo são permitidos.");
+      return;
+    }
 
-        if (contemTermoBanido) {
-          alert("O produto não está alinhado com a essência do Mercado Yangue. Apenas produtos ligados à agricultura, pesca, criação ou natureza do campo são permitidos.");
-          return;
-        }
+    const envio = new FormData();
+    envio.append('nome', nome);
+    envio.append('preco', preco);
+    envio.append('quantidade', quantidade);
+    envio.append('unidade', unidade);
+    envio.append('imagem', imagem);
+    envio.append('provincia', provincia);
+    envio.append('municipio', municipio);
+    envio.append('localizacaoDetalhada', localizacaoDetalhada);
+    envio.append('contactos', contactos);
+    envio.append('descricao', descricao);
+    envio.append('nomeVendedor', nomeVendedor);
+    envio.append('formaPagamento', JSON.stringify(formaPagamento));
 
-        const envio = new FormData();
-        envio.append('nome', nome);
-        envio.append('preco', preco);
-        envio.append('quantidade', quantidade);
-        envio.append('unidade', unidade);
-        envio.append('imagem', imagem); // envia o arquivo correto
-        envio.append('provincia', provincia);
-        envio.append('municipio', municipio);
-        envio.append('localizacaoDetalhada', localizacaoDetalhada);
-        envio.append('contactos', contactos);
-        envio.append('descricao', descricao);
-        envio.append('nomeVendedor', nomeVendedor);
-        envio.append('formaPagamento', JSON.stringify(formaPagamento));
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch("https://mercadoyangue-i3in.onrender.com/api/produtos", {
+        method: 'POST',
+        body: envio,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        try {
-          const token = localStorage.getItem('token');
-          const response = await fetch("https://mercadoyangue-i3in.onrender.com/api/produtos", {
-            method: 'POST',
-            body: envio,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (response.ok) {
-            alert('Produto cadastrado com sucesso!');
-            form.reset();
-          } else {
-            const erro = await response.json();
-            console.error('Erro detalhado:', erro);
-            alert('Erro ao cadastrar produto:\n' + (erro.message || JSON.stringify(erro)));
-          }
-        } catch (error) {
-          alert('Erro de rede ou servidor: ' + error.message);
-        }
-      }}
-      className="flex flex-col gap-4"
-      encType="multipart/form-data" // ✅ ajuste principal
-    >
+      if (response.ok) {
+        alert('Produto cadastrado com sucesso!');
+        form.reset();
+      } else {
+        const erro = await response.json();
+        console.error('Erro detalhado:', erro);
+        alert('Erro ao cadastrar produto:\n' + (erro.message || JSON.stringify(erro)));
+      }
+    } catch (error) {
+      alert('Erro de rede ou servidor: ' + error.message);
+    }
+  }}
+  className="flex flex-col gap-4"
+  encType="multipart/form-data"
+>
   <label className="flex flex-col">
     Nome do Produto:
     <input
       type="text"
       name="nome"
       required
-      className="border border-gray-300 p-2 rounded"
+      placeholder="Ex: Feijão Catete, Banana da Terra, Tilápia fresca..."
+      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
     />
   </label>
 
@@ -1011,50 +1012,40 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
       step="0.01"
       min="0"
       required
-      className="border border-gray-300 p-2 rounded"
+      placeholder="Indica o preço por unidade, kg, litro, etc."
+      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
     />
   </label>
 
-    <label className="flex flex-col">
-  Quantidade:
-  <div className="flex gap-2">
-    <input
-      type="number"
-      name="quantidade"
-      min="0"
-      required
-      className="border border-gray-300 p-2 rounded flex-1"
-    />
-    <select
-      name="unidade"
-      required
-      className="border border-gray-300 p-2 rounded"
-    >
-      <option value="">Selecionar unidade</option>
-      {/* Agricultura */}
-      <option value="kg">Kg</option>
-      <option value="g">g</option>
-      <option value="t">Tonelada</option>
-      <option value="l">Litro</option>
-      <option value="ml">Mililitro</option>
-      <option value="m²">Metro²</option>
-      <option value="ha">Hectare</option>
-      <option value="un">Unidade</option>
-      <option value="caixa">Caixa</option>
-      <option value="saco">Saco</option>
-      <option value="dúzia">Dúzia</option>
-      {/* Pecuária */}
-      <option value="cabeça">Cabeça (gado)</option>
-      {/* Silvicultura */}
-      <option value="m³">Metro cúbico</option>
-      <option value="tronco">Tronco</option>
-      <option value="lenha">Lenha</option>
-      <option value="pedaço">Pedaço</option>
-      {/* Pesca */}
-      <option value="dúzia_peixe">Dúzia de Peixes</option>
-    </select>
-  </div>
-</label>
+  <label className="flex flex-col">
+    Quantidade:
+    <div className="flex gap-2">
+      <input
+        type="number"
+        name="quantidade"
+        min="0"
+        required
+        placeholder="Ex: 20"
+        className="border border-gray-300 p-2 rounded flex-1 focus:ring-2 focus:ring-green-500 outline-none"
+      />
+      <select
+        name="unidade"
+        required
+        className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
+      >
+        <option value="">Selecionar unidade</option>
+        <option value="kg">Kg</option>
+        <option value="l">Litro</option>
+        <option value="un">Unidade</option>
+        <option value="caixa">Caixa</option>
+        <option value="saco">Saco</option>
+        <option value="dúzia">Dúzia</option>
+        <option value="cabeça">Cabeça (gado)</option>
+        <option value="m³">Metro cúbico</option>
+        <option value="tronco">Tronco</option>
+      </select>
+    </div>
+  </label>
 
   <label className="flex flex-col">
     Imagem:
@@ -1063,7 +1054,7 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
       name="imagem"
       accept="image/*"
       required
-      className="border border-gray-300 p-2 rounded"
+      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
     />
   </label>
 
@@ -1072,7 +1063,8 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
     <input
       type="text"
       name="provincia"
-      className="border border-gray-300 p-2 rounded"
+      placeholder="Ex: Huambo, Benguela, Luanda..."
+      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
     />
   </label>
 
@@ -1081,7 +1073,8 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
     <input
       type="text"
       name="municipio"
-      className="border border-gray-300 p-2 rounded"
+      placeholder="Ex: Cacula, Cazenga, Lobito..."
+      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
     />
   </label>
 
@@ -1090,7 +1083,8 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
     <textarea
       name="localizacaoDetalhada"
       rows="3"
-      className="border border-gray-300 p-2 rounded"
+      placeholder="Indica o ponto exato: bairro, estrada, referência..."
+      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
     ></textarea>
   </label>
 
@@ -1099,7 +1093,8 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
     <input
       type="text"
       name="contactos"
-      className="border border-gray-300 p-2 rounded"
+      placeholder="Ex: +244 923 000 000"
+      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
     />
   </label>
 
@@ -1113,11 +1108,14 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
   </label>
 
   <label className="flex flex-col">
-    Descrição:
+    Descrição do Produto:
     <textarea
       name="descricao"
-      rows="3"
-      className="border border-gray-300 p-2 rounded"
+      rows="4"
+      placeholder="Exemplo: O Feijão Catete é cultivado de forma natural, sem uso de químicos. Rico em proteínas e fibras, ideal para uma alimentação saudável. Descreva o sabor, benefícios, modo de produção e como se destaca dos demais."
+      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none transition-all duration-300"
+      onFocus={(e) => e.target.placeholder = ""}
+      onBlur={(e) => e.target.placeholder = "Descreva o produto, realce o sabor, benefícios e modo de produção..."}
     ></textarea>
   </label>
 
@@ -1134,7 +1132,7 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
 
   <button
     type="submit"
-    className="bg-green-600 text-white py-2 rounded hover:bg-green-700"
+    className="bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors duration-300"
   >
     Cadastrar Produto
   </button>
@@ -1143,6 +1141,9 @@ if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
 )}
 
 </main>
+
+<FooterMercadoYangue setAbaAtiva={setAbaAtiva} />
+
 </div>
 );
 }
