@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import logo from './assets/logo.png';
 import axios from 'axios';
 
+// Componentes existentes
 import AbaGestaoVendas from './components/AbaGestaoVendas';
 import AbaGestaoCompras from "./components/AbaGestaoCompras";
 import ConfirmacaoPagamento from "./components/ConfirmacaoPagamento";
@@ -13,103 +13,238 @@ import AbaAjuda from "./components/AbaAjuda";
 import AbaGuiaUtilizacao from "./components/AbaGuiaUtilizacao";
 import FooterMercadoYangue from "./components/FooterMercadoYangue";
 
+// NOVOS COMPONENTES JIAM
+import AbaPrevisoes from './components/AbaPrevisoes';
+import AbaRastreamento from './components/AbaRastreamento';
+import AbaLogistica from './components/AbaLogistica';
+import WhatsAppButton from './components/WhatsAppButton';
 
-// Componente AbaQuemSomos
-function AbaQuemSomos() {
+// Importação de imagens locais (certifique-se que os arquivos existem)
+import logojiam from './assets/logojiam.png';
+import venancioImg from './assets/equipa/Venâncio.png';
+import iracelmaImg from './assets/equipa/Iracelma.png';
+import joseImg from './assets/equipa/Jose.png';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+// ============ ABA QUEM SOMOS - DESIGN PROFISSIONAL COM IMAGENS DA EQUIPA ============
+function AbaQuemSomos({ setAbaAtiva }) {
+  const estatisticas = [
+    { valor: "-40%", label: "Redução de Perdas", desc: "Produção que chega ao mercado" },
+    { valor: "+47T", label: "Capacidade Operacional", desc: "Toneladas comprovadas" },
+    { valor: "100%", label: "Rastreabilidade", desc: "Origem garantida" },
+    { valor: "24/7", label: "Suporte Ativo", desc: "Sempre disponível" }
+  ];
+
+  const funcionalidades = [
+    { icone: "🛒", titulo: "Compre Direto", desc: "Do produtor para você, sem intermediários" },
+    { icone: "📊", titulo: "JIAM Preditivo", desc: "Previsões de demanda com IA" },
+    { icone: "🗺️", titulo: "Rastreabilidade", desc: "Saiba a origem exata do produto" },
+    { icone: "💬", titulo: "Chat Integrado", desc: "Comunique-se diretamente" },
+    { icone: "📦", titulo: "Logística Eficiente", desc: "Entrega em todas províncias" },
+    { icone: "🔒", titulo: "Pagamento Seguro", desc: "Múltiplos métodos" }
+  ];
+
+  const equipa = [
+    { 
+      nome: "Venâncio Martins", 
+      cargo: "Gestor Estratégico & Lead Developer", 
+      descricao: "Visão tecnológica e liderança estratégica",
+      imagem: venancioImg 
+    },
+    { 
+      nome: "Iracelma Muhangueno", 
+      cargo: "Secretária", 
+      descricao: "Gestão Administrativa e sustentabilidade operacional",
+      imagem: iracelmaImg 
+    },
+    { 
+      nome: "José Cossengue", 
+      cargo: "Gestor de Operação", 
+      descricao: "Execução operacional e coordenação de campo",
+      imagem: joseImg 
+    }
+  ];
+
   return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow text-gray-800 space-y-4 leading-relaxed">
-      <h2 className="text-3xl font-extrabold text-green-700 text-center mb-4">Bem-vindo ao MercadoYangue</h2>
-
-      <p>
-        O <strong>MercadoYangue</strong>, concebido por Venâncio Elavoco Cassova Martins, é uma plataforma digital angolana dedicada a impulsionar o comércio local e nacional, promovendo uma ligação directa e segura entre clientes e vendedores, produtores ou agricultores em todo o território nacional.
-      </p>
-
-      <p>
-        Com um sistema de <strong>registo de utilizadores</strong> segmentado por perfis (cliente ou vendedor/agricultor), garantimos um ambiente personalizado e funcional. Para os vendedores/agricultores, é exigido o aceite de um <strong>Contrato Digital</strong>, o qual reforça os princípios de responsabilidade, compromisso e integridade nas transacções comerciais.
-      </p>
-
-      <h3 className="text-2xl font-bold text-green-600 mt-6">Missão, Visão e Valores</h3>
-      <p><strong>Missão:</strong> Conectar os angolanos através de uma plataforma digital que valoriza os produtos locais e promove a sustentabilidade económica.</p>
-      <p><strong>Visão:</strong> Ser o maior e mais confiável mercado digital de Angola, com forte presença nas zonas urbanas e rurais, fomentando o empreendedorismo e a inclusão financeira.</p>
-      <p><strong>Valores:</strong> Verdade, Transparência, Pontualidade, Responsabilidade, Sustentabilidade, Justiça e Inovação.</p>
-
-      <h3 className="text-2xl font-bold text-green-600 mt-6">Abas e Funcionalidades</h3>
-      <ul className="list-disc list-inside">
-        <li><strong>Aba Login</strong>: acesso seguro com validação de perfil individual para clientes e vendedores/agricultores.</li>
-        <li><strong>Aba Quem Somos</strong>: descreve a origem, missão, visão e os valores que orientam o MercadoYangue.</li>
-        <li><strong>Aba Produtos</strong>: navegação eficiente por categoria, província, município e locais populares.</li>
-                <li><strong>Aba Carrinho</strong>: controlo personalizado de compras com gestão de quantidades e método de pagamento.</li>
-        <li><strong>Aba Batepapo</strong>: canal de comunicação directa, com histórico de mensagens visível e notificações activas.</li>
-        <li><strong>Aba Gestão de Vendas</strong>: exclusiva para vendedores/agricultores, inclui relatórios, análises, gráficos, impressão de documentos e recomendações automáticas.</li>
- <li><strong>Aba Gestão de Compras</strong>: exclusiva para Compradores/Clientes, inclui relatórios, análises, gráficos, impressão de documentos e recomendações automáticas.</li>
-
-        <li><strong>Aba Cadastrar Produtos</strong>: ferramenta intuitiva para registo de novos produtos com localização específica e imagens.</li>
-      </ul>
-
-      <p>
-        Os pagamentos são realizados <strong>directamente entre comprador e vendedor</strong>, utilizando métodos como IBAN, número de conta bancária, Multicaixa Express ou outras soluções adaptadas à realidade angolana.
-      </p>
-
-      <h3 className="text-2xl font-bold text-green-600 mt-6">Compromisso e Contrato Digital</h3>
-      <p>
-        Ao aceitar o <strong>Contrato Digital do Vendedor/Agricultor</strong>, o utilizador compromete-se com:
-      </p>
-      <ul className="list-disc list-inside">
-        <li>Veracidade das informações fornecidas.</li>
-        <li>Cumprimento rigoroso dos prazos de entrega.</li>
-        <li>Manutenção de comunicação clara, cortês e responsável.</li>
-        <li>Pagamento de 0,5% de comissão sobre cada venda à plataforma, conforme indicado:</li>
-      </ul>
-      <p>
-        <strong>Domicílio Bancário:</strong> BAI – Agência Huambo Centro<br />
-        <strong>Nome da Conta:</strong> Mercado Yangue Serviços Digitais<br />
-        <strong>IBAN:</strong> AO06 0000 0000 1234 5678 9012 3456 7<br />
-        <strong>Número da Conta:</strong> 1234567890
-      </p>
-      <p>
-        O repasse da comissão é responsabilidade do vendedor/agricultor e deverá ser feito no prazo máximo de 5 dias úteis após a entrega e confirmação da transacção.
-      </p>
-      <p>
-        O MercadoYangue rege-se pela <strong>boa-fé, legalidade, responsabilidade e respeito ao consumidor</strong>, em conformidade com a Lei nº 15/03 da Defesa do Consumidor e outras normativas aplicáveis.
-      </p>
-      <p>
-        É <strong>proibida</strong> a utilização da plataforma para práticas ilícitas, fraudulentas ou enganosas, sob pena de sanções legais e expulsão definitiva do sistema.
-      </p>
-      <p>
-        Cada vendedor/agricultor é responsável pelo cumprimento das normas sanitárias, comerciais e ambientais, assumindo integralmente os riscos decorrentes da má qualidade, defeito ou vencimento dos produtos.
-      </p>
-      <p>
-        Ao registar-se, o utilizador declara que <strong>leu e concorda integralmente</strong> com todas as cláusulas deste contrato, obrigando-se ao seu fiel cumprimento.
-      </p>
-
-      <h3 className="text-2xl font-bold text-green-600 mt-6">Futuro e Crescimento</h3>
-      <ul className="list-disc list-inside">
-        <li>Integração com pagamentos móveis e terminais POS.</li>
-        <li>Versões móveis para Microsoft Store, App Store e Play Store.</li>
-        <li>Parcerias com cooperativas, administrações locais e iniciativas juvenis.</li>
-        <li>Expansão digital para zonas rurais com acesso simplificado.</li>
-        <li>Adição de línguas nacionais: Kimbundu, Umbundu, Kikongo, Tchokwe, e outras em fases futuras.</li>
-      </ul>
-
-      <div className="border-t pt-4 mt-6">
-        <h3 className="text-xl font-bold">Contacte-nos</h3>
-        <p><strong>Email:</strong></p>
-        <ul className="list-disc list-inside ml-6">
-          <li><a href="mailto:contato@mercadoyangue.co.ao" className="text-blue-600">contato@mercadoyangue.co.ao</a></li>
-          <li><a href="mailto:suporte@mercadoyangue.co.ao" className="text-blue-600">suporte@mercadoyangue.co.ao</a></li>
-          <li><a href="mailto:info@mercadoyangue.co.ao" className="text-blue-600">info@mercadoyangue.co.ao</a></li>
-          <li><a href="mailto:atendimento@mercadoyangue.co.ao" className="text-blue-600">atendimento@mercadoyangue.co.ao</a></li>
-        </ul>
-        <p className="mt-2"><strong>WhatsApp & Call Center:</strong> <a href="tel:+244920000000" className="text-blue-600">+244 920 000 000</a></p>
+    <div className="max-w-7xl mx-auto">
+      {/* Hero Section com Carrossel de Imagens do Campo */}
+      <div className="relative rounded-2xl overflow-hidden mb-12 shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-r from-green-900/80 to-green-700/80 z-10"></div>
+        <div className="relative h-[500px] overflow-hidden">
+          <div className="absolute inset-0 flex animate-slide">
+            <div className="min-w-full h-full bg-[url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center"></div>
+            <div className="min-w-full h-full bg-[url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center"></div>
+            <div className="min-w-full h-full bg-[url('https://images.unsplash.com/photo-1523348837708-15d4a6b8b5b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center"></div>
+            <div className="min-w-full h-full bg-[url('https://images.unsplash.com/photo-1592417817032-6072b0b4605b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center"></div>
+          </div>
+        </div>
+        <div className="absolute inset-0 z-20 flex items-center justify-center p-8 md:p-16">
+          <div className="text-center max-w-3xl">
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">Mercado Yangue</h1>
+            <p className="text-lg md:text-xl text-green-100 leading-relaxed mb-8">
+              A Infraestrutura Inteligente para o Agronegócio Angolano. 
+              Conectamos produtores e compradores, eliminamos perdas e geramos previsibilidade.
+            </p>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <button 
+                onClick={() => {
+                  if (localStorage.getItem("token")) {
+                    setAbaAtiva('cadastrar');
+                  } else {
+                    setAbaAtiva('login');
+                  }
+                }}
+                className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
+              >
+                Começar Agora
+              </button>
+              <button 
+                onClick={() => setAbaAtiva('produtos')}
+                className="border-2 border-white hover:bg-white hover:text-green-800 text-white px-6 py-3 rounded-lg font-semibold transition"
+              >
+                Ver Produtos
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <p className="text-center text-sm text-gray-500 mt-6">
+      {/* Estatísticas */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+        {estatisticas.map((stat, idx) => (
+          <div key={idx} className="bg-white p-4 rounded-xl shadow-lg text-center border-b-4 border-green-500">
+            <div className="text-2xl md:text-3xl font-bold text-green-700">{stat.valor}</div>
+            <div className="font-semibold text-gray-800 text-sm md:text-base">{stat.label}</div>
+            <div className="text-xs text-gray-500">{stat.desc}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Logo JIAM Preditivo */}
+      <div className="flex justify-center mb-12">
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6 shadow-lg text-center max-w-md">
+          {logojiam ? (
+            <img src={logojiam} alt="JIAM Preditivo" className="h-20 mx-auto mb-3" />
+          ) : (
+            <div className="text-5xl mb-3">📊</div>
+          )}
+          <h3 className="text-xl font-bold text-green-800">JIAM Preditivo</h3>
+          <p className="text-gray-600 text-sm">Inteligência de dados e previsão de procura para apoio à decisão agrícola</p>
+        </div>
+      </div>
+
+      {/* Missão Visão Valores */}
+      <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition">
+          <div className="text-4xl mb-3">🌱</div>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">Missão</h3>
+          <p className="text-gray-600">Conectar os angolanos através de uma plataforma digital que valoriza os produtos locais e promove a sustentabilidade económica.</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition">
+          <div className="text-4xl mb-3">👁️</div>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">Visão</h3>
+          <p className="text-gray-600">Ser o maior e mais confiável mercado digital de Angola, com forte presença nas zonas urbanas e rurais.</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition">
+          <div className="text-4xl mb-3">⭐</div>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">Valores</h3>
+          <p className="text-gray-600">Verdade, Transparência, Pontualidade, Responsabilidade, Sustentabilidade, Justiça e Inovação.</p>
+        </div>
+      </div>
+
+      {/* Funcionalidades */}
+      <div className="bg-gray-50 rounded-2xl p-8 mb-12">
+        <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-8">Plataforma Completa para o Agronegócio</h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {funcionalidades.map((func, idx) => (
+            <div key={idx} className="text-center group cursor-pointer">
+              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center text-3xl mx-auto mb-3 group-hover:bg-green-200 transition">
+                {func.icone}
+              </div>
+              <h4 className="font-bold text-gray-800">{func.titulo}</h4>
+              <p className="text-sm text-gray-600 mt-1">{func.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Nossa Equipa */}
+      <div className="bg-white rounded-xl shadow-lg p-8 mb-12">
+        <h2 className="text-2xl font-bold text-gray-800 text-center mb-8">👥 Nossa Equipa</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          {equipa.map((membro, idx) => (
+            <div key={idx} className="text-center">
+              <div className="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4 border-4 border-green-500 shadow-lg bg-gray-100 flex items-center justify-center">
+                {membro.imagem ? (
+                  <img src={membro.imagem} alt={membro.nome} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-4xl text-green-600">{membro.nome.charAt(0)}</span>
+                )}
+              </div>
+              <h3 className="text-xl font-bold text-gray-800">{membro.nome}</h3>
+              <p className="text-green-600 font-semibold text-sm">{membro.cargo}</p>
+              <p className="text-sm text-gray-500 mt-2">{membro.descricao}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Call to Action */}
+      <div className="bg-gradient-to-r from-green-700 to-green-800 rounded-xl p-8 text-white text-center">
+        <h3 className="text-2xl font-bold mb-2">Pronto para transformar seu negócio?</h3>
+        <p className="text-green-100 mb-4">Junte-se aos milhares de produtores e compradores que já utilizam o Mercado Yangue</p>
+        <div className="flex flex-col md:flex-row gap-4 justify-center">
+          <button 
+            onClick={() => {
+              if (localStorage.getItem("token")) {
+                setAbaAtiva('cadastrar');
+              } else {
+                setAbaAtiva('login');
+              }
+            }}
+            className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-6 py-2 rounded-lg font-semibold transition"
+          >
+            Quero Vender
+          </button>
+          <button 
+            onClick={() => setAbaAtiva('produtos')}
+            className="border-2 border-white hover:bg-white hover:text-green-800 px-6 py-2 rounded-lg font-semibold transition"
+          >
+            Quero Comprar
+          </button>
+        </div>
+        <div className="mt-6 text-sm text-green-200">
+          <p>📞 WhatsApp: +244 920 000 000 | ✉️ mercadoyangueservicosdigitais@gmail.com</p>
+        </div>
+      </div>
+
+      <div className="text-center text-gray-500 text-xs mt-6 pb-4">
         © {new Date().getFullYear()} MercadoYangue Serviços Digitais — Criado por angolanos, para angolanos.
-      </p>
+      </div>
+
+      <style jsx>{`
+        @keyframes slide {
+          0% { transform: translateX(0); }
+          25% { transform: translateX(0); }
+          30% { transform: translateX(-100%); }
+          50% { transform: translateX(-100%); }
+          55% { transform: translateX(-200%); }
+          75% { transform: translateX(-200%); }
+          80% { transform: translateX(-300%); }
+          100% { transform: translateX(-300%); }
+        }
+        .animate-slide {
+          animation: slide 20s ease-in-out infinite;
+          width: 400%;
+          display: flex;
+        }
+      `}</style>
     </div>
   );
 }
 
+// ============ BANCOS DE ANGOLA ============
 const bancosAngola = [
   "Banco de Poupança e Crédito (BPC)",
   "Banco Angolano de Investimentos (BAI)",
@@ -120,18 +255,14 @@ const bancosAngola = [
   "Banco Económico",
   "Banco BIC",
   "Banco Caixa Geral Angola (BCGA)",
-  "Banco Popular de Angola (BPA)",
   "Banco de Desenvolvimento de Angola (BDA)",
-  "Banco Privado Atlântico (BPA)",
   "Banco Prestígio",
   "Banco Eurobic Angola",
   "Banco Mais",
-  "Banco Comercial Angolano (BCA)",
-  "Banco Comercial e de Investimentos (BCI)",
   "Banco Yetu",
-  "Banco BAI Microfinanças",
 ];
 
+// ============ FORMA PAGAMENTO CAMPO ============
 function FormaPagamentoCampo({ formaPagamento, setFormaPagamento, bancosDisponiveis = [] }) {
   const [tipo, setTipo] = useState(formaPagamento?.tipo || "iban");
   const [iban, setIban] = useState(formaPagamento?.iban || "");
@@ -142,7 +273,6 @@ function FormaPagamentoCampo({ formaPagamento, setFormaPagamento, bancosDisponiv
 
   useEffect(() => {
     const dados = { tipo };
-
     if (tipo === "iban") {
       dados.iban = iban;
       dados.banco = banco;
@@ -153,92 +283,44 @@ function FormaPagamentoCampo({ formaPagamento, setFormaPagamento, bancosDisponiv
       dados.opcao = opcao;
       if (opcao === "multicaixa") dados.telefone = telefone;
     }
-
     setFormaPagamento(dados);
   }, [tipo, iban, numConta, banco, opcao, telefone, setFormaPagamento]);
 
   return (
     <div className="border p-4 rounded mb-4 bg-green-50">
       <h3 className="font-semibold mb-2 text-green-700">Forma de Pagamento</h3>
-
-      <select
-        value={tipo}
-        onChange={(e) => setTipo(e.target.value)}
-        className="w-full p-2 border rounded mb-3"
-      >
+      <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="w-full p-2 border rounded mb-3">
         <option value="iban">IBAN + Banco</option>
         <option value="numConta">Número de Conta + Banco</option>
         <option value="outras">Outras (Ex: Multicaixa)</option>
       </select>
-
       {tipo === "iban" && (
         <>
-          <input
-            type="text"
-            placeholder="IBAN"
-            value={iban}
-            onChange={(e) => setIban(e.target.value)}
-            className="w-full p-2 border rounded mb-3"
-          />
-          <select
-            value={banco}
-            onChange={(e) => setBanco(e.target.value)}
-            className="w-full p-2 border rounded mb-3"
-          >
+          <input type="text" placeholder="IBAN" value={iban} onChange={(e) => setIban(e.target.value)} className="w-full p-2 border rounded mb-3" />
+          <select value={banco} onChange={(e) => setBanco(e.target.value)} className="w-full p-2 border rounded mb-3">
             <option value="">Selecione um Banco</option>
-            {bancosDisponiveis.map((bancoItem, index) => (
-              <option key={index} value={bancoItem}>
-                {bancoItem}
-              </option>
-            ))}
+            {bancosDisponiveis.map((bancoItem, index) => (<option key={index} value={bancoItem}>{bancoItem}</option>))}
           </select>
         </>
       )}
-
       {tipo === "numConta" && (
         <>
-          <input
-            type="text"
-            placeholder="Número de Conta"
-            value={numConta}
-            onChange={(e) => setNumConta(e.target.value)}
-            className="w-full p-2 border rounded mb-3"
-          />
-          <select
-            value={banco}
-            onChange={(e) => setBanco(e.target.value)}
-            className="w-full p-2 border rounded mb-3"
-          >
+          <input type="text" placeholder="Número de Conta" value={numConta} onChange={(e) => setNumConta(e.target.value)} className="w-full p-2 border rounded mb-3" />
+          <select value={banco} onChange={(e) => setBanco(e.target.value)} className="w-full p-2 border rounded mb-3">
             <option value="">Selecione um Banco</option>
-            {bancosDisponiveis.map((bancoItem, index) => (
-              <option key={index} value={bancoItem}>
-                {bancoItem}
-              </option>
-            ))}
+            {bancosDisponiveis.map((bancoItem, index) => (<option key={index} value={bancoItem}>{bancoItem}</option>))}
           </select>
         </>
       )}
-
       {tipo === "outras" && (
         <>
-          <select
-            value={opcao}
-            onChange={(e) => setOpcao(e.target.value)}
-            className="w-full p-2 border rounded mb-3"
-          >
+          <select value={opcao} onChange={(e) => setOpcao(e.target.value)} className="w-full p-2 border rounded mb-3">
             <option value="multicaixa">Multicaixa Express</option>
             <option value="dinheiro">Dinheiro (na entrega)</option>
             <option value="outros">Outro</option>
           </select>
-
           {opcao === "multicaixa" && (
-            <input
-              type="tel"
-              placeholder="Telefone (Multicaixa)"
-              value={telefone}
-              onChange={(e) => setTelefone(e.target.value)}
-              className="w-full p-2 border rounded mb-3"
-            />
+            <input type="tel" placeholder="Telefone (Multicaixa)" value={telefone} onChange={(e) => setTelefone(e.target.value)} className="w-full p-2 border rounded mb-3" />
           )}
         </>
       )}
@@ -246,311 +328,156 @@ function FormaPagamentoCampo({ formaPagamento, setFormaPagamento, bancosDisponiv
   );
 }
 
-
+// ============ LOGIN/CADASTRO ============
 function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
-  const [modo, setModo] = React.useState("login");
-  const [tipoCadastro, setTipoCadastro] = React.useState("cliente");
-
-  const [email, setEmail] = React.useState("");
-  const [senha, setSenha] = React.useState("");
-  const [nome, setNome] = React.useState("");
-  const [produtosFiltrados, setProdutosFiltrados] = React.useState([]);
-
-  const [provincia, setProvincia] = React.useState("");
-  const [municipio, setMunicipio] = React.useState("");
-  const [localizacaoEspecifica, setLocalizacaoEspecifica] = React.useState("");
-
-  const [aceitouContrato, setAceitouContrato] = React.useState(false);
+  const [modo, setModo] = useState("login");
+  const [tipoCadastro, setTipoCadastro] = useState("cliente");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [nome, setNome] = useState("");
+  const [provincia, setProvincia] = useState("");
+  const [municipio, setMunicipio] = useState("");
+  const [localizacaoEspecifica, setLocalizacaoEspecifica] = useState("");
+  const [aceitouContrato, setAceitouContrato] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const limparCampos = () => {
-    setEmail("");
-    setSenha("");
-    setNome("");
-    setProvincia("");
-    setMunicipio("");
-    setLocalizacaoEspecifica("");
+    setEmail(""); setSenha(""); setNome("");
+    setProvincia(""); setMunicipio(""); setLocalizacaoEspecifica("");
     setAceitouContrato(false);
   };
 
-  // 🔹 LOGIN
   const handleLogin = async () => {
-    if (!email || !senha) {
-      alert("Preencha email e senha.");
-      return;
-    }
-
+    if (!email || !senha) return alert("Preencha email e senha.");
+    setLoading(true);
     try {
-      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/login", {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
       });
-
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok) {
-        alert(data?.msg || "Erro no login");
-        return;
-      }
-
+      const data = await res.json();
+      if (!res.ok) return alert(data?.msg || "Erro no login");
       if (!data?.token || !data?.usuario?.nome || !data?.usuario?.tipo) {
-        alert("Dados incompletos recebidos do servidor.");
-        return;
+        return alert("Dados incompletos recebidos do servidor.");
       }
-
       const usuarioLogado = {
         nome: data.usuario.nome,
         email: data.usuario.email || email,
         tipo: data.usuario.tipo,
+        id: data.usuario._id
       };
-
       localStorage.setItem("token", data.token);
       localStorage.setItem("usuario", JSON.stringify(usuarioLogado));
-
       setUsuario(usuarioLogado);
       alert(`Bem-vindo(a), ${usuarioLogado.nome}!`);
       limparCampos();
       setAbaAtiva?.("produtos");
     } catch (error) {
       console.error("Erro no login:", error);
-      alert("Erro inesperado no login. Veja o console.");
+      alert("Erro inesperado no login.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // 🔹 CADASTRO
   const handleCadastro = async () => {
-    if (!email || !senha || !nome) {
-      alert("Preencha nome, email e senha.");
-      return;
+    if (!email || !senha || !nome) return alert("Preencha nome, email e senha.");
+    if (tipoCadastro !== "cliente" && (!provincia || !municipio || !localizacaoEspecifica)) {
+      return alert("Preencha todos os campos para vendedor/agricultor.");
     }
-
-    if (tipoCadastro !== "cliente") {
-      if (!provincia || !municipio || !localizacaoEspecifica) {
-        alert("Preencha todos os campos para vendedor/agricultor.");
-        return;
-      }
-      if (!aceitouContrato) {
-        alert("Você deve aceitar o contrato digital para continuar.");
-        return;
-      }
+    if (tipoCadastro !== "cliente" && !aceitouContrato) {
+      return alert("Você deve aceitar o contrato digital.");
     }
-
-    const novoUsuario = {
-      nome,
-      email,
-      senha,
-      tipo: tipoCadastro,
-      ...(tipoCadastro !== "cliente" && {
-        provincia,
-        municipio,
-        localizacaoEspecifica,
-        aceitouContrato: true,
-      }),
-    };
-
+    setLoading(true);
     try {
-      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/cadastro", {
+      const novoUsuario = {
+        nome, email, senha, tipo: tipoCadastro,
+        ...(tipoCadastro !== "cliente" && { provincia, municipio, localizacaoEspecifica, aceitouContrato: true })
+      };
+      const res = await fetch(`${API_URL}/auth/cadastro`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(novoUsuario),
       });
-
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok) {
-        alert(data?.msg || "Erro no cadastro");
-        return;
-      }
-
-      alert("Cadastro realizado com sucesso!");
-
-      // Enviar email de confirmação
-      try {
-        const emailRes = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/enviar-confirmacao", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        });
-
-        if (!emailRes.ok) {
-          console.warn("Falha ao enviar email de confirmação");
-        } else {
-          console.log("Email de confirmação enviado para:", email);
-        }
-      } catch (err) {
-        console.warn("Erro no envio do email de confirmação:", err);
-      }
-
+      const data = await res.json();
+      if (!res.ok) return alert(data?.msg || "Erro no cadastro");
+      alert("Cadastro realizado com sucesso! Faça login.");
       setModo("login");
       limparCampos();
     } catch (error) {
       console.error("Erro no cadastro:", error);
       alert("Erro ao conectar com o servidor.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // 🔹 ESQUECI SENHA
   const handleEsqueciSenha = async () => {
-    if (!email) {
-      alert("Digite seu email para redefinir a senha.");
-      return;
-    }
-
+    if (!email) return alert("Digite seu email para redefinir a senha.");
     try {
-      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/auth/esqueci-senha", {
+      const res = await fetch(`${API_URL}/auth/esqueci-senha`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.msg || "Erro ao enviar email de redefinição.");
-        return;
-      }
-
-      alert("Se o email estiver cadastrado e ativo, você receberá instruções para redefinir sua senha.");
+      if (!res.ok) return alert(data.msg || "Erro ao enviar email.");
+      alert("Se o email estiver cadastrado, você receberá instruções.");
     } catch (error) {
-      console.error("Erro ao solicitar redefinição de senha:", error);
-      alert("Erro inesperado. Tente novamente mais tarde.");
+      console.error("Erro:", error);
+      alert("Erro inesperado.");
     }
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded shadow-md border border-green-200">
-      {/* Modo de Login/Cadastro */}
-      <div className="mb-6 flex justify-center space-x-4">
-        <button
-          onClick={() => setModo("login")}
-          className={`px-4 py-2 rounded font-semibold ${modo === "login" ? "bg-green-700 text-white" : "bg-green-100 text-green-700 hover:bg-green-200"}`}
-        >
-          Login
-        </button>
-        <button
-          onClick={() => setModo("cadastro")}
-          className={`px-4 py-2 rounded font-semibold ${modo === "cadastro" ? "bg-green-700 text-white" : "bg-green-100 text-green-700 hover:bg-green-200"}`}
-        >
-          Cadastro
-        </button>
+    <div className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-lg border border-green-100">
+      <div className="flex gap-3 mb-6">
+        <button onClick={() => setModo("login")} className={`flex-1 py-2 rounded-lg font-semibold transition ${modo === "login" ? "bg-green-600 text-white shadow-md" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}>Login</button>
+        <button onClick={() => setModo("cadastro")} className={`flex-1 py-2 rounded-lg font-semibold transition ${modo === "cadastro" ? "bg-green-600 text-white shadow-md" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}>Cadastro</button>
       </div>
 
-      {/* LOGIN */}
       {modo === "login" && (
         <>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mb-3 w-full border p-2 rounded"
-          />
-          <input
-            type="password"
-            placeholder="Senha"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            className="mb-3 w-full border p-2 rounded"
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-          />
-          <button onClick={handleLogin} className="w-full bg-green-700 text-white py-3 rounded font-semibold hover:bg-green-800">
-            Entrar
-          </button>
-          <button type="button" onClick={handleEsqueciSenha} className="w-full mt-2 text-sm text-green-700 underline hover:text-green-800">
-            Esqueci minha senha
-          </button>
+          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="mb-3 w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+          <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} className="mb-4 w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" onKeyDown={(e) => e.key === "Enter" && handleLogin()} />
+          <button onClick={handleLogin} disabled={loading} className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50">Entrar</button>
+          <button onClick={handleEsqueciSenha} className="w-full mt-2 text-sm text-green-600 hover:text-green-800 transition">Esqueci minha senha</button>
         </>
       )}
 
-      {/* CADASTRO */}
       {modo === "cadastro" && (
         <>
-          <input type="text" placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} className="mb-3 w-full border p-2 rounded" />
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="mb-3 w-full border p-2 rounded" />
-          <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} className="mb-3 w-full border p-2 rounded" />
-
-          <div className="mb-3">
-            <label className="block mb-1 font-semibold">Tipo de Cadastro</label>
-            <select value={tipoCadastro} onChange={(e) => setTipoCadastro(e.target.value)} className="w-full border p-2 rounded">
-              <option value="cliente">Cliente</option>
-              <option value="vendedor">Vendedor/Agricultor</option>
-            </select>
-          </div>
-
+          <input type="text" placeholder="Nome completo" value={nome} onChange={(e) => setNome(e.target.value)} className="mb-3 w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="mb-3 w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+          <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} className="mb-3 w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+          <select value={tipoCadastro} onChange={(e) => setTipoCadastro(e.target.value)} className="mb-3 w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+            <option value="cliente">Cliente</option>
+            <option value="vendedor">Vendedor/Agricultor</option>
+          </select>
           {tipoCadastro !== "cliente" && (
             <>
-              <input type="text" placeholder="Província" value={provincia} onChange={(e) => setProvincia(e.target.value)} className="mb-3 w-full border p-2 rounded" />
-              <input type="text" placeholder="Município" value={municipio} onChange={(e) => setMunicipio(e.target.value)} className="mb-3 w-full border p-2 rounded" />
-              <input type="text" placeholder="Localização específica" value={localizacaoEspecifica} onChange={(e) => setLocalizacaoEspecifica(e.target.value)} className="mb-3 w-full border p-2 rounded" />
-
-              {/* CONTRATO DIGITAL */}
-              <div id="contrato-digital" className="mb-4 p-6 border border-green-300 rounded bg-green-50 max-h-96 overflow-y-auto text-sm text-gray-800">
-                <div className="flex flex-col items-center mb-6">
-                  <img src="/favicon-32x32.png" alt="MercadoYangue" className="w-12 h-12 mb-2" />
-                  <h2 className="text-xl font-bold text-green-800 text-center">Contrato Digital da Plataforma MercadoYangue</h2>
-                </div>
-                <p>Ao efectuar o registo como vendedor ou agricultor na plataforma Mercado Yangue, o utilizador compromete-se a fornecer unicamente informações verdadeiras e actualizadas, garantindo a veracidade dos dados pessoais e comerciais submetidos, bem como a qualidade e origem dos produtos anunciados.</p>
-                <p>O utilizador declara que cumprirá rigorosamente os prazos acordados para a entrega dos produtos vendidos, bem como manterá uma comunicação clara, cortês e responsável com os compradores, zelando pela satisfação e confiança em todas as transacções realizadas através da plataforma.</p>
-                <p>Fica estabelecido que sobre cada produto vendido será aplicada uma comissão de 0,5% (zero vírgula cinco por cento) sobre o valor total da venda, destinada à manutenção e desenvolvimento da plataforma Mercado Yangue.</p>
-                <p>O pagamento da comissão devida à plataforma Mercado Yangue será realizado por iniciativa e responsabilidade exclusiva do vendedor ou agricultor, através das coordenadas bancárias abaixo indicadas:</p>
-                <p><strong>Domicílio Bancário:</strong> Banco Angolano de Investimento (BAI) – Agência Huambo Centro</p>
-                <p><strong>Nome da Conta:</strong> Mercado Yangue Serviços Digitais</p>
-                <p><strong>IBAN:</strong> AO06 0000 0000 1234 5678 9012 3456 7</p>
-                <p><strong>Número da Conta:</strong> 1234567890</p>
-                <p>Ressalta-se que a comissão será automaticamente estimada no momento da transação, porém o repasse do valor correspondente ao vendedor/agricultor será efetuado pelo próprio, observando as condições estabelecidas nesta plataforma.</p>
-                <p>O prazo máximo para o repasse do valor líquido devido à plataforma é de 5 (cinco) dias úteis contados a partir da confirmação da transacção e da entrega do produto ao comprador, salvo ocorrência de impedimentos devidamente justificados e comunicados previamente à plataforma.</p>
-                <p>O uso da plataforma rege-se pelos princípios da boa-fé, honestidade, transparência e respeito às normas legais vigentes na República de Angola, incluindo a Lei nº 15/03 sobre a Defesa do Consumidor e demais legislação aplicável ao comércio electrónico e protecção de dados pessoais.</p>
-                <p>É expressamente proibida a utilização da plataforma para fins ilícitos, fraudulentos, enganosos ou que violem direitos de terceiros. O incumprimento destas disposições poderá resultar na suspensão temporária ou cancelamento definitivo do acesso do utilizador, sem prejuízo das medidas legais cabíveis.</p>
-                <p>O vendedor/agricultor compromete-se a respeitar as normas sanitárias, ambientais e comerciais aplicáveis, respondendo integralmente por eventuais danos ou prejuízos causados por produtos defeituosos, vencidos ou em desacordo com as especificações anunciadas.</p>
-                <p>Ao assinalar a opção de aceite do presente contrato, o utilizador declara, para todos os efeitos legais, que leu, compreendeu, aceitou e concordou integralmente com todos os termos e condições ora estabelecidos.</p>
+              <input type="text" placeholder="Província" value={provincia} onChange={(e) => setProvincia(e.target.value)} className="mb-3 w-full border p-3 rounded-lg" />
+              <input type="text" placeholder="Município" value={municipio} onChange={(e) => setMunicipio(e.target.value)} className="mb-3 w-full border p-3 rounded-lg" />
+              <input type="text" placeholder="Localização específica" value={localizacaoEspecifica} onChange={(e) => setLocalizacaoEspecifica(e.target.value)} className="mb-3 w-full border p-3 rounded-lg" />
+              <div className="text-xs text-gray-500 bg-green-50 p-3 rounded-lg mb-3 max-h-32 overflow-y-auto">
+                <p className="font-bold">📜 Contrato Digital</p>
+                <p>Ao se cadastrar como vendedor, você concorda com os termos da plataforma e pagamento de 0.5% de comissão sobre cada venda.</p>
               </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const conteudo = document.getElementById("contrato-digital");
-                  if (!conteudo) return;
-                  const printWindow = window.open("", "Print", "width=700,height=900");
-                  printWindow.document.write(`
-                    <html>
-                      <head>
-                        <title>Contrato Digital</title>
-                        <style>
-                          body { font-family: Arial, sans-serif; padding: 20px; }
-                          h2 { text-align: center; margin-bottom: 20px; }
-                          p { margin-bottom: 12px; line-height: 1.5; }
-                        </style>
-                      </head>
-                      <body>${conteudo.innerHTML}</body>
-                    </html>
-                  `);
-                  printWindow.document.close();
-                  printWindow.focus();
-                  printWindow.print();
-                  printWindow.close();
-                }}
-                className="text-green-700 underline mb-2"
-              >
-                Imprimir Contrato
-              </button>
-
-              <label className="inline-flex items-center mb-6 cursor-pointer">
-                <input type="checkbox" checked={aceitouContrato} onChange={(e) => setAceitouContrato(e.target.checked)} className="form-checkbox h-5 w-5 text-green-600" />
-                <span className="ml-2 text-gray-700">Li e aceito o <a href="#contrato-digital" className="text-green-600 underline" onClick={(e) => { e.preventDefault(); document.getElementById("contrato-digital")?.scrollIntoView({ behavior: "smooth" }); }}>contrato digital</a>.</span>
+              <label className="flex items-center gap-2 cursor-pointer mb-4">
+                <input type="checkbox" checked={aceitouContrato} onChange={(e) => setAceitouContrato(e.target.checked)} className="w-4 h-4 text-green-600" />
+                <span className="text-sm">Li e aceito o contrato digital</span>
               </label>
             </>
           )}
-
-          <button onClick={handleCadastro} className="w-full bg-green-700 text-white py-3 rounded font-semibold hover:bg-green-800">Cadastrar</button>
+          <button onClick={handleCadastro} disabled={loading} className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50">Cadastrar</button>
         </>
       )}
     </div>
   );
 }
 
-// COMPONENTE PRINCIPAL
-
-// Antes do componente App
+// ============ COMPONENTE PRINCIPAL APP ============
 const usuarioInicial = null;
 
 export default function App() {
@@ -558,592 +485,300 @@ export default function App() {
   const [produtosFiltrados, setProdutosFiltrados] = useState([]);
   const [carrinho, setCarrinho] = useState([]);
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
-
-  // 🔹 Estado do usuário (busca no localStorage se já existe)
   const [usuario, setUsuario] = useState(() => {
     const usuarioSalvo = localStorage.getItem("usuario");
     return usuarioSalvo ? JSON.parse(usuarioSalvo) : usuarioInicial;
   });
-
-  // 🔹 Estado da aba ativa (sempre começa em "produtos")
-  const [abaAtiva, setAbaAtiva] = useState(() => {
-    return "produtos";
+  const [abaAtiva, setAbaAtiva] = useState(() => "produtos");
+  const [mostrarPainelFBI, setMostrarPainelFBI] = useState(false);
+  const [formaPagamento, setFormaPagamento] = useState({
+    tipo: "iban", iban: "", numConta: "", banco: "", opcao: "multicaixa", telefone: ""
   });
 
-  const [mostrarPainelFBI, setMostrarPainelFBI] = useState(false);
- const [formaPagamento, setFormaPagamento] = useState({
-  tipo: "iban", // ou "" vazio, para forçar escolha do usuário
-  iban: "",
-  numConta: "",
-  banco: "",
-  opcao: "multicaixa",
-  telefone: "",
-});
-
-useEffect(() => {
-  localStorage.setItem("abaAtiva", abaAtiva);
-}, [abaAtiva]);
-
-
-useEffect(() => {
-  localStorage.setItem("carrinho", JSON.stringify(carrinho));
-}, [carrinho]);
-
-useEffect(() => {
-  const salvo = localStorage.getItem("carrinho");
-  if (salvo) setCarrinho(JSON.parse(salvo));
-}, []);
-
-
-
-useEffect(() => {
-  axios
-    .get("https://mercadoyangue-i3in.onrender.com/api/produtos")
-    .then((response) => {
-      const dados = response.data;
-      if (Array.isArray(dados)) {
-        setProdutos(dados);
-        setProdutosFiltrados(dados);
-      } else {
-        console.warn("Resposta da API não é um array:", dados);
+  // Efeitos
+  useEffect(() => { localStorage.setItem("abaAtiva", abaAtiva); }, [abaAtiva]);
+  useEffect(() => { localStorage.setItem("carrinho", JSON.stringify(carrinho)); }, [carrinho]);
+  useEffect(() => {
+    const salvo = localStorage.getItem("carrinho");
+    if (salvo) setCarrinho(JSON.parse(salvo));
+  }, []);
+  useEffect(() => {
+    axios.get(`${API_URL}/produtos`)
+      .then((response) => {
+        const dados = response.data;
+        if (Array.isArray(dados)) {
+          setProdutos(dados);
+          setProdutosFiltrados(dados);
+        } else {
+          setProdutos([]);
+          setProdutosFiltrados([]);
+        }
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar produtos:", error);
         setProdutos([]);
         setProdutosFiltrados([]);
+      });
+  }, []);
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "y" && usuario?.email === "venanciomartinse@gmail.com") {
+        setMostrarPainelFBI((prev) => !prev);
       }
-    })
-    .catch((error) => {
-      console.error("Erro ao buscar produtos:", error.response?.data?.msg || error.message);
-      setProdutos([]);
-      setProdutosFiltrados([]);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [usuario]);
+
+  // Funções principais
+  const navigateToChat = (comprador, vendedor, mensagem) => {
+    localStorage.setItem("mensagemPreChat", JSON.stringify({ vendedor, mensagem, de: comprador }));
+    setAbaAtiva("chat");
+  };
+  const enviarMensagemChat = (vendedor, mensagem) => {
+    if (!vendedor || !mensagem) return;
+    const chatKey = `chat_${vendedor}`;
+    const mensagensAnteriores = JSON.parse(localStorage.getItem(chatKey)) || [];
+    const novaMensagem = { texto: mensagem, data: new Date().toISOString(), de: 'cliente' };
+    localStorage.setItem(chatKey, JSON.stringify([...mensagensAnteriores, novaMensagem]));
+  };
+  const adicionarNoCarrinho = (produto) => {
+    if (!usuario || usuario.tipo !== 'cliente') {
+      alert('Você precisa estar logado como cliente para adicionar ao carrinho.');
+      setAbaAtiva('login');
+      return;
+    }
+    setCarrinho((prev) => {
+      const existe = prev.find((item) => item._id === produto._id);
+      if (existe) {
+        return prev.map((item) => item._id === produto._id ? { ...item, quantidade: item.quantidade + 1 } : item);
+      }
+      return [...prev, { ...produto, quantidade: 1 }];
     });
-}, []);
-
-
-useEffect(() => {
-  const handleKeyDown = (e) => {
-    if (
-      e.ctrlKey &&
-      e.shiftKey &&
-      e.key.toLowerCase() === "y" &&
-      usuario?.email === "venanciomartinse@gmail.com"
-    ) {
-      setMostrarPainelFBI((prev) => !prev);
-    }
+    setProdutos((prev) => prev.map((item) => item._id === produto._id && item.quantidade > 0 ? { ...item, quantidade: item.quantidade - 1 } : item));
+    setProdutosFiltrados((prev) => prev.map((item) => item._id === produto._id && item.quantidade > 0 ? { ...item, quantidade: item.quantidade - 1 } : item));
+    setAbaAtiva('carrinho');
   };
-
-  window.addEventListener("keydown", handleKeyDown);
-  return () => window.removeEventListener("keydown", handleKeyDown);
-}, [usuario]);
-
-
-const navigateToChat = (comprador, vendedor, mensagem) => {
-  localStorage.setItem("mensagemPreChat", JSON.stringify({
-    vendedor,
-    mensagem,
-    de: comprador
-  }));
-  setAbaAtiva("chat");
-};
-
-
-const enviarMensagemChat = (vendedor, mensagem) => {
-  if (!vendedor || !mensagem) {
-    console.warn("Vendedor ou mensagem não informados para envio de chat");
-    return;
-  }
-
-  // Exemplo simples: armazenar mensagem no localStorage, na chave específica do vendedor
-  const chatKey = `chat_${vendedor}`;
-  const mensagensAnteriores = JSON.parse(localStorage.getItem(chatKey)) || [];
-
-  const novaMensagem = {
-    texto: mensagem,
-    data: new Date().toISOString(),
-    de: 'cliente', // ou 'sistema', pode adaptar conforme necessidade
-  };
-
-  localStorage.setItem(chatKey, JSON.stringify([...mensagensAnteriores, novaMensagem]));
-
-  console.log(`Mensagem enviada para ${vendedor}: ${mensagem}`);
-};
-
-
-const adicionarNoCarrinho = (produto) => {
-  if (!usuario || usuario.tipo !== 'cliente') {
-    alert('Você precisa estar logado como cliente para adicionar ao carrinho.');
-    setAbaAtiva('login');
-    return;
-  }
-
-  // Atualizar carrinho
-  setCarrinho((prev) => {
-    const existe = prev.find((item) => item._id === produto._id);
-    if (existe) {
-      return prev.map((item) =>
-        item._id === produto._id ? { ...item, quantidade: item.quantidade + 1 } : item
-      );
-    }
-    return [...prev, { ...produto, quantidade: 1 }];
-  });
-
-  // Atualizar estoque de produtos localmente
-  setProdutos((prev) =>
-    prev.map((item) =>
-      item._id === produto._id && item.quantidade > 0
-        ? { ...item, quantidade: item.quantidade - 1 }
-        : item
-    )
-  );
-
-  setProdutosFiltrados((prev) =>
-    prev.map((item) =>
-      item._id === produto._id && item.quantidade > 0
-        ? { ...item, quantidade: item.quantidade - 1 }
-        : item
-    )
-  );
-
-  setAbaAtiva('carrinho');
-};
 
   const logout = () => {
-  setUsuario(null);
-  setCarrinho([]);
-  localStorage.removeItem("usuario");
-  localStorage.removeItem("token");
-  setAbaAtiva('produtos');
-};
+    setUsuario(null);
+    setCarrinho([]);
+    localStorage.removeItem("usuario");
+    localStorage.removeItem("token");
+    setAbaAtiva('produtos');
+  };
 
-if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
-  return <PainelFBI usuario={usuario} />;
-}
+  if (mostrarPainelFBI && usuario?.email === "venanciomartinse@gmail.com") {
+    return <PainelFBI usuario={usuario} />;
+  }
 
-  const removerDoCarrinho = (produtoId) => {
-    const produtoNoCarrinho = carrinho.find(p => p._id === produtoId);
-    if (!produtoNoCarrinho) return;
-
-    setCarrinho(prev => prev.filter(p => p._id !== produtoId));
-
-    // restaurar estoque local
-    setProdutos(prev =>
-      prev.map(item =>
-        item._id === produtoId
-          ? { ...item, quantidade: item.quantidade + produtoNoCarrinho.quantidade }
-          : item
-      )
-    );
-    setProdutosFiltrados(prev =>
-      prev.map(item =>
-        item._id === produtoId
-          ? { ...item, quantidade: item.quantidade + produtoNoCarrinho.quantidade }
-          : item
-      )
-    );
-  };                                                    
-
+  const podeVerJIAM = usuario && (usuario.tipo === 'vendedor' || usuario.tipo === 'agricultor');
 
   return (
-    <div className="min-h-screen bg-green-50">
-      <header className="bg-green-800 py-4 shadow-lg text-white flex justify-between items-center px-6">
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-  <img 
-    src="/logmercadoyangue.png" 
-    alt="Logo MercadoYangue" 
-    className="h-16 w-16"
-  />
-  MercadoYangue
-</h1>
-
-        <div>
-          {!usuario ? (
-            <button
-              onClick={() => setAbaAtiva('login')}
-              className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded transition"
-            >
-              Iniciar Sessão/Cadastrar-se
-            </button>
-          ) : (
-            <div className="flex items-center gap-4">
-              <span>Olá, {usuario.nome}</span>
-              <button
-                onClick={logout}
-                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded transition"
-              >
-                Sair
-              </button>
+    <div className="min-h-screen bg-gray-50">
+      <WhatsAppButton />
+      
+      {/* Header Profissional */}
+      <header className="bg-gradient-to-r from-green-800 to-green-700 text-white sticky top-0 z-50 shadow-xl">
+        <div className="container mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-3">
+          <div className="flex items-center gap-3">
+            <img src="/logmercadoyangue.png" alt="Logo MercadoYangue" className="h-12 w-auto" />
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Mercado Yangue</h1>
+              <p className="text-xs text-green-200">Inteligência para o Agronegócio Angolano</p>
             </div>
-          )}
+          </div>
+          <div>
+            {!usuario ? (
+              <button onClick={() => setAbaAtiva('login')} className="bg-white text-green-700 px-6 py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">
+                Iniciar Sessão
+              </button>
+            ) : (
+              <div className="flex items-center gap-3 bg-green-900/30 px-4 py-1 rounded-full">
+                <span className="text-sm font-medium">Olá, {usuario.nome}</span>
+                <button onClick={logout} className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded-full text-sm transition">Sair</button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
-      <nav className="bg-green-200 py-2 px-6 flex gap-6 text-green-900 font-semibold">
-        <button
-          onClick={() => setAbaAtiva('produtos')}
-          className={`hover:underline ${abaAtiva === 'produtos' ? 'underline' : ''}`}
-        >
-          Produtos
-        </button>
-
-        {usuario?.tipo === 'cliente' && (
-          <button
-            onClick={() => setAbaAtiva('carrinho')}
-            className={`hover:underline ${abaAtiva === 'carrinho' ? 'underline' : ''}`}
-          >
-            Carrinho
-          </button>
-        )}
-
-{(usuario?.tipo === 'vendedor' || usuario?.tipo === 'agricultor') && (
-  <button
-    onClick={() => setAbaAtiva('gestao')}
-    className={`hover:underline ${abaAtiva === 'gestao' ? 'underline' : ''}`}
-  >
-    Gestão de Vendas
-  </button>
-)}
-
-{usuario?.tipo === 'cliente' && (
-  <button
-    onClick={() => setAbaAtiva('gestao-compras')}
-    className={`hover:underline ${abaAtiva === 'gestao-compras' ? 'underline' : ''}`}
-  >
-    Gestão de Compras
-  </button>
-)}
-
-
-{usuario && (
-  <button
-    onClick={() => setAbaAtiva('chat')}
-    className={`hover:underline ${abaAtiva === 'chat' ? 'underline' : ''}`}
-  >
-    Bate-Papo
-  </button>
-)}
-
-        {(usuario?.tipo === 'vendedor' || usuario?.tipo === 'agricultor') && (
-          <button
-            onClick={() => setAbaAtiva('cadastrar')}
-            className={`hover:underline ${abaAtiva === 'cadastrar' ? 'underline' : ''}`}
-          >
-            Cadastrar Produto
-          </button>
-        )}
-
-        <button
-          onClick={() => setAbaAtiva('quemSomos')}
-          className={`hover:underline ${abaAtiva === 'quemSomos' ? 'underline' : ''}`}
-        >
-          Quem Somos
-        </button>
+      {/* Navegação Moderna */}
+      <nav className="bg-white border-b shadow-sm sticky top-[73px] md:top-[85px] z-40 overflow-x-auto">
+        <div className="container mx-auto px-6 py-3 flex gap-2">
+          {[
+            { id: 'produtos', label: '🛒 Produtos', mostrar: true },
+            { id: 'carrinho', label: '🛍️ Carrinho', mostrar: usuario?.tipo === 'cliente' },
+            { id: 'gestao', label: '📊 Vendas', mostrar: usuario?.tipo === 'vendedor' || usuario?.tipo === 'agricultor' },
+            { id: 'gestao-compras', label: '📋 Compras', mostrar: usuario?.tipo === 'cliente' },
+            { id: 'chat', label: '💬 Chat', mostrar: !!usuario },
+            { id: 'cadastrar', label: '➕ Cadastrar', mostrar: usuario?.tipo === 'vendedor' || usuario?.tipo === 'agricultor' },
+            { id: 'previsoes', label: '📊 JIAM', mostrar: podeVerJIAM },
+            { id: 'rastreamento', label: '🗺️ Rastrear', mostrar: podeVerJIAM },
+            { id: 'logistica', label: '📦 Entregas', mostrar: true },
+            { id: 'quemSomos', label: '🌍 Quem Somos', mostrar: true },
+          ].map(item => item.mostrar && (
+            <button
+              key={item.id}
+              onClick={() => setAbaAtiva(item.id)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                abaAtiva === item.id 
+                  ? 'bg-green-600 text-white shadow-md' 
+                  : 'text-gray-600 hover:bg-green-50 hover:text-green-700'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
       </nav>
 
-      <main className="p-6">
+      {/* Conteúdo Principal */}
+      <main className="container mx-auto px-6 py-8">
         {abaAtiva === 'produtos' && (
           <AbaProdutos
-  produtos={produtos}
-  setProdutos={setProdutos}
-  setProdutoSelecionado={setProdutoSelecionado}
-  adicionarNoCarrinho={adicionarNoCarrinho}
-  usuario={usuario}
-  setAbaAtiva={setAbaAtiva}
-/>
-        )}
-
-        {abaAtiva === 'carrinho' && (
-  <AbaCarrinho
-    carrinho={carrinho}
-    setCarrinho={setCarrinho}
-    usuario={usuario}
-    enviarMensagemChat={enviarMensagemChat}
-    navigateToChat={navigateToChat}
-    setAbaAtiva={setAbaAtiva} 
-  />
-)}
-
-{abaAtiva === 'confirmarPagamento' && (
-  <AuthProvider>
-    <ConfirmacaoPagamentoProtegido
-      comprador={usuario?.nome}
-      carrinho={carrinho}
-      navigateToChat={navigateToChat}
-    />
-  </AuthProvider>
-)}
-
-        {abaAtiva === 'login' && !usuario && (
-  <AbaLoginCadastro setUsuario={setUsuario} setAbaAtiva={setAbaAtiva} />
-
-)}
-
-
-{abaAtiva === 'gestao' &&
-  usuario &&
-  (usuario.tipo === 'vendedor' || usuario.tipo === 'agricultor') && (
-    <AbaGestaoVendas
-      usuario={usuario}
-      produtos={produtos}
-      setProdutos={setProdutos}
-    />
-)}
-
-{abaAtiva === 'gestao-compras' &&
-  usuario?.tipo === 'cliente' && (
-    <AbaGestaoCompras
-      usuario={usuario}
-      produtos={produtos}
-      setProdutos={setProdutos}
-    />
-)}
-
-{abaAtiva === 'chat' && usuario && (
-  <AbaChat usuario={usuario} />
-)}
-
-{abaAtiva === "ajuda" && <AbaAjuda />}
-{abaAtiva === "guia" && <AbaGuiaUtilizacao />}
-
-
-        {abaAtiva === 'quemSomos' && <AbaQuemSomos />}
-
-        {produtoSelecionado && (
-          <AbaDetalhesProduto
-            produto={produtoSelecionado}
+            produtos={produtos}
+            setProdutos={setProdutos}
             setProdutoSelecionado={setProdutoSelecionado}
             adicionarNoCarrinho={adicionarNoCarrinho}
+            usuario={usuario}
+            setAbaAtiva={setAbaAtiva}
           />
         )}
+        {abaAtiva === 'carrinho' && (
+          <AbaCarrinho
+            carrinho={carrinho}
+            setCarrinho={setCarrinho}
+            usuario={usuario}
+            enviarMensagemChat={enviarMensagemChat}
+            navigateToChat={navigateToChat}
+            setAbaAtiva={setAbaAtiva}
+          />
+        )}
+        {abaAtiva === 'login' && !usuario && (
+          <AbaLoginCadastro setUsuario={setUsuario} setAbaAtiva={setAbaAtiva} />
+        )}
+        {abaAtiva === 'gestao' && usuario && (usuario.tipo === 'vendedor' || usuario.tipo === 'agricultor') && (
+          <AbaGestaoVendas usuario={usuario} produtos={produtos} setProdutos={setProdutos} />
+        )}
+        {abaAtiva === 'gestao-compras' && usuario?.tipo === 'cliente' && (
+          <AbaGestaoCompras usuario={usuario} produtos={produtos} setProdutos={setProdutos} />
+        )}
+        {abaAtiva === 'chat' && usuario && <AbaChat usuario={usuario} />}
+        {abaAtiva === 'previsoes' && podeVerJIAM && <AbaPrevisoes usuario={usuario} />}
+        {abaAtiva === 'rastreamento' && podeVerJIAM && (
+          produtoSelecionado ? (
+            <AbaRastreamento usuario={usuario} produtoId={produtoSelecionado._id} produto={produtoSelecionado} />
+          ) : (
+            <div className="text-center p-8 bg-white rounded-xl shadow">
+              <p className="text-gray-500">Selecione um produto na aba Produtos primeiro</p>
+              <button onClick={() => setAbaAtiva('produtos')} className="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg">Ver Produtos</button>
+            </div>
+          )
+        )}
+        {abaAtiva === 'logistica' && <AbaLogistica />}
+        {abaAtiva === 'quemSomos' && <AbaQuemSomos setAbaAtiva={setAbaAtiva} />}
+        {abaAtiva === "ajuda" && <AbaAjuda />}
+        {abaAtiva === "guia" && <AbaGuiaUtilizacao />}
+        {abaAtiva === 'confirmarPagamento' && (
+          <ConfirmacaoPagamento comprador={usuario?.nome} carrinho={carrinho} navigateToChat={navigateToChat} />
+        )}
 
+        {/* Cadastrar Produto */}
         {abaAtiva === 'cadastrar' && usuario && (usuario.tipo === 'vendedor' || usuario.tipo === 'agricultor') && (
-  <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow text-gray-800">
-    <h2 className="text-2xl font-bold mb-4">Cadastrar Produto</h2>
+          <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-lg">
+            <div className="bg-green-100 p-3 rounded-lg mb-4 text-sm text-green-800 flex items-center gap-2">
+              <span className="text-lg">💡</span> Dica: Seja claro sobre o ponto de retirada ou como a entrega será feita. Isso aumenta a confiança do comprador!
+            </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.target;
+              const formData = new FormData(form);
+              const nome = formData.get('nome');
+              const preco = parseFloat(formData.get('preco'));
+              const quantidade = parseInt(formData.get('quantidade'), 10);
+              const unidade = formData.get('unidade');
+              const imagem = formData.get('imagem');
+              const provincia = formData.get('provincia');
+              const municipio = formData.get('municipio');
+              const localizacaoDetalhada = formData.get('localizacaoDetalhada');
+              const contactos = formData.get('contactos');
+              const descricao = formData.get('descricao');
+              const nomeVendedor = usuario.nome;
 
-    <form
-  onSubmit={async (e) => {
-    e.preventDefault();
-    const form = e.target;
+              if (!nome || isNaN(preco) || preco <= 0 || isNaN(quantidade) || quantidade < 0 || !imagem) {
+                alert('Preencha todos os campos obrigatórios corretamente.');
+                return;
+              }
 
-    const formData = new FormData(form);
+              const termosBanidos = ["carro","carros","automóvel","moto","motorizada","casa","apartamento","roupa","calça","camisa","tênis","sapato","telefone","smartphone","computador","tv","geladeira","sofá","cadeira","relógio","perfume"];
+              const textoCompleto = `${nome} ${descricao}`.toLowerCase();
+              const contemTermoBanido = termosBanidos.some(termo => textoCompleto.includes(termo));
 
-    const nome = formData.get('nome');
-    const preco = parseFloat(formData.get('preco'));
-    const quantidade = parseInt(formData.get('quantidade'), 10);
-    const unidade = formData.get('unidade');
-    const imagem = formData.get('imagem');
-    const provincia = formData.get('provincia');
-    const municipio = formData.get('municipio');
-    const localizacaoDetalhada = formData.get('localizacaoDetalhada');
-    const contactos = formData.get('contactos');
-    const descricao = formData.get('descricao');
-    const nomeVendedor = usuario.nome;
+              if (contemTermoBanido) {
+                alert("O produto não está alinhado com a essência do Mercado Yangue. Apenas produtos ligados à agricultura, pesca, criação ou natureza do campo são permitidos.");
+                return;
+              }
 
-    if (!nome || isNaN(preco) || preco <= 0 || isNaN(quantidade) || quantidade < 0 || !imagem) {
-      alert('Por favor, preencha todos os campos obrigatórios corretamente.');
-      return;
-    }
+              const envio = new FormData();
+              envio.append('nome', nome);
+              envio.append('preco', preco);
+              envio.append('quantidade', quantidade);
+              envio.append('unidade', unidade);
+              envio.append('imagem', imagem);
+              envio.append('provincia', provincia);
+              envio.append('municipio', municipio);
+              envio.append('localizacaoDetalhada', localizacaoDetalhada);
+              envio.append('contactos', contactos);
+              envio.append('descricao', descricao);
+              envio.append('nomeVendedor', nomeVendedor);
+              envio.append('formaPagamento', JSON.stringify(formaPagamento));
 
-    const termosBanidos = [
-      "carro","carros","automóvel","moto","motorizada","casa","apartamento","roupa","calça","camisa",
-      "tênis","sapato","telefone","smartphone","computador","tv","geladeira","sofá","cadeira","relógio","perfume"
-    ];
+              try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/produtos`, {
+                  method: 'POST',
+                  body: envio,
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                if (response.ok) {
+                  alert('Produto cadastrado com sucesso!');
+                  form.reset();
+                } else {
+                  const erro = await response.json();
+                  alert('Erro ao cadastrar produto:\n' + (erro.message || JSON.stringify(erro)));
+                }
+              } catch (error) {
+                alert('Erro de rede ou servidor: ' + error.message);
+              }
+            }} className="flex flex-col gap-4" encType="multipart/form-data">
+              <input type="text" name="nome" required placeholder="Ex: Feijão Catete, Banana da Terra" className="border p-3 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+              <div className="grid md:grid-cols-2 gap-4">
+                <input type="number" name="preco" step="0.01" min="0" required placeholder="Preço (Kz)" className="border p-3 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                <div className="flex gap-2">
+                  <input type="number" name="quantidade" min="0" required placeholder="Quantidade" className="flex-1 border p-3 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                  <select name="unidade" required className="border p-3 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                    <option value="kg">Kg</option><option value="l">Litro</option><option value="un">Unidade</option>
+                    <option value="caixa">Caixa</option><option value="saco">Saco</option><option value="dúzia">Dúzia</option>
+                  </select>
+                </div>
+              </div>
+              <input type="file" name="imagem" accept="image/*" required className="border p-2 rounded-lg" />
+              <div className="grid md:grid-cols-2 gap-4">
+                <input type="text" name="provincia" placeholder="Província" className="border p-3 rounded-lg" />
+                <input type="text" name="municipio" placeholder="Município" className="border p-3 rounded-lg" />
+              </div>
+              <textarea name="localizacaoDetalhada" rows="2" placeholder="Localização detalhada (bairro, estrada, referência)" className="border p-3 rounded-lg"></textarea>
+              <input type="text" name="contactos" placeholder="Contactos (Ex: +244 923 000 000)" className="border p-3 rounded-lg" />
+              <FormaPagamentoCampo formaPagamento={formaPagamento} setFormaPagamento={setFormaPagamento} bancosDisponiveis={bancosAngola} />
+              <textarea name="descricao" rows="3" placeholder="Descrição detalhada do produto..." className="border p-3 rounded-lg"></textarea>
+              <button type="submit" className="bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition shadow-md">Cadastrar Produto</button>
+            </form>
+          </div>
+        )}
+      </main>
 
-    const textoCompleto = `${nome} ${descricao}`.toLowerCase();
-    const contemTermoBanido = termosBanidos.some(termo => textoCompleto.includes(termo));
-
-    if (contemTermoBanido) {
-      alert("O produto não está alinhado com a essência do Mercado Yangue. Apenas produtos ligados à agricultura, pesca, criação ou natureza do campo são permitidos.");
-      return;
-    }
-
-    const envio = new FormData();
-    envio.append('nome', nome);
-    envio.append('preco', preco);
-    envio.append('quantidade', quantidade);
-    envio.append('unidade', unidade);
-    envio.append('imagem', imagem);
-    envio.append('provincia', provincia);
-    envio.append('municipio', municipio);
-    envio.append('localizacaoDetalhada', localizacaoDetalhada);
-    envio.append('contactos', contactos);
-    envio.append('descricao', descricao);
-    envio.append('nomeVendedor', nomeVendedor);
-    envio.append('formaPagamento', JSON.stringify(formaPagamento));
-
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch("https://mercadoyangue-i3in.onrender.com/api/produtos", {
-        method: 'POST',
-        body: envio,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        alert('Produto cadastrado com sucesso!');
-        form.reset();
-      } else {
-        const erro = await response.json();
-        console.error('Erro detalhado:', erro);
-        alert('Erro ao cadastrar produto:\n' + (erro.message || JSON.stringify(erro)));
-      }
-    } catch (error) {
-      alert('Erro de rede ou servidor: ' + error.message);
-    }
-  }}
-  className="flex flex-col gap-4"
-  encType="multipart/form-data"
->
-  <label className="flex flex-col">
-    Nome do Produto:
-    <input
-      type="text"
-      name="nome"
-      required
-      placeholder="Ex: Feijão Catete, Banana da Terra, Tilápia fresca..."
-      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
-    />
-  </label>
-
-  <label className="flex flex-col">
-    Preço:
-    <input
-      type="number"
-      name="preco"
-      step="0.01"
-      min="0"
-      required
-      placeholder="Indica o preço por unidade, kg, litro, etc."
-      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
-    />
-  </label>
-
-  <label className="flex flex-col">
-    Quantidade:
-    <div className="flex gap-2">
-      <input
-        type="number"
-        name="quantidade"
-        min="0"
-        required
-        placeholder="Ex: 20"
-        className="border border-gray-300 p-2 rounded flex-1 focus:ring-2 focus:ring-green-500 outline-none"
-      />
-      <select
-        name="unidade"
-        required
-        className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
-      >
-        <option value="">Selecionar unidade</option>
-        <option value="kg">Kg</option>
-        <option value="l">Litro</option>
-        <option value="un">Unidade</option>
-        <option value="caixa">Caixa</option>
-        <option value="saco">Saco</option>
-        <option value="dúzia">Dúzia</option>
-        <option value="cabeça">Cabeça (gado)</option>
-        <option value="m³">Metro cúbico</option>
-        <option value="tronco">Tronco</option>
-      </select>
+      <FooterMercadoYangue setAbaAtiva={setAbaAtiva} />
     </div>
-  </label>
-
-  <label className="flex flex-col">
-    Imagem:
-    <input
-      type="file"
-      name="imagem"
-      accept="image/*"
-      required
-      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
-    />
-  </label>
-
-  <label className="flex flex-col">
-    Província:
-    <input
-      type="text"
-      name="provincia"
-      placeholder="Ex: Huambo, Benguela, Luanda..."
-      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
-    />
-  </label>
-
-  <label className="flex flex-col">
-    Município:
-    <input
-      type="text"
-      name="municipio"
-      placeholder="Ex: Cacula, Cazenga, Lobito..."
-      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
-    />
-  </label>
-
-  <label className="flex flex-col">
-    Localização Detalhada:
-    <textarea
-      name="localizacaoDetalhada"
-      rows="3"
-      placeholder="Indica o ponto exato: bairro, estrada, referência..."
-      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
-    ></textarea>
-  </label>
-
-  <label className="flex flex-col">
-    Contactos:
-    <input
-      type="text"
-      name="contactos"
-      placeholder="Ex: +244 923 000 000"
-      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none"
-    />
-  </label>
-
-  <label className="flex flex-col">
-    Forma de Pagamento:
-    <FormaPagamentoCampo
-      formaPagamento={formaPagamento}
-      setFormaPagamento={setFormaPagamento}
-      bancosDisponiveis={bancosAngola}
-    />
-  </label>
-
-  <label className="flex flex-col">
-    Descrição do Produto:
-    <textarea
-      name="descricao"
-      rows="4"
-      placeholder="Exemplo: O Feijão Catete é cultivado de forma natural, sem uso de químicos. Rico em proteínas e fibras, ideal para uma alimentação saudável. Descreva o sabor, benefícios, modo de produção e como se destaca dos demais."
-      className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 outline-none transition-all duration-300"
-      onFocus={(e) => e.target.placeholder = ""}
-      onBlur={(e) => e.target.placeholder = "Descreva o produto, realce o sabor, benefícios e modo de produção..."}
-    ></textarea>
-  </label>
-
-  <label className="flex flex-col">
-    Nome do Vendedor:
-    <input
-      type="text"
-      name="nomeVendedor"
-      value={usuario.nome}
-      readOnly
-      className="border border-gray-300 p-2 rounded bg-gray-100 cursor-not-allowed"
-    />
-  </label>
-
-  <button
-    type="submit"
-    className="bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors duration-300"
-  >
-    Cadastrar Produto
-  </button>
-</form>    
-  </div>
-)}
-
-</main>
-
-<FooterMercadoYangue setAbaAtiva={setAbaAtiva} />
-
-</div>
-);
+  );
 }

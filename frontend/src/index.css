@@ -2,15 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  table {
-    @apply w-full border-collapse border border-gray-700;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  th, td {
-    @apply border border-gray-700 px-4 py-2 text-left;
-  }
-  th {
-    @apply bg-green-100;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #166534;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #14532d;
+}
