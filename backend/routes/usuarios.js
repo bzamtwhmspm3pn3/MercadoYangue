@@ -14,10 +14,10 @@ router.get('/buscar-vendedores', async (req, res) => {
     // Busca produtos que contenham o termo no nome (case insensitive)
     const produtos = await Produto.find({
       nome: { $regex: nomeProduto, $options: 'i' },
-      quantidade: { $gt: 0 }, // só produtos em estoque
-    }).populate('vendedor', 'nome tipo telefone email');
+      quantidade: { $gt: 0 },
+    }).populate('vendedor', 'nome tipo telefone email provincia municipio');
 
-    // Extraí os vendedores únicos
+    // Extrai os vendedores únicos
     const vendedoresMap = new Map();
     produtos.forEach((produto) => {
       if (produto.vendedor) {
@@ -27,9 +27,24 @@ router.get('/buscar-vendedores', async (req, res) => {
 
     const vendedores = Array.from(vendedoresMap.values());
 
-    res.json(vendedores);
+    res.json({ success: true, data: vendedores });
   } catch (error) {
     console.error('Erro buscar vendedores:', error);
+    res.status(500).json({ msg: 'Erro interno no servidor' });
+  }
+});
+
+// Rota para listar todos os vendedores ativos
+router.get('/listar', async (req, res) => {
+  try {
+    const vendedores = await Usuario.find({ 
+      tipo: { $in: ['vendedor', 'agricultor'] },
+      aceitouContrato: true 
+    }).select('-senha');
+    
+    res.json({ success: true, data: vendedores });
+  } catch (error) {
+    console.error('Erro listar vendedores:', error);
     res.status(500).json({ msg: 'Erro interno no servidor' });
   }
 });

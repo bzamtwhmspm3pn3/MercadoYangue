@@ -23,6 +23,8 @@ const carrinhoroutes = require('./routes/carrinho');
 const faturaroutes = require("./routes/fatura");
 const avaliacaoroutes = require("./routes/avaliacoes");
 const vendedoresRoutes = require('./routes/vendedores');
+const entregadoresRoutes = require('./routes/entregadores');
+const entregasRoutes = require('./routes/entregas');
 
 // ============ IMPORTAÇÃO DAS ROTAS JIAM ============
 const modelosRoutes = require('./routes/modelos');
@@ -76,6 +78,8 @@ app.use('/api/carrinho', carrinhoroutes);
 app.use("/api/fatura", faturaroutes);
 app.use("/api/avaliacoes", avaliacaoroutes);
 app.use('/api/vendedores', vendedoresRoutes);
+app.use('/api/entregadores', entregadoresRoutes);
+app.use('/api/entregas', entregasRoutes);
 
 // ============ ROTAS JIAM PREDITIVO ============
 app.use("/api/modelos", modelosRoutes);

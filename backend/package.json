@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "npm install --legacy-peer-deps",
+    "postinstall": "npm install --legacy-peer-deps"
   },
   "dependencies": {
     "axios": "^1.16.0",
@@ -23,7 +25,7 @@
     "jspdf-autotable": "^5.0.2",
     "mathjs": "^15.2.0",
     "mongoose": "^7.8.9",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^1.4.4",
     "multer-gridfs-storage": "^5.0.2",
     "nodemailer": "^7.0.9",
     "simplexml": "^0.0.3",
@@ -35,6 +37,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
-  "type": "commonjs"
+  "description": "Mercado Yangue Backend - Plataforma de Agronegócio Angolano",
+  "type": "commonjs",
+  "engines": {
+    "node": "20.x",
+    "npm": "10.x"
+  }
 }
