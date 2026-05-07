@@ -14,7 +14,7 @@ import AbaGuiaUtilizacao from "./components/AbaGuiaUtilizacao";
 import FooterMercadoYangue from "./components/FooterMercadoYangue";
 
 // NOVOS COMPONENTES
-import AbaPrevisoes from './components/AbaPrevisoes';
+import AbaPrevisoesAgro from './components/AbaPrevisoesAgro';
 import AbaRastreamento from './components/AbaRastreamento';
 import AbaLogistica from './components/AbaLogistica';
 import AbaEntregador from './components/AbaEntregador';
@@ -110,7 +110,6 @@ function AbaQuemSomos({ setAbaAtiva }) {
 
   return (
     <div className="max-w-7xl mx-auto px-4">
-      {/* Hero Section */}
       <div className="relative rounded-2xl overflow-hidden mb-12 shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-r from-green-900/80 to-green-700/80 z-10"></div>
         <div className="relative h-[400px] md:h-[500px] bg-[url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center">
@@ -131,114 +130,60 @@ function AbaQuemSomos({ setAbaAtiva }) {
         </div>
       </div>
 
-      {/* Estatísticas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
         {estatisticas.map((stat, idx) => (
           <div key={idx} className="bg-white p-3 rounded-xl shadow-lg text-center border-b-4 border-green-500">
             <div className="text-xl md:text-2xl font-bold text-green-700">{stat.valor}</div>
             <div className="font-semibold text-gray-800 text-xs md:text-sm">{stat.label}</div>
-            <div className="text-xs text-gray-500 hidden md:block">{stat.desc}</div>
           </div>
         ))}
       </div>
 
-      {/* Logo JIAM Preditivo com link */}
       <div className="flex justify-center mb-10">
-        <a 
-          href="https://jiampreditivo.netlify.app/" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-4 shadow-lg text-center hover:shadow-xl transition transform hover:scale-105 cursor-pointer block"
-        >
-          {logojiam ? (
-            <img src={logojiam} alt="JIAM Preditivo" className="h-16 mx-auto mb-2" />
-          ) : (
-            <div className="text-4xl mb-2">📊</div>
-          )}
+        <a href="https://jiampreditivo.netlify.app/" target="_blank" rel="noopener noreferrer" className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-4 shadow-lg text-center hover:shadow-xl transition transform hover:scale-105">
+          <img src={logojiam} alt="JIAM Preditivo" className="h-16 mx-auto mb-2" />
           <h3 className="font-bold text-green-800">JIAM Preditivo</h3>
-          <p className="text-xs text-gray-500 mt-1">Clique para conhecer</p>
+          <p className="text-xs text-gray-500">Clique para conhecer</p>
         </a>
       </div>
 
-      {/* Missão/Visão/Valores */}
       <div className="grid md:grid-cols-3 gap-4 mb-10">
-        <div className="bg-white p-5 rounded-xl shadow-lg hover:shadow-xl transition">
+        <div className="bg-white p-5 rounded-xl shadow-lg">
           <div className="text-3xl mb-2">🌱</div>
-          <h3 className="font-bold text-gray-800 text-lg">Missão</h3>
-          <p className="text-sm text-gray-600 mt-1">Conectar os angolanos através de uma plataforma digital que valoriza os produtos locais e promove a sustentabilidade económica.</p>
+          <h3 className="font-bold text-gray-800">Missão</h3>
+          <p className="text-sm text-gray-600">Conectar os angolanos valorizando produtos locais</p>
         </div>
-        <div className="bg-white p-5 rounded-xl shadow-lg hover:shadow-xl transition">
+        <div className="bg-white p-5 rounded-xl shadow-lg">
           <div className="text-3xl mb-2">👁️</div>
-          <h3 className="font-bold text-gray-800 text-lg">Visão</h3>
-          <p className="text-sm text-gray-600 mt-1">Ser o maior e mais confiável mercado digital de Angola, com forte presença nas zonas urbanas e rurais, fomentando o empreendedorismo e a inclusão financeira.</p>
+          <h3 className="font-bold text-gray-800">Visão</h3>
+          <p className="text-sm text-gray-600">Ser o maior mercado digital de Angola</p>
         </div>
-        <div className="bg-white p-5 rounded-xl shadow-lg hover:shadow-xl transition">
+        <div className="bg-white p-5 rounded-xl shadow-lg">
           <div className="text-3xl mb-2">⭐</div>
-          <h3 className="font-bold text-gray-800 text-lg">Valores</h3>
-          <p className="text-sm text-gray-600 mt-1">Verdade, Transparência, Pontualidade, Responsabilidade, Sustentabilidade, Justiça e Inovação.</p>
+          <h3 className="font-bold text-gray-800">Valores</h3>
+          <p className="text-sm text-gray-600">Transparência, Inovação e Sustentabilidade</p>
         </div>
       </div>
 
-      {/* Funcionalidades */}
-      <div className="bg-gray-50 rounded-2xl p-6 mb-10">
-        <h2 className="text-xl font-bold text-center mb-6">📱 Plataforma Completa para o Agronegócio</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {funcionalidades.map((func, idx) => (
-            <div key={idx} className="text-center group cursor-pointer">
-              <div className="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center text-2xl mx-auto mb-2 group-hover:bg-green-200 transition">
-                {func.icone}
-              </div>
-              <h4 className="font-bold text-gray-800 text-sm">{func.titulo}</h4>
-              <p className="text-xs text-gray-500 mt-1 hidden md:block">{func.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Sobre o Projeto */}
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-10">
-        <h2 className="text-xl font-bold text-green-700 mb-4">📖 Sobre o Mercado Yangue</h2>
-        <p className="text-gray-700 mb-3">
-          O <strong>MercadoYangue</strong> é uma plataforma digital angolana dedicada a impulsionar o comércio local e nacional, 
-          promovendo uma ligação directa e segura entre clientes e vendedores, produtores ou agricultores em todo o território nacional.
-        </p>
-        <p className="text-gray-700 mb-3">
-          Com um sistema de registo de utilizadores segmentado por perfis (cliente, vendedor/agricultor ou entregador), 
-          garantimos um ambiente personalizado e funcional. Para os vendedores/agricultores, é exigido o aceite de um Contrato Digital, 
-          o qual reforça os princípios de responsabilidade, compromisso e integridade nas transacções comerciais.
-        </p>
-        <p className="text-gray-700">
-          O <strong>JIAM Preditivo</strong> é o nosso sistema de inteligência de dados que analisa o histórico de vendas 
-          e gera previsões de demanda e preços, ajudando produtores a planejar melhor sua produção e reduzir perdas.
-        </p>
-      </div>
-
-      {/* Nossa Equipa */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-10">
         <h2 className="text-xl font-bold text-center mb-6">👥 Nossa Equipa</h2>
         <div className="grid md:grid-cols-3 gap-6">
           {equipa.map((membro, idx) => (
             <div key={idx} className="text-center">
-              <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-3 border-4 border-green-500 shadow-lg">
+              <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-3 border-4 border-green-500">
                 <img src={membro.imagem} alt={membro.nome} className="w-full h-full object-cover" />
               </div>
               <h3 className="font-bold text-gray-800">{membro.nome}</h3>
-              <p className="text-green-600 text-sm font-semibold">{membro.cargo}</p>
-              <p className="text-xs text-gray-500 mt-2">{membro.descricao}</p>
+              <p className="text-green-600 text-sm">{membro.cargo}</p>
+              <p className="text-xs text-gray-500 mt-1">{membro.descricao}</p>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Contato */}
       <div className="bg-gradient-to-r from-green-700 to-green-800 rounded-xl p-6 text-white text-center">
-        <h3 className="text-lg font-bold mb-2">📞 Precisa de ajuda?</h3>
-        <p className="text-sm mb-3">Entre em contacto com o nosso suporte</p>
-        <div className="flex flex-col gap-2">
-          <p className="text-sm">📱 WhatsApp: {WHATSAPP_NUMBER}</p>
-          <p className="text-sm">✉️ Email: mercadoyangueservicosdigitais@gmail.com</p>
-        </div>
-        <p className="text-xs text-green-200 mt-4">© {new Date().getFullYear()} MercadoYangue — Criado por angolanos, para angolanos.</p>
+        <p className="text-sm">📞 WhatsApp: {WHATSAPP_NUMBER} | ✉️ mercadoyangueservicosdigitais@gmail.com</p>
+        <p className="text-xs text-green-200 mt-2">© {new Date().getFullYear()} MercadoYangue — Criado por angolanos</p>
       </div>
     </div>
   );
@@ -277,7 +222,7 @@ function FormaPagamentoCampo({ formaPagamento, setFormaPagamento, bancosDisponiv
   );
 }
 
-// ============ LOGIN/CADASTRO COM TERMOS DE USO ============
+// ============ LOGIN/CADASTRO ============
 function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
   const [modo, setModo] = useState("login");
   const [tipoCadastro, setTipoCadastro] = useState("cliente");
@@ -317,9 +262,9 @@ function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
   const handleCadastro = async () => {
     if (!nome || !email || !senha) return alert("Preencha todos os campos");
     if (tipoCadastro !== "cliente" && (!provincia || !municipio)) {
-      return alert("Preencha província e município para vendedor/agricultor/entregador");
+      return alert("Preencha província e município");
     }
-    if (!aceitouTermos) return alert("Você deve aceitar os Termos de Uso e Política de Privacidade");
+    if (!aceitouTermos) return alert("Aceite os Termos de Uso");
     
     setLoading(true);
     try {
@@ -330,7 +275,6 @@ function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
       });
       alert("Cadastro realizado! Faça login.");
       setModo("login");
-      setAceitouTermos(false);
     } catch (error) {
       alert("Erro no cadastro");
     } finally {
@@ -338,66 +282,18 @@ function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
     }
   };
 
-  // Modal de Termos de Uso
   const TermosModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-6 max-w-2xl max-h-[80vh] overflow-y-auto mx-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-green-700">📜 Termos de Uso e Política de Privacidade</h3>
-          <button onClick={() => setMostrarTermos(false)} className="text-gray-500 hover:text-gray-700">✕</button>
+        <h3 className="text-xl font-bold text-green-700 mb-4">📜 Termos de Uso</h3>
+        <div className="space-y-3 text-sm">
+          <p><strong>1.</strong> Ao se cadastrar, você concorda com os termos da plataforma.</p>
+          <p><strong>2.</strong> Seus dados são usados exclusivamente para operar a plataforma.</p>
+          <p><strong>3.</strong> Vendedores pagam 0.5% de comissão sobre cada venda.</p>
+          <p><strong>4.</strong> Os vendedores são responsáveis pela qualidade dos produtos.</p>
+          <p><strong>5.</strong> Não compartilhamos seus dados com terceiros.</p>
         </div>
-        
-        <div className="space-y-4 text-sm text-gray-700">
-          <div>
-            <h4 className="font-bold text-green-600">1. Aceitação dos Termos</h4>
-            <p>Ao se cadastrar no Mercado Yangue, você concorda com todos os termos e condições aqui estabelecidos.</p>
-          </div>
-          
-          <div>
-            <h4 className="font-bold text-green-600">2. Coleta de Dados</h4>
-            <p>Coletamos nome, email, localização e dados de navegação para melhorar sua experiência e processar transações.</p>
-          </div>
-          
-          <div>
-            <h4 className="font-bold text-green-600">3. Uso das Informações</h4>
-            <p>Seus dados são usados exclusivamente para operar a plataforma, processar pagamentos e comunicar sobre suas transações.</p>
-          </div>
-          
-          <div>
-            <h4 className="font-bold text-green-600">4. Compartilhamento</h4>
-            <p>Não compartilhamos seus dados pessoais com terceiros sem seu consentimento, exceto quando exigido por lei.</p>
-          </div>
-          
-          <div>
-            <h4 className="font-bold text-green-600">5. Segurança</h4>
-            <p>Utilizamos criptografia e boas práticas de segurança para proteger seus dados.</p>
-          </div>
-          
-          <div>
-            <h4 className="font-bold text-green-600">6. Comissões</h4>
-            <p>Vendedores/Agricultores pagam 0.5% de comissão sobre cada venda realizada na plataforma.</p>
-          </div>
-          
-          <div>
-            <h4 className="font-bold text-green-600">7. Responsabilidades</h4>
-            <p>Os vendedores são responsáveis pela qualidade e veracidade das informações dos produtos.</p>
-          </div>
-          
-          <div>
-            <h4 className="font-bold text-green-600">8. Privacidade</h4>
-            <p>Seus dados não serão vendidos ou usados para fins não autorizados. Você pode solicitar exclusão a qualquer momento.</p>
-          </div>
-        </div>
-        
-        <button
-          onClick={() => {
-            setAceitouTermos(true);
-            setMostrarTermos(false);
-          }}
-          className="mt-6 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
-        >
-          Li e Aceito os Termos
-        </button>
+        <button onClick={() => { setAceitouTermos(true); setMostrarTermos(false); }} className="mt-6 w-full bg-green-600 text-white py-2 rounded-lg">Aceito</button>
       </div>
     </div>
   );
@@ -417,53 +313,31 @@ function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
         </>
       ) : (
         <>
-          <input type="text" placeholder="Nome completo" value={nome} onChange={(e) => setNome(e.target.value)} className="w-full p-3 border rounded-lg mb-3" />
+          <input type="text" placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} className="w-full p-3 border rounded-lg mb-3" />
           <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 border rounded-lg mb-3" />
           <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} className="w-full p-3 border rounded-lg mb-3" />
           <select value={tipoCadastro} onChange={(e) => setTipoCadastro(e.target.value)} className="w-full p-3 border rounded-lg mb-3">
             <option value="cliente">Cliente</option>
-            <option value="vendedor">Vendedor/Agricultor</option>
+            <option value="vendedor">Vendedor</option>
             <option value="entregador">Entregador</option>
           </select>
-          
           {tipoCadastro !== "cliente" && (
             <div className="grid grid-cols-2 gap-3 mb-3">
               <input type="text" placeholder="Província" value={provincia} onChange={(e) => setProvincia(e.target.value)} className="w-full p-3 border rounded-lg" />
               <input type="text" placeholder="Município" value={municipio} onChange={(e) => setMunicipio(e.target.value)} className="w-full p-3 border rounded-lg" />
             </div>
           )}
-
-          {/* Termos de Uso */}
-          <div className="mb-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={aceitouTermos}
-                onChange={() => !aceitouTermos && setMostrarTermos(true)}
-                className="w-4 h-4 text-green-600"
-              />
-              <span className="text-sm text-gray-700">
-                Li e aceito os{" "}
-                <button
-                  type="button"
-                  onClick={() => setMostrarTermos(true)}
-                  className="text-green-600 underline hover:text-green-700"
-                >
-                  Termos de Uso e Política de Privacidade
-                </button>
-              </span>
-            </label>
-          </div>
-
+          <label className="flex items-center gap-2 cursor-pointer mb-4">
+            <input type="checkbox" checked={aceitouTermos} onChange={() => setMostrarTermos(true)} className="w-4 h-4" />
+            <span className="text-sm">Aceito os <button type="button" onClick={() => setMostrarTermos(true)} className="text-green-600 underline">Termos de Uso</button></span>
+          </label>
           <button onClick={handleCadastro} disabled={loading} className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold">Cadastrar</button>
         </>
       )}
-
       {mostrarTermos && <TermosModal />}
     </div>
   );
 }
-
 
 // ============ COMPONENTE PRINCIPAL APP ============
 export default function App() {
@@ -473,13 +347,12 @@ export default function App() {
   const [usuario, setUsuario] = useState(() => JSON.parse(localStorage.getItem("usuario")));
   const [abaAtiva, setAbaAtiva] = useState("produtos");
   const [menuAberto, setMenuAberto] = useState(false);
+  const [formaPagamento, setFormaPagamento] = useState({ tipo: "iban", iban: "", banco: "" });
 
-  // Carregar produtos
   useEffect(() => {
     axios.get(`${API_URL}/produtos`).then(res => setProdutos(res.data || [])).catch(err => console.error(err));
   }, []);
 
-  // Persistir carrinho
   useEffect(() => {
     localStorage.setItem("carrinho", JSON.stringify(carrinho));
   }, [carrinho]);
@@ -491,7 +364,7 @@ export default function App() {
 
   const adicionarAoCarrinho = (produto) => {
     if (!usuario || usuario.tipo !== 'cliente') {
-      alert('Faça login como cliente para comprar');
+      alert('Faça login como cliente');
       setAbaAtiva('login');
       return;
     }
@@ -509,21 +382,18 @@ export default function App() {
     setAbaAtiva('produtos');
   };
 
-  // Verificação de permissões
   const podeVerJIAM = usuario && (usuario.tipo === 'vendedor' || usuario.tipo === 'agricultor');
   const podeVerEntregador = usuario && usuario.tipo === 'entregador';
   const podeVerGestao = usuario && (usuario.tipo === 'vendedor' || usuario.tipo === 'agricultor');
-  const podeVerCompras = usuario && usuario.tipo === 'cliente';
 
-  // Menu items com todas as abas incluindo Ajuda e Guia
   const menuItems = [
     { id: 'produtos', label: '🛒 Produtos', mostrar: true },
     { id: 'carrinho', label: '🛍️ Carrinho', mostrar: usuario?.tipo === 'cliente' },
     { id: 'gestao', label: '📊 Vendas', mostrar: podeVerGestao },
-    { id: 'gestao-compras', label: '📋 Compras', mostrar: podeVerCompras },
+    { id: 'gestao-compras', label: '📋 Compras', mostrar: usuario?.tipo === 'cliente' },
     { id: 'chat', label: '💬 Chat', mostrar: !!usuario },
     { id: 'cadastrar', label: '➕ Cadastrar', mostrar: podeVerGestao },
-    { id: 'previsoes', label: '📊 JIAM', mostrar: podeVerJIAM },
+    { id: 'previsoes', label: '📊 JIAM Agro', mostrar: podeVerJIAM },
     { id: 'rastreamento', label: '🗺️ Rastrear', mostrar: podeVerJIAM },
     { id: 'entregador', label: '🚚 Entregas', mostrar: podeVerEntregador },
     { id: 'logistica', label: '📦 Logística', mostrar: true },
@@ -536,30 +406,24 @@ export default function App() {
     <div className="min-h-screen bg-gray-50">
       <WhatsAppButton telefone={WHATSAPP_NUMBER} />
       
-      {/* Header */}
       <header className="bg-gradient-to-r from-green-800 to-green-700 text-white sticky top-0 z-50 shadow-lg">
         <div className="px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => setAbaAtiva('produtos')}>
             <img src="/logmercadoyangue.png" alt="Logo" className="h-10" />
-            <div>
-              <h1 className="text-lg font-bold">Mercado Yangue</h1>
-              <p className="text-xs text-green-200 hidden sm:block">Inteligência para o Agronegócio</p>
-            </div>
+            <h1 className="text-lg font-bold">Mercado Yangue</h1>
           </div>
-          
-          {/* Menu Desktop */}
           <div className="hidden md:flex items-center gap-2">
-            {menuItems.filter(item => item.mostrar).slice(0, 7).map(item => (
+            {menuItems.filter(item => item.mostrar).slice(0, 6).map(item => (
               <button key={item.id} onClick={() => setAbaAtiva(item.id)} className={`px-3 py-1.5 rounded-lg text-sm transition ${abaAtiva === item.id ? 'bg-white text-green-700' : 'hover:bg-green-600'}`}>
                 {item.label}
               </button>
             ))}
-            {menuItems.filter(item => item.mostrar).length > 7 && (
+            {menuItems.filter(item => item.mostrar).length > 6 && (
               <div className="relative">
                 <button onClick={() => setMenuAberto(!menuAberto)} className="px-3 py-1.5 rounded-lg text-sm hover:bg-green-600">Mais ▼</button>
                 {menuAberto && (
                   <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg py-2 z-50 min-w-[150px]">
-                    {menuItems.filter(item => item.mostrar).slice(7).map(item => (
+                    {menuItems.filter(item => item.mostrar).slice(6).map(item => (
                       <button key={item.id} onClick={() => { setAbaAtiva(item.id); setMenuAberto(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50">
                         {item.label}
                       </button>
@@ -577,8 +441,6 @@ export default function App() {
               </div>
             )}
           </div>
-
-          {/* Menu Mobile */}
           <div className="md:hidden flex items-center gap-2">
             {!usuario ? (
               <button onClick={() => setAbaAtiva('login')} className="bg-white text-green-700 px-3 py-1 rounded-lg text-sm">Entrar</button>
@@ -592,7 +454,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* Menu Mobile Dropdown */}
       {menuAberto && (
         <div className="md:hidden fixed top-[57px] left-0 right-0 bg-white shadow-lg z-50 max-h-80 overflow-y-auto border-t">
           <div className="p-2">
@@ -605,21 +466,85 @@ export default function App() {
         </div>
       )}
 
-      {/* Conteúdo Principal - Com TODAS as abas incluindo Ajuda e Guia */}
       <main className="container mx-auto px-4 py-6">
         {abaAtiva === 'produtos' && <AbaProdutos produtos={produtos} setProdutos={setProdutos} setProdutoSelecionado={setProdutoSelecionado} adicionarNoCarrinho={adicionarAoCarrinho} usuario={usuario} setAbaAtiva={setAbaAtiva} />}
         {abaAtiva === 'carrinho' && <AbaCarrinho carrinho={carrinho} setCarrinho={setCarrinho} usuario={usuario} setAbaAtiva={setAbaAtiva} />}
         {abaAtiva === 'login' && !usuario && <AbaLoginCadastro setUsuario={setUsuario} setAbaAtiva={setAbaAtiva} />}
         {abaAtiva === 'gestao' && podeVerGestao && <AbaGestaoVendas usuario={usuario} produtos={produtos} setProdutos={setProdutos} />}
-        {abaAtiva === 'gestao-compras' && podeVerCompras && <AbaGestaoCompras usuario={usuario} produtos={produtos} setProdutos={setProdutos} />}
+        {abaAtiva === 'gestao-compras' && usuario?.tipo === 'cliente' && <AbaGestaoCompras usuario={usuario} produtos={produtos} setProdutos={setProdutos} />}
         {abaAtiva === 'chat' && usuario && <AbaChat usuario={usuario} />}
-        {abaAtiva === 'previsoes' && podeVerJIAM && <AbaPrevisoes usuario={usuario} />}
-        {abaAtiva === 'rastreamento' && podeVerJIAM && (produtoSelecionado ? <AbaRastreamento usuario={usuario} produtoId={produtoSelecionado._id} produto={produtoSelecionado} /> : <div className="text-center p-8 bg-white rounded-xl shadow"><p className="text-gray-500">Selecione um produto na aba Produtos primeiro</p><button onClick={() => setAbaAtiva('produtos')} className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg">Ver Produtos</button></div>)}
+        {abaAtiva === 'previsoes' && podeVerJIAM && <AbaPrevisoesAgro usuario={usuario} />}
+        {abaAtiva === 'rastreamento' && podeVerJIAM && (produtoSelecionado ? <AbaRastreamento usuario={usuario} produtoId={produtoSelecionado._id} produto={produtoSelecionado} /> : <div className="text-center p-8 bg-white rounded-xl shadow"><p>Selecione um produto primeiro</p><button onClick={() => setAbaAtiva('produtos')} className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg">Ver Produtos</button></div>)}
         {abaAtiva === 'entregador' && podeVerEntregador && <AbaEntregador usuario={usuario} />}
         {abaAtiva === 'logistica' && <AbaLogistica usuario={usuario} />}
         {abaAtiva === 'quemSomos' && <AbaQuemSomos setAbaAtiva={setAbaAtiva} />}
         {abaAtiva === 'ajuda' && <AbaAjuda />}
         {abaAtiva === 'guia' && <AbaGuiaUtilizacao />}
+
+        {/* FORMULÁRIO DE CADASTRO DE PRODUTO */}
+        {abaAtiva === 'cadastrar' && usuario && (usuario.tipo === 'vendedor' || usuario.tipo === 'agricultor') && (
+          <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-lg">
+            <h2 className="text-2xl font-bold mb-4">🌾 Cadastrar Produto</h2>
+            <div className="bg-green-100 p-3 rounded-lg mb-4 text-sm text-green-800">
+              💡 Dica: Seja claro sobre o ponto de retirada ou como a entrega será feita.
+            </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.target;
+              const formData = new FormData(form);
+              
+              const envio = new FormData();
+              envio.append('nome', formData.get('nome'));
+              envio.append('preco', formData.get('preco'));
+              envio.append('quantidade', formData.get('quantidade'));
+              envio.append('unidade', formData.get('unidade'));
+              envio.append('imagem', formData.get('imagem'));
+              envio.append('provincia', formData.get('provincia'));
+              envio.append('municipio', formData.get('municipio'));
+              envio.append('descricao', formData.get('descricao'));
+              envio.append('nomeVendedor', usuario.nome);
+              envio.append('formaPagamento', JSON.stringify(formaPagamento));
+
+              try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/produtos`, {
+                  method: 'POST',
+                  body: envio,
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                if (response.ok) {
+                  alert('Produto cadastrado com sucesso!');
+                  form.reset();
+                } else {
+                  const erro = await response.json();
+                  alert('Erro ao cadastrar: ' + (erro.message || JSON.stringify(erro)));
+                }
+              } catch (error) {
+                alert('Erro de rede: ' + error.message);
+              }
+            }} encType="multipart/form-data" className="space-y-4">
+              <input type="text" name="nome" required placeholder="Nome do produto" className="w-full p-3 border rounded-lg" />
+              <div className="grid md:grid-cols-2 gap-4">
+                <input type="number" name="preco" step="0.01" required placeholder="Preço (Kz)" className="w-full p-3 border rounded-lg" />
+                <div className="flex gap-2">
+                  <input type="number" name="quantidade" required placeholder="Quantidade" className="flex-1 p-3 border rounded-lg" />
+                  <select name="unidade" required className="p-3 border rounded-lg">
+                    <option value="kg">Kg</option><option value="l">Litro</option><option value="un">Unidade</option>
+                    <option value="caixa">Caixa</option><option value="saco">Saco</option>
+                  </select>
+                </div>
+              </div>
+              <input type="file" name="imagem" accept="image/*" required className="w-full p-2 border rounded-lg" />
+              <div className="grid md:grid-cols-2 gap-4">
+                <input type="text" name="provincia" placeholder="Província" className="w-full p-3 border rounded-lg" />
+                <input type="text" name="municipio" placeholder="Município" className="w-full p-3 border rounded-lg" />
+              </div>
+              <textarea name="descricao" rows="3" placeholder="Descrição do produto" className="w-full p-3 border rounded-lg"></textarea>
+              <FormaPagamentoCampo formaPagamento={formaPagamento} setFormaPagamento={setFormaPagamento} bancosDisponiveis={bancosAngola} />
+              <button type="submit" className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">Cadastrar Produto</button>
+            </form>
+          </div>
+        )}
       </main>
 
       <FooterMercadoYangue setAbaAtiva={setAbaAtiva} />

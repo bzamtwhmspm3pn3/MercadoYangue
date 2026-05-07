@@ -3,11 +3,13 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import ConfirmacaoPagamento from "./ConfirmacaoPagamento";
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 export default function ConfirmacaoPagamentoProtegido({
   carrinho,
   navigateToChat,
   tipoFactura = "manual",
-  onSucesso // <-- opcional: callback que o AbaCarrinho irá passar para recarregar carrinho/historico
+  onSucesso
 }) {
   const { inicializarAuth, token, usuario } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
@@ -28,60 +30,80 @@ export default function ConfirmacaoPagamentoProtegido({
     setLoading(true);
 
     try {
-      // 0) Dados para pagamento
-      const metodoPagamento = checkoutData.metodoPagamento || "transferencia";
-      const referencia = checkoutData.referencia || `REF-${Date.now()}`;
+      // Dados para pagamento
+      const metodoPagamento = checkoutData?.metodoPagamento || "transferencia";
+      const referencia = checkoutData?.referencia || `REF-${Date.now()}`;
+      
+      // Obter o vendedor do primeiro item do carrinho
+      const vendedorId = carrinho[0]?.vendedorId || carrinho[0]?.vendedor?._id;
+      const vendedorNome = carrinho[0]?.vendedor?.nome || "Vendedor";
 
-      // 1) Primeiro: chamar a rota do CARRINHO para descontar stock e finalizar carrinho
-      const resCarrinho = await fetch("https://mercadoyangue-i3in.onrender.com/api/carrinho/checkout", {
+      // 1) Finalizar carrinho (checkout)
+      const resCarrinho = await fetch(`${API_URL}/carrinho/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json; charset=utf-8",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ metodoPagamento, referencia }),
+        body: JSON.stringify({ 
+          metodoPagamento, 
+          referencia,
+          entrega: checkoutData?.entrega || null,
+          factura: checkoutData?.factura || { tipo: tipoFactura }
+        }),
       });
 
       const dataCarrinho = await resCarrinho.json();
       if (!resCarrinho.ok) {
-        throw new Error(dataCarrinho.msg || "Erro ao finalizar carrinho (checkout)");
+        throw new Error(dataCarrinho.msg || "Erro ao finalizar carrinho");
       }
       console.log("✅ Carrinho finalizado:", dataCarrinho);
 
-      // 2) Depois: registar venda/compra (sua rota /api/checkout) — opcional mas aparentemente necessária no seu fluxo
-      const resVenda = await fetch("https://mercadoyangue-i3in.onrender.com/api/checkout", {
+      // 2) Registrar venda
+      const resVenda = await fetch(`${API_URL}/vendas`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json; charset=utf-8",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          ...checkoutData,
-          comprador: usuario._id,
-          factura: checkoutData.factura || { tipo: tipoFactura },
+          compradorId: usuario._id || usuario.id,
+          vendedorId: vendedorId,
+          itens: carrinho.map(item => ({
+            produtoId: item._id || item.produtoId,
+            nome: item.nome,
+            quantidade: item.quantidade,
+            precoUnitario: item.preco,
+            subtotal: item.preco * item.quantidade
+          })),
+          total: carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0),
+          metodoPagamento,
+          referencia,
+          entrega: checkoutData?.entrega || null,
+          status: "confirmado"
         }),
       });
 
       const dataVenda = await resVenda.json();
       if (!resVenda.ok) {
-        // Já finalizámos o carrinho no passo 1; aqui apenas reportar o erro (não reverter)
-        console.error("⚠️ Erro ao registar venda/compra:", dataVenda);
-        // opcional: você pode alertar, mas normalmente queres prosseguir.
+        console.error("⚠️ Erro ao registrar venda:", dataVenda);
       } else {
-        console.log("✅ Compra registrada:", dataVenda);
+        console.log("✅ Venda registrada:", dataVenda);
       }
 
-      // 3) Enviar mensagem automática (chat)
+      // 3) Enviar mensagem automática para o vendedor
+      const mensagem = msgAutomatica || `Olá! Acabei de realizar um pedido no valor de ${carrinho.reduce((sum, i) => sum + (i.preco * i.quantidade), 0).toLocaleString()} Kz. ${checkoutData?.entrega ? `Solicitei entrega.` : "Farei a retirada local."} Aguardo confirmação.`;
+      
       try {
-        const resMsg = await fetch("https://mercadoyangue-i3in.onrender.com/api/chat/enviar", {
+        const resMsg = await fetch(`${API_URL}/chat/enviar`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json; charset=utf-8",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            destinatario: vendedor?._id || checkoutData.vendedorId || null,
-            conteudo: msgAutomatica,
+            destinatarioId: vendedorId,
+            conteudo: mensagem,
           }),
         });
 
@@ -95,37 +117,76 @@ export default function ConfirmacaoPagamentoProtegido({
         console.error("❌ Erro no envio de mensagem automática:", err);
       }
 
-      // 4) Atualizar estados locais / informar filho
-      setMensagemAutomatica(msgAutomatica);
-      setVendedorPrincipal(vendedor);
-      setCheckoutConfirmado(true);
-
-      // 5) Notificar o componente pai (AbaCarrinho) para recarregar / atualizar UI
-      if (typeof onSucesso === "function") {
-        // passa objetos úteis: resultado do carrinho/pedido e da venda (quando existirem)
-        onSucesso({ pedido: dataCarrinho.pedido || dataCarrinho, venda: dataVenda || null });
+      // 4) Se houver entrega, notificar o entregador
+      if (checkoutData?.entrega?.entregadorId) {
+        try {
+          const msgEntregador = `Nova entrega solicitada! Cliente: ${usuario.nome}. Endereço: ${checkoutData.entrega.endereco || "Combinar"}`;
+          await fetch(`${API_URL}/chat/enviar`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json; charset=utf-8",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              destinatarioId: checkoutData.entrega.entregadorId,
+              conteudo: msgEntregador,
+            }),
+          });
+          console.log("✅ Mensagem enviada ao entregador");
+        } catch (err) {
+          console.error("❌ Erro ao notificar entregador:", err);
+        }
       }
 
+      // 5) Atualizar estados locais
+      setMensagemAutomatica(mensagem);
+      setVendedorPrincipal({ _id: vendedorId, nome: vendedorNome });
+      setCheckoutConfirmado(true);
+
+      // 6) Notificar o componente pai (AbaCarrinho)
+      if (typeof onSucesso === "function") {
+        onSucesso({ 
+          pedido: dataCarrinho.pedido || dataCarrinho, 
+          venda: dataVenda || null 
+        });
+      }
+
+      alert("✅ Pedido confirmado com sucesso!");
       return { pedido: dataCarrinho.pedido || dataCarrinho, venda: dataVenda || null };
 
     } catch (err) {
       console.error("❌ Erro no fluxo de checkout:", err);
-      alert(err.message || "Erro no checkout");
+      alert(err.message || "Erro no checkout. Tente novamente.");
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  if (!token || !usuario) return <div>Carregando autenticação...</div>;
+  if (!token || !usuario) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <p className="ml-3 text-gray-600">Carregando autenticação...</p>
+      </div>
+    );
+  }
+
+  if (!carrinho || carrinho.length === 0) {
+    return (
+      <div className="text-center p-12 bg-white rounded-xl shadow">
+        <p className="text-gray-500">Carrinho vazio. Adicione produtos antes de finalizar a compra.</p>
+      </div>
+    );
+  }
 
   return (
     <ConfirmacaoPagamento
       comprador={usuario}
       carrinho={carrinho}
       navigateToChat={navigateToChat}
-      onConfirmar={enviarCheckout}         // <-- aqui o filho chama enviarCheckout
-      vendedorPrincipal={carrinho[0]?.vendedor || { _id: null, nome: "Vendedor" }}
+      onConfirmar={enviarCheckout}
+      vendedorPrincipal={carrinho[0]?.vendedor || { _id: carrinho[0]?.vendedorId, nome: "Vendedor" }}
       mensagemAutomatica={mensagemAutomatica}
       checkoutConfirmado={checkoutConfirmado}
       loading={loading}

@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import ModalEditarProduto from "./ModalEditarProduto";
 import MensagemMultilingue from "./MensagemMultilingue";
-import { Carousel } from "react-responsive-carousel";
-import "react-responsive-carousel/lib/styles/carousel.min.css";
 import axios from "axios";
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -174,7 +172,7 @@ export default function AbaProdutos({
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 overflow-x-hidden">
       {/* Hero Section */}
       <div className="relative rounded-2xl overflow-hidden mb-8 shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-r from-green-900 to-green-700 opacity-90"></div>
@@ -193,16 +191,15 @@ export default function AbaProdutos({
 
       <MensagemMultilingue />
 
-      {/* Destaques */}
+      {/* Destaques - Grid em vez de Carousel */}
       {produtosMaisComprados.length > 0 && (
         <div className="mb-10">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
               <span className="text-3xl">🔥</span> Mais Vendidos
             </h2>
-            <div className="h-1 w-20 bg-green-500 rounded"></div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {produtosMaisComprados.map((produto) => (
               <div
                 key={produto._id}
@@ -222,7 +219,7 @@ export default function AbaProdutos({
                     alt={produto.nome}
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                   />
-                  <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                  <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10">
                     🔥 Top
                   </div>
                 </div>
@@ -240,7 +237,7 @@ export default function AbaProdutos({
       {/* Vendedores do Mês Banner */}
       {vendedoresDoMes.length > 0 && (
         <div className="mb-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-4 shadow-lg">
-          <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="text-3xl">🏆</span>
               <span className="text-white font-bold">Vendedores do Mês</span>
@@ -264,7 +261,7 @@ export default function AbaProdutos({
         <h2 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
           <span className="text-xl">🔍</span> Encontre o produto ideal
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             { name: "nome", placeholder: "Nome do produto", icon: "🌾" },
             { name: "provincia", placeholder: "Província", icon: "📍" },
@@ -310,31 +307,31 @@ export default function AbaProdutos({
             return (
               <div key={vendedor} className="bg-white rounded-xl shadow-lg overflow-hidden">
                 <div className="bg-gradient-to-r from-green-700 to-green-600 px-6 py-3">
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-2xl">🧑‍🌾</span>
                       <h3 className="text-xl font-bold text-white">
                         {produtosDoVendedor[0]?.vendedor?.genero === "feminino" ? "Vendedora" : "Vendedor"}: {vendedor}
                       </h3>
                       {seloPorCadastro && (
-                        <span className="bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                        <span className="bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full">
                           🏅 Cadastro Ativo
                         </span>
                       )}
                       {seloPorVenda && (
-                        <span className="bg-blue-400 text-blue-900 text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                        <span className="bg-blue-400 text-blue-900 text-xs px-2 py-1 rounded-full">
                           💎 Top Vendas
                         </span>
                       )}
                     </div>
                     <div className="text-white/80 text-sm">
-                      {produtosDoVendedor.length} produtos disponíveis
+                      {produtosDoVendedor.length} produtos
                     </div>
                   </div>
                 </div>
 
                 <div className="p-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                     {produtosDoVendedor.map((produto) => (
                       <div
                         key={produto._id}
@@ -390,7 +387,7 @@ export default function AbaProdutos({
                             📍 {produto.localizacaoDetalhada || `${produto.provincia} - ${produto.municipio}`}
                           </p>
                           <p className="text-xs text-gray-500 line-clamp-2 mt-1">
-                            {produto.descricao}
+                            {produto.descricao?.substring(0, 80)}...
                           </p>
 
                           <div className="flex gap-2 mt-3">
