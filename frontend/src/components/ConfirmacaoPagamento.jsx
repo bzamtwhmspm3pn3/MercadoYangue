@@ -19,15 +19,24 @@ export default function ConfirmacaoPagamento({
   const [filtros, setFiltros] = useState({ provincia: "", municipio: "", veiculo: "" });
   const [loading, setLoading] = useState(false);
   const [carregandoEntregadores, setCarregandoEntregadores] = useState(false);
+  const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
-  // Buscar entregadores reais do backend
+  // Buscar entregadores reais do backend quando solicitar entrega
   useEffect(() => {
     if (solicitaEntrega) {
-      buscarEntregadores();
+      buscarEntregadoresReais();
+    } else {
+      // Se não solicitar entrega, usar dados de exemplo (fallback)
+      setEntregadores([
+        { nome: "Manuel Moto", veiculo: "Moto", provincia: "Luanda", municipio: "Viana", local: "KM 30", tarifa: 1500, telefone: "923-000-111", disponivel: true },
+        { nome: "Joana Carro", veiculo: "Carro", provincia: "Luanda", municipio: "Kilamba Kiaxi", local: "KK 5000", tarifa: 2500, telefone: "922-123-456", disponivel: true },
+        { nome: "Carlos Van", veiculo: "Kombi", provincia: "Huíla", municipio: "Lubango", local: "Tchioco", tarifa: 3000, telefone: "924-888-777", disponivel: true },
+        { nome: "Pedro Bike", veiculo: "Bicicleta", provincia: "Benguela", municipio: "Lobito", local: "Restinga", tarifa: 1000, telefone: "926-789-101", disponivel: true },
+      ]);
     }
   }, [solicitaEntrega]);
 
-  const buscarEntregadores = async () => {
+  const buscarEntregadoresReais = async () => {
     setCarregandoEntregadores(true);
     try {
       const token = localStorage.getItem("token");
@@ -35,49 +44,39 @@ export default function ConfirmacaoPagamento({
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      if (response.data.success) {
-        // Mapear os dados do backend para o formato esperado
+      if (response.data.success && response.data.data.length > 0) {
         const entregadoresReais = response.data.data.map(ent => ({
           _id: ent._id,
           nome: ent.nome,
-          email: ent.email,
-          telefone: ent.telefone || "Não informado",
           veiculo: ent.veiculo || "Não informado",
-          placa: ent.placa || "Sem placa",
           provincia: ent.provincia || "Não informada",
           municipio: ent.municipio || "Não informado",
           local: ent.localizacaoEspecifica || ent.municipio || "Ponto de encontro",
-          tarifa: ent.tarifa || calcularTarifaBase(ent.veiculo),
-          disponivel: ent.disponivel !== false,
-          localizacaoAtual: ent.localizacaoAtual
+          tarifa: ent.tarifa || 1500,
+          telefone: ent.telefone || "Não informado",
+          disponivel: ent.disponivel !== false
         }));
         setEntregadores(entregadoresReais);
       } else {
-        console.error("Erro ao buscar entregadores:", response.data.message);
-        setEntregadores([]);
+        // Fallback para dados de exemplo se não houver entregadores no backend
+        setEntregadores([
+          { nome: "Manuel Moto", veiculo: "Moto", provincia: "Luanda", municipio: "Viana", local: "KM 30", tarifa: 1500, telefone: "923-000-111", disponivel: true },
+          { nome: "Joana Carro", veiculo: "Carro", provincia: "Luanda", municipio: "Kilamba Kiaxi", local: "KK 5000", tarifa: 2500, telefone: "922-123-456", disponivel: true },
+        ]);
       }
     } catch (error) {
-      console.error("Erro na requisição de entregadores:", error);
-      setEntregadores([]);
+      console.error("Erro ao buscar entregadores:", error);
+      // Fallback para dados locais
+      setEntregadores([
+        { nome: "Manuel Moto", veiculo: "Moto", provincia: "Luanda", municipio: "Viana", local: "KM 30", tarifa: 1500, telefone: "923-000-111", disponivel: true },
+        { nome: "Joana Carro", veiculo: "Carro", provincia: "Luanda", municipio: "Kilamba Kiaxi", local: "KK 5000", tarifa: 2500, telefone: "922-123-456", disponivel: true },
+      ]);
     } finally {
       setCarregandoEntregadores(false);
     }
   };
 
-  // Calcular tarifa base baseada no tipo de veículo
-  const calcularTarifaBase = (veiculo) => {
-    const tarifas = {
-      'moto': 1000,
-      'bicicleta': 500,
-      'carro': 2000,
-      'kombi': 2500,
-      'camiao': 4000
-    };
-    const veiculoLower = (veiculo || "").toLowerCase();
-    return tarifas[veiculoLower] || 1500;
-  };
-
-  const confirmarPagamento = async () => {
+  const confirmarPagamento = () => {
     if (!carrinho || carrinho.length === 0) {
       alert("Carrinho vazio!");
       return;
@@ -87,58 +86,30 @@ export default function ConfirmacaoPagamento({
       return;
     }
 
-    setLoading(true);
-    
-    try {
-      const token = localStorage.getItem("token");
-      
-      // Montar os dados do checkout
-      const checkoutData = {
-        compradorId: JSON.parse(localStorage.getItem("usuario"))?.id,
-        produtos: carrinho.map(item => ({
-          produtoId: item._id || item.produtoId,
-          nome: item.nome,
-          quantidade: item.quantidade,
-          preco: item.preco,
-          subtotal: item.preco * item.quantidade
-        })),
-        total: carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0),
-        solicitaFactura,
-        entrega: solicitaEntrega ? {
-          entregadorId: entregadorSelecionado._id,
-          entregadorNome: entregadorSelecionado.nome,
-          tarifa: entregadorSelecionado.tarifa,
-          endereco: entregadorSelecionado.local
-        } : null,
-        status: "pendente"
-      };
+    // Montar os dados do checkout (mesmo formato da versão que funcionava)
+    const checkoutData = {
+      vendedorId: vendedorPrincipal?._id ||
+        carrinho[0]?.produto?.vendedor?._id ||
+        carrinho[0]?.vendedorId ||
+        null,
+      produtos: carrinho.map(item => {
+        const p = item?.produto || {};
+        return {
+          produto: p._id || item._id || null,
+          nome: p.nome || item.nome || "Produto",
+          quantidade: item.quantidade || 1,
+          preco: p.preco ?? item.preco ?? 0
+        };
+      }),
+      entregador: solicitaEntrega ? entregadorSelecionado : null,
+      factura: solicitaFactura ? { tipo: "manual" } : null,
+      metodoPagamento: "transferencia",
+      referencia: `REF-${Date.now()}`
+    };
 
-      // Salvar o pedido no backend
-      const response = await axios.post(`${API_URL}/pedidos`, checkoutData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (response.data.success) {
-        alert(`✅ Pedido confirmado! ${solicitaEntrega ? `Entregador: ${entregadorSelecionado.nome}` : "Retirada local"}`);
-        
-        // Enviar mensagem para o chat
-        if (navigateToChat && vendedorPrincipal) {
-          const mensagem = `Olá, acabei de confirmar meu pedido. ${solicitaEntrega ? `Solicitei entrega com ${entregadorSelecionado.nome}.` : "Farei a retirada local."} Aguardo confirmação.`;
-          navigateToChat(comprador, vendedorPrincipal.nome, mensagem);
-        }
-        
-        // Chamar callback se existir
-        if (typeof onConfirmar === "function") {
-          onConfirmar(checkoutData);
-        }
-      } else {
-        alert("Erro ao confirmar pedido: " + (response.data.message || "Tente novamente"));
-      }
-    } catch (error) {
-      console.error("Erro no checkout:", error);
-      alert("Erro ao processar pagamento. Verifique sua conexão.");
-    } finally {
-      setLoading(false);
+    // Dispara callback para gravar no backend
+    if (typeof onConfirmar === "function") {
+      onConfirmar(checkoutData);
     }
   };
 
@@ -159,6 +130,13 @@ export default function ConfirmacaoPagamento({
     e.disponivel !== false
   );
 
+  // Calcular total do carrinho corretamente
+  const totalCarrinho = carrinho.reduce((sum, item) => {
+    const preco = item.preco || item.produto?.preco || 0;
+    const quantidade = item.quantidade || 1;
+    return sum + (preco * quantidade);
+  }, 0);
+
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
       {/* Header */}
@@ -171,16 +149,21 @@ export default function ConfirmacaoPagamento({
       <div className="p-6 border-b">
         <h3 className="font-semibold text-gray-800 mb-3">🛒 Itens do Pedido</h3>
         <div className="space-y-2 max-h-48 overflow-y-auto">
-          {carrinho.map((item, idx) => (
-            <div key={idx} className="flex justify-between text-sm py-1 border-b">
-              <span>{item.quantidade}x {item.nome}</span>
-              <span className="font-semibold">{(item.preco * item.quantidade).toLocaleString()} Kz</span>
-            </div>
-          ))}
+          {carrinho.map((item, idx) => {
+            const nome = item.nome || item.produto?.nome || "Produto";
+            const preco = item.preco || item.produto?.preco || 0;
+            const quantidade = item.quantidade || 1;
+            return (
+              <div key={idx} className="flex justify-between text-sm py-1 border-b">
+                <span>{quantidade}x {nome}</span>
+                <span className="font-semibold">{(preco * quantidade).toLocaleString()} Kz</span>
+              </div>
+            );
+          })}
         </div>
         <div className="flex justify-between font-bold text-lg mt-3 pt-2 border-t">
           <span>Total</span>
-          <span className="text-green-700">{carrinho.reduce((sum, i) => sum + (i.preco * i.quantidade), 0).toLocaleString()} Kz</span>
+          <span className="text-green-700">{totalCarrinho.toLocaleString()} Kz</span>
         </div>
       </div>
 
@@ -214,9 +197,17 @@ export default function ConfirmacaoPagamento({
       {/* Seção de Entregadores */}
       {solicitaEntrega && (
         <div className="p-6 bg-gray-50">
-          <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-            <span className="text-xl">🚚</span> Escolha seu entregador
-          </h3>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+              <span className="text-xl">🚚</span> Escolha seu entregador
+            </h3>
+            <button 
+              onClick={() => setMostrarFiltros(!mostrarFiltros)}
+              className="text-sm text-green-600 hover:text-green-700"
+            >
+              {mostrarFiltros ? "Ocultar Filtros" : "Mostrar Filtros"}
+            </button>
+          </div>
           
           {carregandoEntregadores ? (
             <div className="flex justify-center py-8">
@@ -230,47 +221,49 @@ export default function ConfirmacaoPagamento({
           ) : (
             <>
               {/* Filtros */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                <select 
-                  className="border rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500"
-                  value={filtros.provincia} 
-                  onChange={e => setFiltros(prev => ({ ...prev, provincia: e.target.value, municipio: "" }))}
-                >
-                  <option value="">Todas Províncias</option>
-                  {provincias.map(p => <option key={p}>{p}</option>)}
-                </select>
-                
-                <select 
-                  className="border rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500"
-                  value={filtros.municipio} 
-                  onChange={e => setFiltros(prev => ({ ...prev, municipio: e.target.value }))}
-                  disabled={!filtros.provincia}
-                >
-                  <option value="">Todos Municípios</option>
-                  {municipios.map(m => <option key={m}>{m}</option>)}
-                </select>
-                
-                <select 
-                  className="border rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500"
-                  value={filtros.veiculo} 
-                  onChange={e => setFiltros(prev => ({ ...prev, veiculo: e.target.value }))}
-                >
-                  <option value="">Todos Veículos</option>
-                  {veiculos.map(v => <option key={v}>{v}</option>)}
-                </select>
-              </div>
+              {mostrarFiltros && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                  <select 
+                    className="border rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500"
+                    value={filtros.provincia} 
+                    onChange={e => setFiltros(prev => ({ ...prev, provincia: e.target.value, municipio: "" }))}
+                  >
+                    <option value="">Todas Províncias</option>
+                    {provincias.map(p => <option key={p}>{p}</option>)}
+                  </select>
+                  
+                  <select 
+                    className="border rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500"
+                    value={filtros.municipio} 
+                    onChange={e => setFiltros(prev => ({ ...prev, municipio: e.target.value }))}
+                    disabled={!filtros.provincia}
+                  >
+                    <option value="">Todos Municípios</option>
+                    {municipios.map(m => <option key={m}>{m}</option>)}
+                  </select>
+                  
+                  <select 
+                    className="border rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500"
+                    value={filtros.veiculo} 
+                    onChange={e => setFiltros(prev => ({ ...prev, veiculo: e.target.value }))}
+                  >
+                    <option value="">Todos Veículos</option>
+                    {veiculos.map(v => <option key={v}>{v}</option>)}
+                  </select>
+                </div>
+              )}
 
               {/* Lista de Entregadores */}
               {entregadoresFiltrados.length === 0 ? (
                 <p className="text-center text-gray-500 py-4">Nenhum entregador disponível com os filtros selecionados.</p>
               ) : (
                 <div className="space-y-2 max-h-80 overflow-y-auto">
-                  {entregadoresFiltrados.map(entregador => (
+                  {entregadoresFiltrados.map((entregador, idx) => (
                     <div
-                      key={entregador._id}
+                      key={entregador._id || idx}
                       onClick={() => setEntregadorSelecionado(entregador)}
                       className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        entregadorSelecionado?._id === entregador._id
+                        entregadorSelecionado?.nome === entregador.nome
                           ? "border-green-500 bg-green-50 shadow-md"
                           : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
                       }`}
@@ -284,16 +277,11 @@ export default function ConfirmacaoPagamento({
                             </span>
                           </div>
                           <div className="text-sm text-gray-500 mt-1">
-                            📍 {entregador.local || entregador.municipio}, {entregador.provincia}
+                            📍 {entregador.local}, {entregador.municipio}, {entregador.provincia}
                           </div>
                           <div className="text-sm text-gray-500">
                             📞 {entregador.telefone}
                           </div>
-                          {entregador.placa && (
-                            <div className="text-xs text-gray-400">
-                              🚗 Placa: {entregador.placa}
-                            </div>
-                          )}
                         </div>
                         <div className="text-right">
                           <div className="text-lg font-bold text-green-700">
@@ -334,7 +322,7 @@ export default function ConfirmacaoPagamento({
         
         {solicitaEntrega && entregadorSelecionado && (
           <p className="text-xs text-center text-gray-500 mt-3">
-            Entrega solicitada para {entregadorSelecionado.nome}. Você pode acompanhar no chat.
+            🚚 Entrega solicitada para {entregadorSelecionado.nome}. Você pode acompanhar no chat.
           </p>
         )}
       </div>

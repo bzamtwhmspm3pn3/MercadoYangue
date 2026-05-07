@@ -29,7 +29,40 @@ import joseImg from './assets/equipa/Jose.png';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 const WHATSAPP_NUMBER = "+244928565837";
 
-// ============ ABA QUEM SOMOS COMPLETA ============
+// ============ BANCOS DE ANGOLA ============
+const bancosAngola = ["BAI", "BPC", "Millennium Atlântico", "Banco Sol", "BFA", "BIC", "Keve"];
+
+// ============ FORMA PAGAMENTO CAMPO ============
+function FormaPagamentoCampo({ formaPagamento, setFormaPagamento, bancosDisponiveis = [] }) {
+  const [tipo, setTipo] = useState(formaPagamento?.tipo || "iban");
+  const [iban, setIban] = useState(formaPagamento?.iban || "");
+  const [banco, setBanco] = useState(formaPagamento?.banco || "");
+
+  useEffect(() => {
+    setFormaPagamento({ tipo, iban, banco });
+  }, [tipo, iban, banco]);
+
+  return (
+    <div className="border p-3 rounded-lg bg-green-50">
+      <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="w-full p-2 border rounded mb-2">
+        <option value="iban">IBAN + Banco</option>
+        <option value="numConta">Número de Conta</option>
+        <option value="dinheiro">Dinheiro na Entrega</option>
+      </select>
+      {tipo === "iban" && (
+        <>
+          <input type="text" placeholder="IBAN" value={iban} onChange={(e) => setIban(e.target.value)} className="w-full p-2 border rounded mb-2" />
+          <select value={banco} onChange={(e) => setBanco(e.target.value)} className="w-full p-2 border rounded">
+            <option value="">Selecione o Banco</option>
+            {bancosDisponiveis.map((b, i) => <option key={i} value={b}>{b}</option>)}
+          </select>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ============ ABA QUEM SOMOS ============
 function AbaQuemSomos({ setAbaAtiva }) {
   const estatisticas = [
     { valor: "-40%", label: "Redução de Perdas", desc: "Produção que chega ao mercado" },
@@ -38,34 +71,10 @@ function AbaQuemSomos({ setAbaAtiva }) {
     { valor: "24/7", label: "Suporte Ativo", desc: "Sempre disponível" }
   ];
 
-  const funcionalidades = [
-    { icone: "🛒", titulo: "Compre Direto", desc: "Do produtor para você, sem intermediários" },
-    { icone: "📊", titulo: "JIAM Preditivo", desc: "Previsões de demanda com IA" },
-    { icone: "🗺️", titulo: "Rastreabilidade", desc: "Saiba a origem exata do produto" },
-    { icone: "💬", titulo: "Chat Integrado", desc: "Comunique-se diretamente" },
-    { icone: "📦", titulo: "Logística Eficiente", desc: "Entrega em todas províncias" },
-    { icone: "🔒", titulo: "Pagamento Seguro", desc: "Múltiplos métodos" }
-  ];
-
   const equipa = [
-    { 
-      nome: "Venâncio Martins", 
-      cargo: "Gestor Estratégico & Lead Developer", 
-      descricao: "Visão tecnológica e liderança estratégica",
-      imagem: venancioImg 
-    },
-    { 
-      nome: "Iracelma Muhangueno", 
-      cargo: "Administração & Controlo Operacional", 
-      descricao: "Responsável pelo suporte administrativo, organização operacional e estrutura de controlo interno.",
-      imagem: iracelmaImg 
-    },
-    { 
-      nome: "José Cossengue", 
-      cargo: "Gestor de Operação", 
-      descricao: "Execução operacional e coordenação de campo",
-      imagem: joseImg 
-    }
+    { nome: "Venâncio Martins", cargo: "Gestor Estratégico & Lead Developer", descricao: "Visão tecnológica e liderança estratégica", imagem: venancioImg },
+    { nome: "Iracelma Muhangueno", cargo: "Administração & Controlo Operacional", descricao: "Responsável pelo suporte administrativo, organização operacional e estrutura de controlo interno.", imagem: iracelmaImg },
+    { nome: "José Cossengue", cargo: "Gestor de Operação", descricao: "Execução operacional e coordenação de campo", imagem: joseImg }
   ];
 
   const handleAction = (acao) => {
@@ -189,40 +198,7 @@ function AbaQuemSomos({ setAbaAtiva }) {
   );
 }
 
-// ============ BANCOS ============
-const bancosAngola = ["BAI", "BPC", "Millennium Atlântico", "Banco Sol", "BFA", "BIC", "Keve"];
-
-// ============ FORMA PAGAMENTO ============
-function FormaPagamentoCampo({ formaPagamento, setFormaPagamento, bancosDisponiveis = [] }) {
-  const [tipo, setTipo] = useState(formaPagamento?.tipo || "iban");
-  const [iban, setIban] = useState(formaPagamento?.iban || "");
-  const [banco, setBanco] = useState(formaPagamento?.banco || "");
-
-  useEffect(() => {
-    setFormaPagamento({ tipo, iban, banco });
-  }, [tipo, iban, banco]);
-
-  return (
-    <div className="border p-3 rounded-lg bg-green-50">
-      <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="w-full p-2 border rounded mb-2">
-        <option value="iban">IBAN + Banco</option>
-        <option value="numConta">Número de Conta</option>
-        <option value="dinheiro">Dinheiro na Entrega</option>
-      </select>
-      {tipo === "iban" && (
-        <>
-          <input type="text" placeholder="IBAN" value={iban} onChange={(e) => setIban(e.target.value)} className="w-full p-2 border rounded mb-2" />
-          <select value={banco} onChange={(e) => setBanco(e.target.value)} className="w-full p-2 border rounded">
-            <option value="">Selecione o Banco</option>
-            {bancosDisponiveis.map((b, i) => <option key={i} value={b}>{b}</option>)}
-          </select>
-        </>
-      )}
-    </div>
-  );
-}
-
-// ============ LOGIN/CADASTRO ============
+// ============ LOGIN/CADASTRO COM TEcla ENTER ============
 function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
   const [modo, setModo] = useState("login");
   const [tipoCadastro, setTipoCadastro] = useState("cliente");
@@ -307,9 +283,23 @@ function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
 
       {modo === "login" ? (
         <>
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 border rounded-lg mb-3" />
-          <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} className="w-full p-3 border rounded-lg mb-4" />
-          <button onClick={handleLogin} disabled={loading} className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold">Entrar</button>
+          <input 
+            type="email" 
+            placeholder="Email" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+            className="w-full p-3 border rounded-lg mb-3 focus:ring-2 focus:ring-green-500 outline-none" 
+          />
+          <input 
+            type="password" 
+            placeholder="Senha" 
+            value={senha} 
+            onChange={(e) => setSenha(e.target.value)} 
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+            className="w-full p-3 border rounded-lg mb-4 focus:ring-2 focus:ring-green-500 outline-none" 
+          />
+          <button onClick={handleLogin} disabled={loading} className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition">Entrar</button>
         </>
       ) : (
         <>
@@ -349,10 +339,12 @@ export default function App() {
   const [menuAberto, setMenuAberto] = useState(false);
   const [formaPagamento, setFormaPagamento] = useState({ tipo: "iban", iban: "", banco: "" });
 
+  // Carregar produtos
   useEffect(() => {
     axios.get(`${API_URL}/produtos`).then(res => setProdutos(res.data || [])).catch(err => console.error(err));
   }, []);
 
+  // Persistir carrinho
   useEffect(() => {
     localStorage.setItem("carrinho", JSON.stringify(carrinho));
   }, [carrinho]);
@@ -493,6 +485,23 @@ export default function App() {
               const form = e.target;
               const formData = new FormData(form);
               
+              // Validar forma de pagamento
+              const tipoPagamento = formData.get('tipoPagamento') || 'iban';
+              const iban = formData.get('iban');
+              const telefoneExpress = formData.get('telefoneExpress');
+              
+              if (tipoPagamento === 'iban' && !iban) {
+                alert('Por favor, insira o IBAN para pagamento');
+                return;
+              }
+              
+              const formaPagamentoData = {
+                tipo: tipoPagamento,
+                iban: tipoPagamento === 'iban' ? iban : null,
+                telefone: tipoPagamento === 'express' ? telefoneExpress : null,
+                banco: formData.get('banco') || null
+              };
+              
               const envio = new FormData();
               envio.append('nome', formData.get('nome'));
               envio.append('preco', formData.get('preco'));
@@ -503,7 +512,8 @@ export default function App() {
               envio.append('municipio', formData.get('municipio'));
               envio.append('descricao', formData.get('descricao'));
               envio.append('nomeVendedor', usuario.nome);
-              envio.append('formaPagamento', JSON.stringify(formaPagamento));
+              envio.append('formaPagamento', JSON.stringify(formaPagamentoData));
+              envio.append('contactos', formData.get('contactos'));
 
               try {
                 const token = localStorage.getItem('token');
@@ -523,12 +533,12 @@ export default function App() {
                 alert('Erro de rede: ' + error.message);
               }
             }} encType="multipart/form-data" className="space-y-4">
-              <input type="text" name="nome" required placeholder="Nome do produto" className="w-full p-3 border rounded-lg" />
+              <input type="text" name="nome" required placeholder="Nome do produto" className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
               <div className="grid md:grid-cols-2 gap-4">
-                <input type="number" name="preco" step="0.01" required placeholder="Preço (Kz)" className="w-full p-3 border rounded-lg" />
+                <input type="number" name="preco" step="0.01" required placeholder="Preço (Kz)" className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                 <div className="flex gap-2">
-                  <input type="number" name="quantidade" required placeholder="Quantidade" className="flex-1 p-3 border rounded-lg" />
-                  <select name="unidade" required className="p-3 border rounded-lg">
+                  <input type="number" name="quantidade" required placeholder="Quantidade" className="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                  <select name="unidade" required className="p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
                     <option value="kg">Kg</option><option value="l">Litro</option><option value="un">Unidade</option>
                     <option value="caixa">Caixa</option><option value="saco">Saco</option>
                   </select>
@@ -539,9 +549,43 @@ export default function App() {
                 <input type="text" name="provincia" placeholder="Província" className="w-full p-3 border rounded-lg" />
                 <input type="text" name="municipio" placeholder="Município" className="w-full p-3 border rounded-lg" />
               </div>
+              
+              {/* Forma de Pagamento Melhorada */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-semibold mb-3">💰 Formas de Pagamento Aceitas</h3>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2">
+                    <input type="radio" name="tipoPagamento" value="iban" defaultChecked /> 
+                    <span>💳 Transferência Bancária (IBAN)</span>
+                  </label>
+                  <div className="ml-6">
+                    <input type="text" name="iban" placeholder="IBAN" className="w-full p-2 border rounded" />
+                    <select name="banco" className="w-full p-2 border rounded mt-2">
+                      <option value="">Selecione o Banco</option>
+                      {bancosAngola.map(b => <option key={b} value={b}>{b}</option>)}
+                    </select>
+                  </div>
+                  
+                  <label className="flex items-center gap-2">
+                    <input type="radio" name="tipoPagamento" value="express" /> 
+                    <span>📱 Multicaixa Express</span>
+                  </label>
+                  <div className="ml-6">
+                    <input type="tel" name="telefoneExpress" placeholder="Número de telefone (Multicaixa)" className="w-full p-2 border rounded" />
+                    <p className="text-xs text-gray-500 mt-1">O comprador pagará diretamente via Multicaixa Express</p>
+                  </div>
+                  
+                  <label className="flex items-center gap-2">
+                    <input type="radio" name="tipoPagamento" value="dinheiro" /> 
+                    <span>💵 Dinheiro na Entrega</span>
+                  </label>
+                </div>
+              </div>
+              
+              <input type="text" name="contactos" placeholder="Contactos (Ex: +244 923 000 000)" className="w-full p-3 border rounded-lg" />
               <textarea name="descricao" rows="3" placeholder="Descrição do produto" className="w-full p-3 border rounded-lg"></textarea>
-              <FormaPagamentoCampo formaPagamento={formaPagamento} setFormaPagamento={setFormaPagamento} bancosDisponiveis={bancosAngola} />
-              <button type="submit" className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">Cadastrar Produto</button>
+              
+              <button type="submit" className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition">Cadastrar Produto</button>
             </form>
           </div>
         )}

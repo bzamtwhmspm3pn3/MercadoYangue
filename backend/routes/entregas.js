@@ -7,19 +7,27 @@ const Usuario = require('../models/usuario');
 // Solicitar nova entrega
 router.post('/solicitar', async (req, res) => {
   try {
-    const { clienteId, origem, destino, produtoId, observacoes } = req.body;
+    const { clienteId, origem, destino, produtoId, observacoes, entregadorId } = req.body;
     
     const novaEntrega = new Entrega({
       clienteId,
       origem,
       destino,
       produtoId,
+      entregadorId: entregadorId || null,
       observacoes,
-      status: 'pendente'
+      status: entregadorId ? 'aceita' : 'pendente'
     });
     
     await novaEntrega.save();
-    res.json({ success: true, data: novaEntrega });
+    
+    // Se tiver entregador, notificar
+    if (entregadorId) {
+      const entregador = await Usuario.findById(entregadorId);
+      // Aqui poderia enviar notificação via socket
+    }
+    
+    res.json({ success: true, data: novaEntrega, message: 'Entrega solicitada com sucesso' });
   } catch (error) {
     console.error('Erro solicitar entrega:', error);
     res.status(500).json({ success: false, message: error.message });
@@ -30,7 +38,8 @@ router.post('/solicitar', async (req, res) => {
 router.get('/entregador/:entregadorId', async (req, res) => {
   try {
     const entregas = await Entrega.find({ entregadorId: req.params.entregadorId })
-      .populate('clienteId', 'nome telefone')
+      .populate('clienteId', 'nome telefone email')
+      .populate('produtoId', 'nome preco imagem')
       .sort({ createdAt: -1 });
     res.json({ success: true, data: entregas });
   } catch (error) {
@@ -39,11 +48,25 @@ router.get('/entregador/:entregadorId', async (req, res) => {
   }
 });
 
+// Listar entregas de um cliente
+router.get('/cliente/:clienteId', async (req, res) => {
+  try {
+    const entregas = await Entrega.find({ clienteId: req.params.clienteId })
+      .populate('entregadorId', 'nome telefone veiculo placa')
+      .populate('produtoId', 'nome preco imagem')
+      .sort({ createdAt: -1 });
+    res.json({ success: true, data: entregas });
+  } catch (error) {
+    console.error('Erro listar entregas do cliente:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // Listar entregas pendentes
 router.get('/pendentes', async (req, res) => {
   try {
     const entregas = await Entrega.find({ status: 'pendente' })
-      .populate('clienteId', 'nome telefone')
+      .populate('clienteId', 'nome telefone endereco')
       .sort({ createdAt: 1 });
     res.json({ success: true, data: entregas });
   } catch (error) {
@@ -55,7 +78,7 @@ router.get('/pendentes', async (req, res) => {
 // Listar todas as entregas ativas
 router.get('/ativas', async (req, res) => {
   try {
-    const entregas = await Entrega.find({ status: { $ne: 'entregue' } })
+    const entregas = await Entrega.find({ status: { $nin: ['entregue', 'cancelada'] } })
       .populate('clienteId', 'nome telefone')
       .populate('entregadorId', 'nome telefone veiculo')
       .sort({ createdAt: -1 });
@@ -79,14 +102,16 @@ router.put('/:id/status', async (req, res) => {
     entrega.status = status;
     if (localizacao) {
       if (!entrega.localizacoes) entrega.localizacoes = [];
-      entrega.localizacoes.push({ ...localizacao, status });
+      entrega.localizacoes.push({ ...localizacao, status, timestamp: new Date() });
     }
     if (status === 'entregue') {
       entrega.dataEntrega = new Date();
     }
     
     await entrega.save();
-    res.json({ success: true, data: entrega });
+    
+    // Notificar cliente via socket se houver
+    res.json({ success: true, data: entrega, message: `Status atualizado para ${status}` });
   } catch (error) {
     console.error('Erro atualizar status:', error);
     res.status(500).json({ success: false, message: error.message });
@@ -101,10 +126,45 @@ router.put('/:id/atribuir', async (req, res) => {
       req.params.id,
       { entregadorId, status: 'aceita' },
       { new: true }
-    );
-    res.json({ success: true, data: entrega });
+    ).populate('entregadorId', 'nome telefone veiculo');
+    
+    res.json({ success: true, data: entrega, message: 'Entregador atribuído com sucesso' });
   } catch (error) {
     console.error('Erro atribuir entregador:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Buscar entrega por ID
+router.get('/:id', async (req, res) => {
+  try {
+    const entrega = await Entrega.findById(req.params.id)
+      .populate('clienteId', 'nome telefone email')
+      .populate('entregadorId', 'nome telefone veiculo placa')
+      .populate('produtoId', 'nome preco imagem');
+    
+    if (!entrega) {
+      return res.status(404).json({ success: false, message: 'Entrega não encontrada' });
+    }
+    
+    res.json({ success: true, data: entrega });
+  } catch (error) {
+    console.error('Erro buscar entrega:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Cancelar entrega
+router.delete('/:id', async (req, res) => {
+  try {
+    const entrega = await Entrega.findByIdAndUpdate(
+      req.params.id,
+      { status: 'cancelada' },
+      { new: true }
+    );
+    res.json({ success: true, data: entrega, message: 'Entrega cancelada' });
+  } catch (error) {
+    console.error('Erro cancelar entrega:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 });

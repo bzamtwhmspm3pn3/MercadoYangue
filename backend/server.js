@@ -35,6 +35,9 @@ const interpretacaoRoutes = require("./routes/r-api/interpretacao");
 const dadosRoutes = require("./routes/r-api/dados");
 const predicoesRoutes = require("./routes/predicoes");
 const geolocalizacaoRoutes = require("./routes/geolocalizacao");
+const jiamAgroRoutes = require('./routes/jiamAgro');
+const chatbotRoutes = require('./routes/chatbot');
+
 
 // ============ MIDDLEWARE ============
 const app = express();
@@ -90,6 +93,9 @@ app.use("/api/r/modelos", modelosRRoutes);
 app.use("/api/r/dados", dadosRoutes);
 app.use("/api/predicoes", predicoesRoutes);
 app.use("/api/geolocalizacao", geolocalizacaoRoutes);
+app.use('/api/jiam', jiamAgroRoutes);
+app.use('/api/chatbot', chatbotRoutes);
+
 
 // ============ ROTA HEALTH ============
 app.get("/api/health", (req, res) => {
