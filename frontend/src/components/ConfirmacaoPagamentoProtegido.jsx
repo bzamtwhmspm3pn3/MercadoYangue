@@ -20,50 +20,34 @@ export default function ConfirmacaoPagamentoProtegido({
     inicializarAuth();
   }, []);
 
-  const enviarCheckout = async (checkoutData) => {
+  const enviarCheckout = async (checkoutData, msgAutomatica, vendedor) => {
     if (!usuario || !token || !carrinho || carrinho.length === 0) {
-      alert("Usuario nao autenticado ou carrinho vazio.");
+      alert("Usuário não autenticado ou carrinho vazio.");
       return;
     }
 
     setLoading(true);
 
     try {
-      const metodoPagamento = checkoutData?.metodoPagamento || "transferencia";
-      const referencia = checkoutData?.referencia || `REF-${Date.now()}`;
-      
-      // Obter o vendedor
-      const vendedorId = carrinho[0]?.vendedor?._id || carrinho[0]?.vendedorId;
-      const vendedorNome = carrinho[0]?.vendedor?.nome || "Vendedor";
+      const metodoPagamento = checkoutData.metodoPagamento || "transferencia";
+      const referencia = checkoutData.referencia || `REF-${Date.now()}`;
 
-      // 1) Finalizar carrinho (checkout)
+      // Finalizar carrinho (baixa estoque)
       const resCarrinho = await fetch(`${API_URL}/carrinho/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-          metodoPagamento, 
-          referencia,
-          entrega: checkoutData?.entregador ? {
-            entregadorId: checkoutData.entregador.id,
-            entregadorNome: checkoutData.entregador.nome,
-            tarifa: checkoutData.entregador.tarifa
-          } : null,
-          factura: checkoutData?.factura || { tipo: tipoFactura }
-        }),
+        body: JSON.stringify({ metodoPagamento, referencia }),
       });
 
       const dataCarrinho = await resCarrinho.json();
       if (!resCarrinho.ok) {
         throw new Error(dataCarrinho.msg || "Erro ao finalizar carrinho");
       }
-      console.log("Carrinho finalizado:", dataCarrinho);
 
-      // 2) Registrar venda
-      const totalPedido = carrinho.reduce((sum, item) => sum + ((item.preco || 0) * (item.quantidade || 1)), 0);
-      
+      // Registrar venda
       const resVenda = await fetch(`${API_URL}/vendas`, {
         method: "POST",
         headers: {
@@ -71,20 +55,9 @@ export default function ConfirmacaoPagamentoProtegido({
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          compradorId: usuario._id || usuario.id,
-          vendedorId: vendedorId,
-          itens: carrinho.map(item => ({
-            produtoId: item._id || item.produtoId,
-            nome: item.nome || "Produto",
-            quantidade: item.quantidade || 1,
-            precoUnitario: item.preco || 0,
-            subtotal: (item.preco || 0) * (item.quantidade || 1)
-          })),
-          total: totalPedido,
-          metodoPagamento,
-          referencia,
-          entregadorId: checkoutData?.entregador?.id || null,
-          status: "confirmado"
+          ...checkoutData,
+          compradorId: usuario._id,
+          factura: checkoutData.factura || { tipo: tipoFactura },
         }),
       });
 
@@ -93,73 +66,52 @@ export default function ConfirmacaoPagamentoProtegido({
         console.error("Erro ao registrar venda:", dataVenda);
       }
 
-      // 3) Enviar mensagem para o vendedor
-      const mensagemVendedor = `Olá! Acabei de realizar um pedido no valor de ${totalPedido.toLocaleString()} Kz. ${checkoutData?.entregador ? `Solicitei entrega com ${checkoutData.entregador.nome}.` : "Farei a retirada local."} Aguardo confirmacao.`;
+      // Enviar mensagem para o vendedor
+      const mensagem = msgAutomatica || `Olá! Acabei de realizar um pedido. Aguardo confirmação.`;
       
       try {
         await fetch(`${API_URL}/chat/enviar`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ destinatarioId: vendedorId, conteudo: mensagemVendedor }),
+          body: JSON.stringify({
+            destinatarioId: checkoutData.vendedorId,
+            conteudo: mensagem,
+          }),
         });
-        console.log("Mensagem enviada ao vendedor");
       } catch (err) {
         console.error("Erro ao enviar mensagem:", err);
       }
 
-      // 4) Se houver entrega, notificar o entregador e criar entrega no sistema
-      if (checkoutData?.entregador) {
+      // Notificar entregador se houver
+      if (checkoutData.entregador) {
         try {
-          // Criar registro de entrega
-          await fetch(`${API_URL}/entregas/solicitar`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({
-              clienteId: usuario._id || usuario.id,
-              entregadorId: checkoutData.entregador.id,
-              origem: "Ponto de retirada",
-              destino: "Endereco do cliente",
-              status: "pendente",
-              valorFrete: checkoutData.entregador.tarifa
-            }),
-          });
-          
-          // Notificar entregador
-          const msgEntregador = `Nova entrega solicitada! Cliente: ${usuario.nome}. Produto: ${carrinho[0]?.nome}. Valor: ${totalPedido.toLocaleString()} Kz.`;
           await fetch(`${API_URL}/chat/enviar`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ destinatarioId: checkoutData.entregador.id, conteudo: msgEntregador }),
+            body: JSON.stringify({
+              destinatarioId: checkoutData.entregador._id,
+              conteudo: `Nova entrega solicitada! Cliente: ${usuario.nome}`,
+            }),
           });
-          console.log("Entregador notificado");
         } catch (err) {
           console.error("Erro ao notificar entregador:", err);
         }
       }
 
-      setMensagemAutomatica(mensagemVendedor);
-      setVendedorPrincipal({ _id: vendedorId, nome: vendedorNome });
+      setMensagemAutomatica(mensagem);
+      setVendedorPrincipal(vendedor);
       setCheckoutConfirmado(true);
 
       if (typeof onSucesso === "function") {
-        onSucesso({ pedido: dataCarrinho.pedido || dataCarrinho, venda: dataVenda || null });
+        onSucesso({ pedido: dataCarrinho, venda: dataVenda });
       }
 
       alert("Pedido confirmado com sucesso!");
-      
-      // Limpar carrinho no localStorage
-      localStorage.removeItem("carrinho");
-      
-      // Navegar para historico de compras
-      if (navigateToChat) {
-        navigateToChat(usuario.nome, vendedorNome, mensagemVendedor);
-      }
-
-      return { pedido: dataCarrinho.pedido || dataCarrinho, venda: dataVenda || null };
+      return { pedido: dataCarrinho, venda: dataVenda };
 
     } catch (err) {
       console.error("Erro no checkout:", err);
-      alert(err.message || "Erro no checkout. Tente novamente.");
+      alert(err.message || "Erro no checkout");
       throw err;
     } finally {
       setLoading(false);
@@ -167,12 +119,7 @@ export default function ConfirmacaoPagamentoProtegido({
   };
 
   if (!token || !usuario) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-        <p className="ml-3 text-gray-600">Carregando autenticacao...</p>
-      </div>
-    );
+    return <div className="text-center p-8">Carregando autenticação...</div>;
   }
 
   if (!carrinho || carrinho.length === 0) {

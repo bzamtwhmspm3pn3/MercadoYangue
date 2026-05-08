@@ -10,233 +10,198 @@ export default function ConfirmacaoPagamento({
   onConfirmar,
   vendedorPrincipal,
   checkoutConfirmado,
-  loading: loadingProp
+  loading
 }) {
   const [solicitaFactura, setSolicitaFactura] = useState(false);
   const [solicitaEntrega, setSolicitaEntrega] = useState(false);
   const [entregadores, setEntregadores] = useState([]);
   const [entregadorSelecionado, setEntregadorSelecionado] = useState(null);
   const [filtros, setFiltros] = useState({ provincia: "", municipio: "", veiculo: "" });
-  const [loading, setLoading] = useState(false);
   const [carregandoEntregadores, setCarregandoEntregadores] = useState(false);
-  const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
-  // Buscar entregadores reais do backend quando solicitar entrega
+  // Buscar entregadores reais do backend
+ const buscarEntregadoresReais = async () => {
+  setCarregandoEntregadores(true);
+  try {
+    const token = localStorage.getItem("token");
+    // Agora usa a rota correta /api/entregadores (já existe no backend)
+    const response = await axios.get(`${API_URL}/entregadores`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    
+    if (response.data.success && response.data.data.length > 0) {
+      const entregadoresFormatados = response.data.data.map(ent => ({
+        _id: ent._id,
+        nome: ent.nome,
+        veiculo: ent.veiculo || "Moto",
+        provincia: ent.provincia || "Luanda",
+        municipio: ent.municipio || "Não informado",
+        local: ent.localizacaoEspecifica || ent.municipio || "Ponto de encontro",
+        tarifa: ent.tarifa || 1500,
+        contacto: ent.telefone || "Não informado"
+      }));
+      setEntregadores(entregadoresFormatados);
+    } else {
+      // Fallback para dados de exemplo
+      setEntregadores([
+        { nome: "Manuel Moto", veiculo: "Moto", provincia: "Luanda", municipio: "Viana", local: "KM 30", tarifa: 1500, contacto: "923-000-111" },
+        { nome: "Joana Carro", veiculo: "Carro", provincia: "Luanda", municipio: "Kilamba Kiaxi", local: "KK 5000", tarifa: 2500, contacto: "922-123-456" },
+      ]);
+    }
+  } catch (error) {
+    console.error("Erro ao buscar entregadores:", error);
+    setEntregadores([
+      { nome: "Manuel Moto", veiculo: "Moto", provincia: "Luanda", municipio: "Viana", local: "KM 30", tarifa: 1500, contacto: "923-000-111" },
+      { nome: "Joana Carro", veiculo: "Carro", provincia: "Luanda", municipio: "Kilamba Kiaxi", local: "KK 5000", tarifa: 2500, contacto: "922-123-456" },
+    ]);
+  } finally {
+    setCarregandoEntregadores(false);
+  }
+};
+
+
   useEffect(() => {
     if (solicitaEntrega) {
       buscarEntregadoresReais();
     }
   }, [solicitaEntrega]);
 
-  const buscarEntregadoresReais = async () => {
-    setCarregandoEntregadores(true);
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/entregadores`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (response.data.success && response.data.data.length > 0) {
-        const entregadoresReais = response.data.data.map(ent => ({
-          _id: ent._id,
-          nome: ent.nome,
-          veiculo: ent.veiculo || "Nao informado",
-          provincia: ent.provincia || "Nao informada",
-          municipio: ent.municipio || "Nao informado",
-          local: ent.localizacaoEspecifica || ent.municipio || "Ponto de encontro",
-          tarifa: ent.tarifa || 1500,
-          telefone: ent.telefone || "Nao informado",
-          email: ent.email,
-          disponivel: ent.disponivel !== false
-        }));
-        setEntregadores(entregadoresReais);
-      } else {
-        setEntregadores([]);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar entregadores:", error);
-      setEntregadores([]);
-    } finally {
-      setCarregandoEntregadores(false);
-    }
-  };
+  const confirmarPagamentoLocal = () => {
+    if (!carrinho || carrinho.length === 0) return alert("Carrinho vazio!");
+    if (solicitaEntrega && !entregadorSelecionado) return alert("Selecione um entregador");
 
-  const confirmarPagamento = () => {
-    if (!carrinho || carrinho.length === 0) {
-      alert("Carrinho vazio!");
-      return;
-    }
-    if (solicitaEntrega && !entregadorSelecionado) {
-      alert("Selecione um entregador");
-      return;
-    }
-
-    // Montar os dados do checkout
     const checkoutData = {
       vendedorId: vendedorPrincipal?._id ||
-        carrinho[0]?.vendedor?._id ||
+        carrinho[0]?.produto?.vendedor?._id ||
         carrinho[0]?.vendedorId ||
         null,
-      produtos: carrinho.map(item => ({
-        produto: item._id || item.produtoId || null,
-        nome: item.nome || "Produto",
-        quantidade: item.quantidade || 1,
-        preco: item.preco || 0,
-        subtotal: (item.preco || 0) * (item.quantidade || 1)
-      })),
-      entregador: solicitaEntrega ? {
-        id: entregadorSelecionado._id,
-        nome: entregadorSelecionado.nome,
-        telefone: entregadorSelecionado.telefone,
-        tarifa: entregadorSelecionado.tarifa
-      } : null,
-      factura: solicitaFactura ? { tipo: "manual" } : null,
-      metodoPagamento: "transferencia",
-      referencia: `REF-${Date.now()}`
+      produtos: carrinho.map(item => {
+        const p = item?.produto || {};
+        return {
+          produto: p._id || item._id || null,
+          nome: p.nome || item.nome || "Produto",
+          quantidade: item.quantidade || 1,
+          preco: p.preco ?? item.preco ?? 0
+        };
+      }),
+      entregador: solicitaEntrega ? entregadorSelecionado : null,
+      factura: solicitaFactura ? { tipo: "manual" } : null
     };
 
-    // Dispara callback para gravar no backend
     if (typeof onConfirmar === "function") {
       onConfirmar(checkoutData);
     }
   };
 
-  const provincias = [...new Set(entregadores.map(e => e.provincia).filter(Boolean))];
-  const municipios = [...new Set(
-    entregadores
-      .filter(e => !filtros.provincia || e.provincia === filtros.provincia)
-      .map(e => e.municipio)
-      .filter(Boolean)
-  )];
-  const veiculos = [...new Set(entregadores.map(e => e.veiculo).filter(Boolean))];
+  const provincias = [...new Set(entregadores.map(e => e.provincia))];
+  const municipios = [...new Set(entregadores.filter(e => !filtros.provincia || e.provincia === filtros.provincia).map(e => e.municipio))];
+  const veiculos = [...new Set(entregadores.map(e => e.veiculo))];
 
   const entregadoresFiltrados = entregadores.filter(e =>
     (!filtros.provincia || e.provincia === filtros.provincia) &&
     (!filtros.municipio || e.municipio === filtros.municipio) &&
-    (!filtros.veiculo || e.veiculo === filtros.veiculo) &&
-    e.disponivel !== false
+    (!filtros.veiculo || e.veiculo === filtros.veiculo)
   );
 
-  const totalCarrinho = carrinho.reduce((sum, item) => {
-    const preco = item.preco || 0;
-    const quantidade = item.quantidade || 1;
-    return sum + (preco * quantidade);
-  }, 0);
+  const totalCarrinho = carrinho.reduce((sum, item) => sum + ((item.preco || 0) * (item.quantidade || 1)), 0);
 
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-      <div className="bg-gradient-to-r from-green-700 to-green-600 px-6 py-4">
-        <h2 className="text-2xl font-bold text-white">Confirmacao de Pagamento</h2>
-        <p className="text-green-100 text-sm">Revise os detalhes do seu pedido</p>
-      </div>
+    <div className="p-6 bg-white rounded shadow-md max-w-2xl mx-auto">
+      <h2 className="text-2xl font-bold mb-6">Confirmação de Pagamento</h2>
 
       {/* Resumo do Pedido */}
-      <div className="p-6 border-b">
-        <h3 className="font-semibold text-gray-800 mb-3">Itens do Pedido</h3>
-        <div className="space-y-2 max-h-48 overflow-y-auto">
-          {carrinho.map((item, idx) => {
-            const nome = item.nome || "Produto";
-            const preco = item.preco || 0;
-            const quantidade = item.quantidade || 1;
-            return (
-              <div key={idx} className="flex justify-between text-sm py-1 border-b">
-                <span>{quantidade}x {nome}</span>
-                <span className="font-semibold">{(preco * quantidade).toLocaleString()} Kz</span>
-              </div>
-            );
-          })}
-        </div>
-        <div className="flex justify-between font-bold text-lg mt-3 pt-2 border-t">
-          <span>Total</span>
-          <span className="text-green-700">{totalCarrinho.toLocaleString()} Kz</span>
-        </div>
-      </div>
-
-      {/* Opcoes */}
-      <div className="p-6 border-b">
-        <div className="mb-4">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" checked={solicitaFactura} onChange={e => setSolicitaFactura(e.target.checked)} className="w-5 h-5 text-green-600 rounded" />
-            <span className="text-gray-700">Desejo factura (NIF obrigatorio)</span>
-          </label>
-        </div>
-        <div>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" checked={solicitaEntrega} onChange={e => setSolicitaEntrega(e.target.checked)} className="w-5 h-5 text-green-600 rounded" />
-            <span className="text-gray-700">Desejo servico de entrega</span>
-          </label>
-        </div>
-      </div>
-
-      {/* Entregadores */}
-      {solicitaEntrega && (
-        <div className="p-6 bg-gray-50">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold text-gray-800">Escolha seu entregador</h3>
-            <button onClick={() => setMostrarFiltros(!mostrarFiltros)} className="text-sm text-green-600">
-              {mostrarFiltros ? "Ocultar Filtros" : "Mostrar Filtros"}
-            </button>
+      <div className="mb-4 p-3 bg-gray-50 rounded">
+        <h3 className="font-semibold mb-2">Itens do Pedido</h3>
+        {carrinho.map((item, idx) => (
+          <div key={idx} className="flex justify-between text-sm py-1">
+            <span>{item.quantidade}x {item.nome || "Produto"}</span>
+            <span>{((item.preco || 0) * (item.quantidade || 1)).toLocaleString()} Kz</span>
           </div>
-          
+        ))}
+        <div className="border-t mt-2 pt-2 font-bold flex justify-between">
+          <span>Total:</span>
+          <span>{totalCarrinho.toLocaleString()} Kz</span>
+        </div>
+      </div>
+
+      {/* Opções */}
+      <div className="mb-4">
+        <label className="flex items-center space-x-2">
+          <input type="checkbox" checked={solicitaFactura} onChange={e => setSolicitaFactura(e.target.checked)} />
+          <span>Desejo factura</span>
+        </label>
+      </div>
+
+      <div className="mb-4">
+        <label className="flex items-center space-x-2">
+          <input type="checkbox" checked={solicitaEntrega} onChange={e => setSolicitaEntrega(e.target.checked)} />
+          <span>Desejo entrega</span>
+        </label>
+      </div>
+
+      {solicitaEntrega && (
+        <div className="mb-6">
+          <h4 className="font-semibold mb-2">Escolher Entregador</h4>
           {carregandoEntregadores ? (
-            <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div></div>
-          ) : entregadores.length === 0 ? (
-            <div className="text-center py-8 bg-white rounded-lg">
-              <p>Nenhum entregador cadastrado no momento.</p>
-              <p className="text-sm text-gray-400">Tente novamente mais tarde ou opte por retirada local.</p>
-            </div>
+            <div className="text-center py-4">Carregando entregadores...</div>
           ) : (
             <>
-              {mostrarFiltros && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                  <select className="border rounded-lg p-2 text-sm" value={filtros.provincia} onChange={e => setFiltros(prev => ({ ...prev, provincia: e.target.value, municipio: "" }))}>
-                    <option value="">Todas Provincias</option>
-                    {provincias.map(p => <option key={p}>{p}</option>)}
-                  </select>
-                  <select className="border rounded-lg p-2 text-sm" value={filtros.municipio} onChange={e => setFiltros(prev => ({ ...prev, municipio: e.target.value }))} disabled={!filtros.provincia}>
-                    <option value="">Todos Municipios</option>
-                    {municipios.map(m => <option key={m}>{m}</option>)}
-                  </select>
-                  <select className="border rounded-lg p-2 text-sm" value={filtros.veiculo} onChange={e => setFiltros(prev => ({ ...prev, veiculo: e.target.value }))}>
-                    <option value="">Todos Veiculos</option>
-                    {veiculos.map(v => <option key={v}>{v}</option>)}
-                  </select>
-                </div>
-              )}
-              {entregadoresFiltrados.length === 0 ? (
-                <p className="text-center text-gray-500 py-4">Nenhum entregador disponivel.</p>
-              ) : (
-                <div className="space-y-2 max-h-80 overflow-y-auto">
-                  {entregadoresFiltrados.map((entregador, idx) => (
-                    <div key={entregador._id || idx} onClick={() => setEntregadorSelecionado(entregador)} className={`p-4 rounded-xl border-2 cursor-pointer ${entregadorSelecionado?.nome === entregador.nome ? "border-green-500 bg-green-50" : "border-gray-200"}`}>
-                      <div className="flex justify-between">
-                        <div>
-                          <div className="font-bold">{entregador.nome} <span className="text-xs bg-green-100 text-green-700 px-2 rounded-full">{entregador.veiculo}</span></div>
-                          <div className="text-sm text-gray-500">{entregador.local}, {entregador.municipio}, {entregador.provincia}</div>
-                          <div className="text-sm text-gray-500">Telefone: {entregador.telefone}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-green-700">{entregador.tarifa.toLocaleString()} Kz</div>
-                          <div className="text-xs text-gray-400">taxa de entrega</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <FiltrosEntregadores provincias={provincias} municipios={municipios} veiculos={veiculos} filtros={filtros} setFiltros={setFiltros} />
+              <ListaEntregadores entregadores={entregadoresFiltrados} selecionado={entregadorSelecionado} onSelecionar={setEntregadorSelecionado} />
             </>
           )}
         </div>
       )}
 
-      <div className="p-6 bg-white border-t">
-        <button onClick={confirmarPagamento} disabled={(solicitaEntrega && !entregadorSelecionado) || loading || loadingProp} className="w-full py-3 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400">
-          {loading || loadingProp ? "Processando..." : "Confirmar Pagamento"}
-        </button>
-        {solicitaEntrega && entregadorSelecionado && (
-          <p className="text-xs text-center text-gray-500 mt-3">Entrega solicitada para {entregadorSelecionado.nome}</p>
-        )}
-      </div>
+      <button
+        onClick={confirmarPagamentoLocal}
+        disabled={(solicitaEntrega && !entregadorSelecionado) || loading}
+        className={`w-full py-3 font-bold text-white rounded ${(solicitaEntrega && !entregadorSelecionado) || loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
+      >
+        {loading ? "A processar..." : "Confirmar Pagamento"}
+      </button>
     </div>
+  );
+}
+
+// --- Componentes auxiliares ---
+function FiltrosEntregadores({ provincias, municipios, veiculos, filtros, setFiltros }) {
+  return (
+    <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-3">
+      <select className="border p-2 rounded" value={filtros.provincia} onChange={e => setFiltros(prev => ({ ...prev, provincia: e.target.value, municipio: "" }))}>
+        <option value="">Todas Províncias</option>
+        {provincias.map(p => <option key={p}>{p}</option>)}
+      </select>
+      <select className="border p-2 rounded" value={filtros.municipio} onChange={e => setFiltros(prev => ({ ...prev, municipio: e.target.value }))} disabled={!filtros.provincia}>
+        <option value="">Todos Municípios</option>
+        {municipios.map(m => <option key={m}>{m}</option>)}
+      </select>
+      <select className="border p-2 rounded" value={filtros.veiculo} onChange={e => setFiltros(prev => ({ ...prev, veiculo: e.target.value }))}>
+        <option value="">Todos Veículos</option>
+        {veiculos.map(v => <option key={v}>{v}</option>)}
+      </select>
+    </div>
+  );
+}
+
+function ListaEntregadores({ entregadores, selecionado, onSelecionar }) {
+  if (entregadores.length === 0) return <p className="text-sm italic text-gray-500">Nenhum entregador disponível.</p>;
+
+  return (
+    <ul className="space-y-3 max-h-64 overflow-y-auto border rounded p-3 bg-gray-50">
+      {entregadores.map((e, i) => (
+        <li
+          key={i}
+          tabIndex={0}
+          onClick={() => onSelecionar(e)}
+          onKeyDown={ev => ev.key === "Enter" && onSelecionar(e)}
+          className={`cursor-pointer p-3 rounded border ${selecionado?.nome === e.nome ? "bg-green-100 border-green-500" : "bg-white border-gray-300"}`}
+        >
+          <p><strong>{e.nome}</strong> — {e.veiculo}</p>
+          <p>{e.local}, {e.municipio}, {e.provincia}</p>
+          <p>💰 {e.tarifa.toLocaleString()} Kz | 📞 {e.contacto}</p>
+        </li>
+      ))}
+    </ul>
   );
 }

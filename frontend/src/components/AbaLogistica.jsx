@@ -65,7 +65,9 @@ function AbaLogistica({ usuario, setAbaAtiva }) {
     { icone: "⭐", titulo: "Avalie a Experiência", descricao: "Sua avaliação ajuda outros compradores" }
   ];
 
-  const isLoggedIn = !!usuario?.id;
+  // Obter ID do usuário corretamente (suporta id ou _id)
+  const getUserId = () => usuario?.id || usuario?._id;
+  const isLoggedIn = !!getUserId();
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -73,7 +75,7 @@ function AbaLogistica({ usuario, setAbaAtiva }) {
     } else {
       setLoading(false);
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, usuario?.tipo]);
 
   const carregarDados = async () => {
     setLoading(true);
@@ -87,7 +89,10 @@ function AbaLogistica({ usuario, setAbaAtiva }) {
 
   const carregarEntregadores = async () => {
     try {
-      const response = await axios.get(`${API_URL}/entregadores`);
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API_URL}/entregadores`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setEntregadores(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar entregadores:', error);
@@ -97,7 +102,10 @@ function AbaLogistica({ usuario, setAbaAtiva }) {
 
   const carregarEntregasAtivas = async () => {
     try {
-      const response = await axios.get(`${API_URL}/entregas/ativas`);
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API_URL}/entregas/ativas`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setEntregasAtivas(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar entregas ativas:', error);
@@ -106,17 +114,22 @@ function AbaLogistica({ usuario, setAbaAtiva }) {
   };
 
   const carregarMinhasEntregas = async () => {
-    if (!usuario?.id) return;
+    const userId = getUserId();
+    if (!userId) return;
+    
     try {
+      const token = localStorage.getItem("token");
       let url;
       if (usuario.tipo === 'entregador') {
-        url = `${API_URL}/entregas/entregador/${usuario.id}`;
+        url = `${API_URL}/entregas/entregador/${userId}`;
       } else if (usuario.tipo === 'vendedor') {
-        url = `${API_URL}/entregas/vendedor/${usuario.id}`;
+        url = `${API_URL}/entregas/vendedor/${userId}`;
       } else {
-        url = `${API_URL}/entregas/cliente/${usuario.id}`;
+        url = `${API_URL}/entregas/cliente/${userId}`;
       }
-      const response = await axios.get(url);
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setMinhasEntregas(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar minhas entregas:', error);
@@ -161,12 +174,17 @@ function AbaLogistica({ usuario, setAbaAtiva }) {
 
     setLoading(true);
     try {
+      const userId = getUserId();
+      const token = localStorage.getItem("token");
+      
       const response = await axios.post(`${API_URL}/entregas/solicitar`, {
-        clienteId: usuario?.id,
+        clienteId: userId,
         origem: entregaSelecionada.origem,
         destino: entregaSelecionada.destino,
         entregadorId: entregaSelecionada.entregadorId || null,
         observacoes: entregaSelecionada.observacoes
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       if (response.data.success) {
@@ -186,8 +204,11 @@ function AbaLogistica({ usuario, setAbaAtiva }) {
 
   const atualizarStatusEntrega = async (entregaId, novoStatus) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.put(`${API_URL}/entregas/${entregaId}/status`, {
         status: novoStatus
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
         alert(`Status atualizado para: ${novoStatus}`);
@@ -510,7 +531,7 @@ function AbaLogistica({ usuario, setAbaAtiva }) {
         </>
       )}
 
-      {/* Modais */}
+      {/* Modais (mantidos iguais) */}
       {modalCadastro && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">

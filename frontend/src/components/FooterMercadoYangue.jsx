@@ -162,25 +162,24 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
         </div>
 
         {/* Coluna 3 - Contactos */}
-        <div className="bg-green-800/50 rounded-xl p-4">
-          <h3 className="text-lg font-semibold mb-3 text-green-200 flex items-center gap-2">
-            <Mail size={18} /> Contacte-nos
-          </h3>
-          <ul className="text-sm text-green-200 space-y-2">
-            <li className="flex items-center gap-2"><Mail size={14} /> mercadoyangueservicosdigitais@gmail.com</li>
-            <li className="flex items-center gap-2"><Phone size={14} /> +244 928 565 837</li>
-            <li className="flex items-center gap-2"><Globe size={14} /> Angola</li>
-          </ul>
-          <div className="mt-4 pt-3 border-t border-green-700">
-            <p className="text-xs text-green-400 text-center">
-              © 2025 MercadoYangue Serviços Digitais
-            </p>
-            <p className="text-xs text-green-500 text-center mt-1">
-              Criado por angolanos, para angolanos 🇦🇴
-            </p>
-          </div>
-        </div>
-      </div>
+<div className="bg-green-800/50 rounded-xl p-4">
+  <h3 className="text-lg font-semibold mb-3 text-green-200 flex items-center gap-2">
+    <Mail size={18} /> Contacte-nos
+  </h3>
+  <ul className="text-sm text-green-200 space-y-2">
+    <li className="flex items-center gap-2"><Mail size={14} /> mercadoyangueservicosdigitais@gmail.com</li>
+    <li className="flex items-center gap-2"><Phone size={14} /> +244 928 565 837</li>
+    <li className="flex items-center gap-2"><Globe size={14} /> Angola</li>
+  </ul>
+  <div className="mt-4 pt-3 border-t border-green-700">
+    <p className="text-xs text-green-400 text-center">
+      © {new Date().getFullYear()} MercadoYangue Serviços Digitais
+    </p>
+    <p className="text-xs text-green-500 text-center mt-1">
+      Criado por angolanos, para angolanos 🇦🇴
+    </p>
+  </div>
+</div>
 
       {/* Modal de Avaliação */}
       <AnimatePresence>

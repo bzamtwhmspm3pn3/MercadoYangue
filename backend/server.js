@@ -12,7 +12,6 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 
 // ============ IMPORTAÇÃO DAS ROTAS EXISTENTES ============
-const usuariosroutes = require('./routes/usuarios');
 const authroutes = require('./routes/auth');
 const produtoroutes = require('./routes/produtos');
 const chatroutes = require('./routes/chat');
@@ -25,6 +24,7 @@ const avaliacaoroutes = require("./routes/avaliacoes");
 const vendedoresRoutes = require('./routes/vendedores');
 const entregadoresRoutes = require('./routes/entregadores');
 const entregasRoutes = require('./routes/entregas');
+const usuariosroutes = require('./routes/usuarios');  // GENÉRICA - deve ser a última
 
 // ============ IMPORTAÇÃO DAS ROTAS JIAM ============
 const modelosRoutes = require('./routes/modelos');
@@ -37,7 +37,6 @@ const predicoesRoutes = require("./routes/predicoes");
 const geolocalizacaoRoutes = require("./routes/geolocalizacao");
 const jiamAgroRoutes = require('./routes/jiamAgro');
 const chatbotRoutes = require('./routes/chatbot');
-
 
 // ============ MIDDLEWARE ============
 const app = express();
@@ -69,10 +68,12 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static('uploads'));
 
-// ============ ROTAS MERCADO YANGUE ============
+// ============ ROTAS MERCADO YANGUE (ORDEM CORRETA) ============
+// ROTAS ESPECÍFICAS (primeiro)
 app.use('/api/auth', authroutes);
 app.use('/api/produtos', produtoroutes);
-app.use('/api', usuariosroutes);
+app.use('/api/entregadores', entregadoresRoutes);
+app.use('/api/entregas', entregasRoutes);
 app.use('/api/chat', chatroutes);
 app.use('/api/vendas', vendasroutes);
 app.use('/api/compras', comprasroutes);
@@ -81,8 +82,9 @@ app.use('/api/carrinho', carrinhoroutes);
 app.use("/api/fatura", faturaroutes);
 app.use("/api/avaliacoes", avaliacaoroutes);
 app.use('/api/vendedores', vendedoresRoutes);
-app.use('/api/entregadores', entregadoresRoutes);
-app.use('/api/entregas', entregasRoutes);
+
+// ROTA GENÉRICA (por último)
+app.use('/api', usuariosroutes);
 
 // ============ ROTAS JIAM PREDITIVO ============
 app.use("/api/modelos", modelosRoutes);
@@ -95,7 +97,6 @@ app.use("/api/predicoes", predicoesRoutes);
 app.use("/api/geolocalizacao", geolocalizacaoRoutes);
 app.use('/api/jiam', jiamAgroRoutes);
 app.use('/api/chatbot', chatbotRoutes);
-
 
 // ============ ROTA HEALTH ============
 app.get("/api/health", (req, res) => {
@@ -186,7 +187,6 @@ app.post("/api/chatbot", async (req, res) => {
     memoriaConversas[id].push({ remetente: "user", texto: mensagem });
 
     const msg = mensagem.toLowerCase();
-    const contexto = obterContexto(id);
     let resposta = "Desculpa, ainda estou a aprender sobre isso. 😅";
 
     // Saudações
