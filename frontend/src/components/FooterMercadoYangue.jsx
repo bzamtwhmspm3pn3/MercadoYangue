@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, X, HelpCircle, BookOpen, Heart, Info, Mail, Phone, MapPin, Globe } from "lucide-react";
+import { Star, X, HelpCircle, BookOpen, Heart, Info, Mail, Phone, Globe } from "lucide-react";
 
 export default function FooterMercadoYangue({ setAbaAtiva }) {
   const [showModal, setShowModal] = useState(false);
@@ -26,7 +26,7 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
         setLoading(false);
       })
       .catch((err) => {
-        console.warn("⚠️ Erro ao carregar avaliações:", err.message);
+        console.warn("Erro ao carregar avaliações:", err.message);
         setLoading(false);
       });
   }, [API_URL]);
@@ -62,7 +62,7 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
         alert("Erro ao enviar avaliação. Tente novamente.");
       }
     } catch (err) {
-      console.error("❌ Falha de conexão:", err);
+      console.error("Falha de conexão:", err);
       alert("Falha de conexão com o servidor.");
     }
   };
@@ -127,59 +127,51 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
         {/* Coluna 2 - Links Rápidos */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-green-200">📚 Informação</h3>
+            <h3 className="text-lg font-semibold mb-3 text-green-200">Informação</h3>
             <div className="flex flex-col gap-2">
-              <button
-                onClick={() => setAbaAtiva("quemSomos")}
-                className="flex items-center gap-2 bg-green-700 hover:bg-green-600 px-3 py-2 rounded-lg text-sm transition text-left"
-              >
+              <button onClick={() => setAbaAtiva("quemSomos")} className="flex items-center gap-2 bg-green-700 hover:bg-green-600 px-3 py-2 rounded-lg text-sm transition text-left">
                 <Info size={16} /> Sobre Nós
               </button>
-              <button
-                onClick={() => setAbaAtiva("ajuda")}
-                className="flex items-center gap-2 bg-green-700 hover:bg-green-600 px-3 py-2 rounded-lg text-sm transition text-left"
-              >
+              <button onClick={() => setAbaAtiva("ajuda")} className="flex items-center gap-2 bg-green-700 hover:bg-green-600 px-3 py-2 rounded-lg text-sm transition text-left">
                 <HelpCircle size={16} /> Ajuda Interactiva
               </button>
-              <button
-                onClick={() => setAbaAtiva("guia")}
-                className="flex items-center gap-2 bg-green-700 hover:bg-green-600 px-3 py-2 rounded-lg text-sm transition text-left"
-              >
+              <button onClick={() => setAbaAtiva("guia")} className="flex items-center gap-2 bg-green-700 hover:bg-green-600 px-3 py-2 rounded-lg text-sm transition text-left">
                 <BookOpen size={16} /> Guia de Utilização
               </button>
             </div>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-green-200">🔗 Links Úteis</h3>
+            <h3 className="text-lg font-semibold mb-3 text-green-200">Links Úteis</h3>
             <div className="flex flex-col gap-2">
-              <button onClick={() => setAbaAtiva("produtos")} className="text-sm text-green-300 hover:text-white transition text-left">🛒 Produtos</button>
-              <button onClick={() => setAbaAtiva("logistica")} className="text-sm text-green-300 hover:text-white transition text-left">📦 Entregas</button>
-              <button onClick={() => setAbaAtiva("quemSomos")} className="text-sm text-green-300 hover:text-white transition text-left">🌍 Quem Somos</button>
-              <a href="https://jiampreditivo.netlify.app/" target="_blank" rel="noopener noreferrer" className="text-sm text-green-300 hover:text-white transition">📊 JIAM Preditivo</a>
+              <button onClick={() => setAbaAtiva("produtos")} className="text-sm text-green-300 hover:text-white transition text-left">Produtos</button>
+              <button onClick={() => setAbaAtiva("logistica")} className="text-sm text-green-300 hover:text-white transition text-left">Entregas</button>
+              <button onClick={() => setAbaAtiva("quemSomos")} className="text-sm text-green-300 hover:text-white transition text-left">Quem Somos</button>
+              <a href="https://jiampreditivo.netlify.app/" target="_blank" rel="noopener noreferrer" className="text-sm text-green-300 hover:text-white transition">JIAM Preditivo</a>
             </div>
           </div>
         </div>
 
         {/* Coluna 3 - Contactos */}
-<div className="bg-green-800/50 rounded-xl p-4">
-  <h3 className="text-lg font-semibold mb-3 text-green-200 flex items-center gap-2">
-    <Mail size={18} /> Contacte-nos
-  </h3>
-  <ul className="text-sm text-green-200 space-y-2">
-    <li className="flex items-center gap-2"><Mail size={14} /> mercadoyangueservicosdigitais@gmail.com</li>
-    <li className="flex items-center gap-2"><Phone size={14} /> +244 928 565 837</li>
-    <li className="flex items-center gap-2"><Globe size={14} /> Angola</li>
-  </ul>
-  <div className="mt-4 pt-3 border-t border-green-700">
-    <p className="text-xs text-green-400 text-center">
-      © {new Date().getFullYear()} MercadoYangue Serviços Digitais
-    </p>
-    <p className="text-xs text-green-500 text-center mt-1">
-      Criado por angolanos, para angolanos 🇦🇴
-    </p>
-  </div>
-</div>
+        <div className="bg-green-800/50 rounded-xl p-4">
+          <h3 className="text-lg font-semibold mb-3 text-green-200 flex items-center gap-2">
+            <Mail size={18} /> Contacte-nos
+          </h3>
+          <ul className="text-sm text-green-200 space-y-2">
+            <li className="flex items-center gap-2"><Mail size={14} /> mercadoyangueservicosdigitais@gmail.com</li>
+            <li className="flex items-center gap-2"><Phone size={14} /> +244 928 565 837</li>
+            <li className="flex items-center gap-2"><Globe size={14} /> Angola</li>
+          </ul>
+          <div className="mt-4 pt-3 border-t border-green-700">
+            <p className="text-xs text-green-400 text-center">
+              © {new Date().getFullYear()} MercadoYangue Serviços Digitais
+            </p>
+            <p className="text-xs text-green-500 text-center mt-1">
+              Criado por angolanos, para angolanos 🇦🇴
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Modal de Avaliação */}
       <AnimatePresence>
@@ -197,7 +189,7 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
               className="bg-white rounded-2xl p-6 w-11/12 md:w-[450px] shadow-2xl"
             >
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-green-800">Avalie o MercadoYangue 🌿</h3>
+                <h3 className="text-xl font-bold text-green-800">Avalie o MercadoYangue</h3>
                 <button onClick={() => setShowModal(false)} className="p-1 hover:bg-gray-100 rounded-full">
                   <X className="text-gray-500 hover:text-red-500" size={20} />
                 </button>
