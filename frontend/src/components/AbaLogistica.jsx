@@ -65,9 +65,9 @@ function AbaLogistica({ usuario, setAbaAtiva }) {
     { icone: "⭐", titulo: "Avalie a Experiência", descricao: "Sua avaliação ajuda outros compradores" }
   ];
 
-  // Obter ID do usuário corretamente (suporta id ou _id)
-  const getUserId = () => usuario?.id || usuario?._id;
-  const isLoggedIn = !!getUserId();
+  // Obter ID do usuário corretamente (suporta id, _id ou email como fallback)
+  const getUserId = () => usuario?.id || usuario?._id || usuario?.email;
+  const isLoggedIn = !!getUserId() && !!usuario?.nome;
 
   useEffect(() => {
     if (isLoggedIn) {

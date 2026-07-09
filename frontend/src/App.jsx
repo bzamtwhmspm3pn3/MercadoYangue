@@ -346,6 +346,11 @@ export default function App() {
 
   const navigateToChat = () => setAbaAtiva('chat');
 
+  const normalizeCartItem = (item) => {
+    if (item.produto) return item;
+    return { _id: item._id, produto: { ...item }, quantidade: item.quantidade || 1 };
+  };
+
   const adicionarAoCarrinho = (data) => {
     if (!usuario || usuario.tipo !== 'cliente') {
       alert('Faça login como cliente');
@@ -353,18 +358,22 @@ export default function App() {
       return;
     }
     if (Array.isArray(data)) {
-      setCarrinho(data);
+      setCarrinho(data.map(normalizeCartItem));
       setAbaAtiva('carrinho');
       return;
     }
     if (data && Array.isArray(data.itens)) {
-      setCarrinho(data.itens);
+      setCarrinho(data.itens.map(normalizeCartItem));
       setAbaAtiva('carrinho');
       return;
     }
     setCarrinho(prev => {
-      const existe = prev.find(item => item._id === data._id || item.produto?._id === data._id);
-      return existe ? prev.map(item => (item._id === data._id || item.produto?._id === data._id) ? { ...item, quantidade: item.quantidade + 1 } : item) : [...prev, { ...data, quantidade: 1 }];
+      const normalized = normalizeCartItem(data);
+      const pid = normalized.produto?._id || normalized._id;
+      const existe = prev.find(item => (item.produto?._id || item._id) === pid);
+      return existe
+        ? prev.map(item => ((item.produto?._id || item._id) === pid) ? { ...item, quantidade: item.quantidade + 1 } : item)
+        : [...prev, normalized];
     });
     setAbaAtiva('carrinho');
   };
@@ -486,7 +495,7 @@ export default function App() {
         {abaAtiva === 'gestao-compras' && usuario?.tipo === 'cliente' && <AbaGestaoCompras usuario={usuario} setAbaAtiva={setAbaAtiva} />}
         {abaAtiva === 'chat' && usuario && <AbaChat usuario={usuario} />}
         {abaAtiva === 'previsoes' && podeVerJIAM && <AbaPrevisoesAgro usuario={usuario} />}
-        {abaAtiva === 'rastreamento' && !!usuario && (produtoSelecionado ? <AbaRastreamento usuario={usuario} produtoId={produtoSelecionado._id} produto={produtoSelecionado} /> : <div className="container-page"><div className="card p-12 text-center"><p className="text-gray-500 mb-4">Selecione um produto para rastrear</p><button onClick={() => setAbaAtiva('produtos')} className="btn-primary">Ver Produtos</button></div></div>)}
+        {abaAtiva === 'rastreamento' && !!usuario && <AbaRastreamento usuario={usuario} />}
         {abaAtiva === 'entregador' && podeVerEntregador && <AbaEntregador usuario={usuario} />}
         {abaAtiva === 'logistica' && <AbaLogistica usuario={usuario} setAbaAtiva={setAbaAtiva} />}
         {abaAtiva === 'quemSomos' && <AbaQuemSomos setAbaAtiva={setAbaAtiva} />}

@@ -19,19 +19,19 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-agro-700 text-white px-6 py-2.5 rounded-lg font-medium 
-           hover:bg-agro-800 active:bg-agro-900 
+    @apply bg-green-700 text-white px-6 py-2.5 rounded-lg font-medium 
+           hover:bg-green-800 active:bg-green-900 
            transition-all duration-200 
            shadow-sm hover:shadow-md
-           focus:outline-none focus:ring-2 focus:ring-agro-500 focus:ring-offset-2;
+           focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
   }
 
   .btn-secondary {
-    @apply bg-white text-agro-700 border-2 border-agro-200 
+    @apply bg-white text-green-700 border-2 border-green-200 
            px-6 py-2.5 rounded-lg font-medium 
-           hover:bg-agro-50 hover:border-agro-300 
+           hover:bg-green-50 hover:border-green-300 
            transition-all duration-200
-           focus:outline-none focus:ring-2 focus:ring-agro-500 focus:ring-offset-2;
+           focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
   }
 
   .btn-ghost {
@@ -49,9 +49,9 @@
   }
 
   .input-field {
-    @apply w-full px-4 py-2.5 border border-gray-200 rounded-lg 
-           focus:ring-2 focus:ring-agro-500 focus:border-agro-500 
-           outline-none transition-all duration-200 bg-white;
+    @apply w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg 
+           focus:ring-2 focus:ring-green-500 focus:border-green-500 
+           outline-none transition-all duration-200 bg-white text-gray-900;
   }
 
   .badge {
@@ -59,11 +59,11 @@
   }
 
   .badge-green {
-    @apply badge bg-agro-100 text-agro-800;
+    @apply badge bg-green-100 text-green-800;
   }
 
   .badge-gold {
-    @apply badge bg-harvest-100 text-harvest-700;
+    @apply badge bg-yellow-100 text-yellow-700;
   }
 
   .section-title {

@@ -197,7 +197,7 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="Seu nome (opcional)"
-                className="input-field mb-3"
+                className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none bg-white text-gray-900 mb-3"
               />
 
               <div className="flex justify-center gap-2 mb-4">
@@ -217,7 +217,7 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
                 onChange={(e) => setComentario(e.target.value)}
                 placeholder="Escreva o seu comentário..."
                 rows={3}
-                className="input-field mb-3 resize-none"
+                className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none bg-white text-gray-900 resize-none mb-3"
               />
 
               <div className="flex gap-3">
