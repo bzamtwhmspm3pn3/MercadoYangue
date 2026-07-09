@@ -8,7 +8,7 @@ function WhatsAppButton({ telefone = "+244923000000", mensagem = "Olá! Gostaria
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 z-50 flex items-center justify-center gap-2 group"
+      className="fixed bottom-6 right-6 bg-agro-600 text-white p-4 rounded-full shadow-lg hover:bg-agro-700 transition-all duration-300 z-50 flex items-center justify-center gap-2 group"
       style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7">

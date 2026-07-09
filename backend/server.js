@@ -1,4 +1,4 @@
-// server.js - BACKEND COMPLETO (MERCADO YANGUE + JIAM PREDITIVO)
+// server.js - API AgriMarket
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -26,7 +26,7 @@ const entregadoresRoutes = require('./routes/entregadores');
 const entregasRoutes = require('./routes/entregas');
 const usuariosroutes = require('./routes/usuarios');  // GENÉRICA - deve ser a última
 
-// ============ IMPORTAÇÃO DAS ROTAS JIAM ============
+// ============ ROTAS JIAM PREDITIVO ============
 const modelosRoutes = require('./routes/modelos');
 const modelosRRoutes = require("./routes/r-api/modelos");
 const processamentoRoutes = require("./routes/r-api/processamento");
@@ -34,9 +34,10 @@ const visualizacaoRoutes = require("./routes/r-api/visualizacao");
 const interpretacaoRoutes = require("./routes/r-api/interpretacao");
 const dadosRoutes = require("./routes/r-api/dados");
 const predicoesRoutes = require("./routes/predicoes");
-const geolocalizacaoRoutes = require("./routes/geolocalizacao");
 const jiamAgroRoutes = require('./routes/jiamAgro');
-const chatbotRoutes = require('./routes/chatbot');
+
+// ============ ROTAS ADICIONAIS ============
+const geolocalizacaoRoutes = require("./routes/geolocalizacao");
 
 // ============ MIDDLEWARE ============
 const app = express();
@@ -94,20 +95,19 @@ app.use("/api/r/interpretacao", interpretacaoRoutes);
 app.use("/api/r/modelos", modelosRRoutes);
 app.use("/api/r/dados", dadosRoutes);
 app.use("/api/predicoes", predicoesRoutes);
-app.use("/api/geolocalizacao", geolocalizacaoRoutes);
 app.use('/api/jiam', jiamAgroRoutes);
-app.use('/api/chatbot', chatbotRoutes);
+
+app.use("/api/geolocalizacao", geolocalizacaoRoutes);
 
 // ============ ROTA HEALTH ============
 app.get("/api/health", (req, res) => {
   res.json({
     success: true,
-    message: "Mercado Yangue + JIAM Preditivo Online",
+    message: "AgriMarket + JIAM Preditivo Online",
     timestamp: new Date().toISOString(),
     modules: {
-      mercado_yangue: true,
+      mercado: true,
       jiam_preditivo: true,
-      r_js: true,
       geolocalizacao: true
     }
   });
@@ -168,18 +168,15 @@ io.on("connection", (socket) => {
   });
 });
 
-// ============ ROTA DO CHATBOT (IA YANGUE) ============
-let memoriaConversas = {};
 
-function obterContexto(sessionId) {
-  const conversa = memoriaConversas[sessionId] || [];
-  return conversa.filter((m) => m.remetente === "user").slice(-3).map((m) => m.texto).join(" | ");
-}
+
+// ============ ROTA DO CHATBOT ============
+let memoriaConversas = {};
 
 app.post("/api/chatbot", async (req, res) => {
   try {
     const { mensagem, sessionId } = req.body;
-    if (!mensagem) return res.status(400).json({ resposta: "Mensagem vazia recebida. 🤔" });
+    if (!mensagem) return res.status(400).json({ resposta: "Mensagem vazia recebida." });
 
     const id = sessionId || "default";
     if (!memoriaConversas[id]) memoriaConversas[id] = [];
@@ -187,40 +184,33 @@ app.post("/api/chatbot", async (req, res) => {
     memoriaConversas[id].push({ remetente: "user", texto: mensagem });
 
     const msg = mensagem.toLowerCase();
-    let resposta = "Desculpa, ainda estou a aprender sobre isso. 😅";
+    let resposta = "Desculpa, ainda estou a aprender sobre isso.";
 
-    // Saudações
     if (/(olá|ola|oi|bom dia|boa tarde|boa noite)/.test(msg)) {
-      resposta = "Olá! 👋 Seja bem-vindo ao MercadoYangue — a tua plataforma angolana de comércio digital. Em que posso ajudar hoje?";
+      resposta = "Ola! Seja bem-vindo a AgriMarket — a plataforma global de comercio agricola. Em que posso ajudar?";
     } else if (/(obrigad[ao]|valeu|grato)/.test(msg)) {
-      resposta = "De nada! 😊 É sempre um prazer ajudar-te no MercadoYangue.";
+      resposta = "De nada! Estamos aqui para ajudar no seu negocio agricola.";
     } else if (/(tchau|adeus|até logo)/.test(msg)) {
-      resposta = "Até já! 👋 Volta sempre ao MercadoYangue — estamos sempre por cá!";
-    }
-    // Conhecimento geral
-    else if (msg.includes("mercado yangue") || msg.includes("sobre")) {
-      resposta = "O MercadoYangue é uma plataforma digital angolana criada por Venâncio Elavoco Cassova Martins. A sua missão é conectar clientes e vendedores locais, promovendo o comércio nacional e a sustentabilidade económica. 🌍";
-    } else if (msg.includes("missão")) {
-      resposta = "A missão do MercadoYangue é unir os angolanos através de uma plataforma que valoriza produtos locais e fortalece a economia nacional. 🤝";
-    } else if (msg.includes("contrato") || msg.includes("comissão")) {
-      resposta = "O vendedor/agricultor aceita o Contrato Digital, comprometendo-se com a veracidade das informações, prazos de entrega e pagamento de 0,5% de comissão sobre cada venda à plataforma. 💼";
+      resposta = "Ate logo! Volte sempre a AgriMarket.";
     } else if (msg.includes("vender")) {
-      resposta = "Para vender, vai à aba 'Cadastrar Produtos', adiciona fotos, descrição e preço. É simples e rápido! 📸";
+      resposta = "Para vender, va a aba 'Cadastrar Produtos', adicione fotos, descricao e preco. Simples e rapido!";
     } else if (msg.includes("comprar")) {
-      resposta = "Para comprar, entra no produto desejado e clica em 'Adicionar ao Carrinho'. Depois escolhe o método de pagamento que preferires. 🛒";
-    } else if (msg.includes("entrega") || msg.includes("logística")) {
-      resposta = "As entregas são combinadas entre vendedor e comprador. Consulte a aba 'Entregas' para prazos por província. 🚚";
-    } else if (msg.includes("previsão") || msg.includes("predição") || msg.includes("jiam")) {
-      resposta = "O JIAM Preditivo é nosso sistema de inteligência de dados! Acesse o Dashboard de Previsões para ver análises de demanda, preços e produção. 📊";
-    } else if (msg.includes("geolocalização") || msg.includes("rastrear")) {
-      resposta = "Produtores podem rastrear suas plantações por geolocalização. Compradores veem a origem exata dos produtos! 🗺️";
+      resposta = "Para comprar, entre no produto desejado e clique em 'Adicionar ao Carrinho'. Depois escolha o metodo de pagamento.";
+    } else if (msg.includes("entrega") || msg.includes("logistica")) {
+      resposta = "As entregas sao combinadas entre vendedor e comprador. Consulte a aba 'Entregas' para prazos por provincia.";
+    } else if (msg.includes("jiam") || msg.includes("previsao") || msg.includes("analise")) {
+      resposta = "O JIAM Preditivo e o nosso sistema de inteligencia de dados! Acesse o Dashboard de Previsoes para analises de mercado, precos e producao.";
+    } else if (msg.includes("pagamento") || msg.includes("iban")) {
+      resposta = "Aceitamos Transferencia Bancaria (IBAN), Multicaixa Express e Dinheiro na Entrega.";
+    } else if (msg.includes("rastrear") || msg.includes("geolocalizacao")) {
+      resposta = "Produtores podem rastrear suas plantacoes. Compradores veem a origem exata dos produtos!";
     }
 
     memoriaConversas[id].push({ remetente: "bot", texto: resposta });
     res.json({ resposta });
   } catch (erro) {
-    console.error("❌ Erro na rota /api/chatbot:", erro);
-    res.status(500).json({ resposta: "Erro interno no servidor. 😕" });
+    console.error("Erro na rota /api/chatbot:", erro);
+    res.status(500).json({ resposta: "Erro interno no servidor." });
   }
 });
 
@@ -238,11 +228,10 @@ mongoose.connect(mongoURI, {
 .then(() => {
   console.log('✅ MongoDB conectado ao Atlas');
   server.listen(port, () => {
-    console.log(`\n🚀 SERVIDOR COMPLETO INICIADO NA PORTA ${port}`);
-    console.log(`📍 Mercado Yangue API: http://localhost:${port}/api`);
-    console.log(`📊 JIAM Preditivo API: http://localhost:${port}/api/predicoes`);
-    console.log(`🗺️ Geolocalização API: http://localhost:${port}/api/geolocalizacao`);
-    console.log(`🤖 Chatbot IA: http://localhost:${port}/api/chatbot`);
+    console.log(`\n🚀 SERVIDOR INICIADO NA PORTA ${port}`);
+    console.log(`📍 API: http://localhost:${port}/api`);
+    console.log(`📊 JIAM Preditivo: http://localhost:${port}/api/jiam`);
+    console.log(`💬 Chatbot: http://localhost:${port}/api/chatbot`);
     console.log("=".repeat(50));
   });
 })

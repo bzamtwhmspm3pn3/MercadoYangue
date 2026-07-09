@@ -1,33 +1,40 @@
 {
-  "name": "Mercado Yangue",
-  "short_name": "MercadoYangue",
-  "description": "Plataforma digital para o agronegócio angolano",
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#166534",
-  "background_color": "#ffffff",
+  "short_name": "JIAM",
+  "name": "JIAM Preditivo - Plataforma de Análise Preditiva com IA",
+  "description": "Previsões avançadas de séries temporais, machine learning e modelos estatísticos",
   "icons": [
     {
-      "src": "android-chrome-192x192.png",
+      "src": "favicon/android-chrome-192x192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "android-chrome-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "favicon-16x16.png",
-      "sizes": "16x16",
       "type": "image/png"
     },
     {
-      "src": "favicon-32x32.png",
+      "src": "favicon/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "apple touch icon"
+    },
+    {
+      "src": "favicon/favicon-32x32.png",
       "sizes": "32x32",
       "type": "image/png"
+    },
+    {
+      "src": "favicon/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
     }
-  ]
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#00CFFF",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "categories": ["business", "finance", "productivity"],
+  "lang": "pt-BR"
 }

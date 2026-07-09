@@ -1,27 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// Componentes existentes
 import AbaGestaoVendas from './components/AbaGestaoVendas';
 import AbaGestaoCompras from "./components/AbaGestaoCompras";
-import ConfirmacaoPagamento from "./components/ConfirmacaoPagamento";
 import AbaChat from './components/AbaChat';
 import AbaProdutos from "./components/AbaProdutos";
 import AbaCarrinho from './components/AbaCarrinho';
-import PainelFBI from "./pages/dados/dados";
 import AbaAjuda from "./components/AbaAjuda";
 import AbaGuiaUtilizacao from "./components/AbaGuiaUtilizacao";
 import FooterMercadoYangue from "./components/FooterMercadoYangue";
-
-// NOVOS COMPONENTES
 import AbaPrevisoesAgro from './components/AbaPrevisoesAgro';
 import AbaRastreamento from './components/AbaRastreamento';
 import AbaLogistica from './components/AbaLogistica';
 import AbaEntregador from './components/AbaEntregador';
 import WhatsAppButton from './components/WhatsAppButton';
-
-// Importação de imagens
-import logojiam from './assets/logojiam.png';
 import venancioImg from './assets/equipa/Venâncio.png';
 import iracelmaImg from './assets/equipa/Iracelma.png';
 import joseImg from './assets/equipa/Jose.png';
@@ -29,10 +21,8 @@ import joseImg from './assets/equipa/Jose.png';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 const WHATSAPP_NUMBER = "+244928565837";
 
-// ============ BANCOS DE ANGOLA ============
 const bancosAngola = ["BAI", "BPC", "Millennium Atlântico", "Banco Sol", "BFA", "BIC", "Keve"];
 
-// ============ FORMA PAGAMENTO CAMPO ============
 function FormaPagamentoCampo({ formaPagamento, setFormaPagamento, bancosDisponiveis = [] }) {
   const [tipo, setTipo] = useState(formaPagamento?.tipo || "iban");
   const [iban, setIban] = useState(formaPagamento?.iban || "");
@@ -43,16 +33,16 @@ function FormaPagamentoCampo({ formaPagamento, setFormaPagamento, bancosDisponiv
   }, [tipo, iban, banco]);
 
   return (
-    <div className="border p-3 rounded-lg bg-green-50">
-      <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="w-full p-2 border rounded mb-2">
-        <option value="iban">IBAN + Banco</option>
+    <div className="border border-gray-200 p-4 rounded-xl bg-gray-50 space-y-3">
+      <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="input-field">
+        <option value="iban">Transferência Bancária (IBAN)</option>
         <option value="numConta">Número de Conta</option>
         <option value="dinheiro">Dinheiro na Entrega</option>
       </select>
       {tipo === "iban" && (
         <>
-          <input type="text" placeholder="IBAN" value={iban} onChange={(e) => setIban(e.target.value)} className="w-full p-2 border rounded mb-2" />
-          <select value={banco} onChange={(e) => setBanco(e.target.value)} className="w-full p-2 border rounded">
+          <input type="text" placeholder="IBAN" value={iban} onChange={(e) => setIban(e.target.value)} className="input-field" />
+          <select value={banco} onChange={(e) => setBanco(e.target.value)} className="input-field">
             <option value="">Selecione o Banco</option>
             {bancosDisponiveis.map((b, i) => <option key={i} value={b}>{b}</option>)}
           </select>
@@ -62,7 +52,6 @@ function FormaPagamentoCampo({ formaPagamento, setFormaPagamento, bancosDisponiv
   );
 }
 
-// ============ ABA QUEM SOMOS ============
 function AbaQuemSomos({ setAbaAtiva }) {
   const estatisticas = [
     { valor: "-40%", label: "Redução de Perdas", desc: "Produção que chega ao mercado" },
@@ -84,7 +73,7 @@ function AbaQuemSomos({ setAbaAtiva }) {
         if (usuario?.tipo === 'vendedor' || usuario?.tipo === 'agricultor') {
           setAbaAtiva('cadastrar');
         } else {
-          alert('Para vender, você precisa se cadastrar como Vendedor/Agricultor');
+          alert('Para vender, cadastre-se como Vendedor/Agricultor');
           setAbaAtiva('login');
         }
       } else {
@@ -96,7 +85,7 @@ function AbaQuemSomos({ setAbaAtiva }) {
         if (usuario?.tipo === 'cliente') {
           setAbaAtiva('produtos');
         } else {
-          alert('Para comprar, você precisa se cadastrar como Cliente');
+          alert('Para comprar, cadastre-se como Cliente');
           setAbaAtiva('login');
         }
       } else {
@@ -108,7 +97,7 @@ function AbaQuemSomos({ setAbaAtiva }) {
         if (usuario?.tipo === 'entregador') {
           setAbaAtiva('entregador');
         } else {
-          alert('Para ser entregador, você precisa se cadastrar como Entregador');
+          alert('Para ser entregador, cadastre-se como Entregador');
           setAbaAtiva('login');
         }
       } else {
@@ -118,87 +107,110 @@ function AbaQuemSomos({ setAbaAtiva }) {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4">
-      <div className="relative rounded-2xl overflow-hidden mb-12 shadow-2xl">
-        <div className="absolute inset-0 bg-gradient-to-r from-green-900/80 to-green-700/80 z-10"></div>
-        <div className="relative h-[400px] md:h-[500px] bg-[url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center">
+    <div className="container-page">
+      <div className="relative rounded-2xl overflow-hidden mb-12 shadow-xl">
+        <div className="absolute inset-0 bg-gradient-to-r from-agro-900/85 to-agro-700/85 z-10"></div>
+        <div className="relative h-[420px] md:h-[520px] bg-[url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center">
           <div className="absolute inset-0 z-20 flex items-center justify-center p-6">
             <div className="text-center max-w-3xl">
-              <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">Mercado Yangue</h1>
-              <p className="text-base md:text-lg text-green-100 leading-relaxed mb-6">
-                A Infraestrutura Inteligente para o Agronegócio Angolano. Conectamos produtores e compradores, 
-                eliminamos perdas e geramos previsibilidade através do JIAM Preditivo.
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 tracking-tight">AgriMarket</h1>
+              <p className="text-lg md:text-xl text-gray-100 leading-relaxed mb-8 max-w-2xl mx-auto">
+                A plataforma global que conecta produtores agrícolas a compradores do mundo inteiro. 
+                Comércio justo, rastreável e sustentável.
               </p>
-              <div className="flex flex-wrap gap-3 justify-center">
-                <button onClick={() => handleAction('vender')} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-lg font-semibold transition">Quero Vender</button>
-                <button onClick={() => handleAction('comprar')} className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold transition">Quero Comprar</button>
-                <button onClick={() => handleAction('entregador')} className="border-2 border-white hover:bg-white hover:text-green-800 text-white px-5 py-2 rounded-lg font-semibold transition">Quero ser Entregador</button>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <button onClick={() => handleAction('vender')} className="bg-harvest-500 hover:bg-harvest-600 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg">
+                  Quero Vender
+                </button>
+                <button onClick={() => handleAction('comprar')} className="bg-white hover:bg-gray-100 text-agro-800 px-6 py-3 rounded-lg font-semibold transition shadow-lg">
+                  Quero Comprar
+                </button>
+                <button onClick={() => handleAction('entregador')} className="border-2 border-white/60 hover:bg-white/10 text-white px-6 py-3 rounded-lg font-semibold transition">
+                  Ser Entregador
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
         {estatisticas.map((stat, idx) => (
-          <div key={idx} className="bg-white p-3 rounded-xl shadow-lg text-center border-b-4 border-green-500">
-            <div className="text-xl md:text-2xl font-bold text-green-700">{stat.valor}</div>
-            <div className="font-semibold text-gray-800 text-xs md:text-sm">{stat.label}</div>
+          <div key={idx} className="card p-5 text-center border-b-4 border-agro-500">
+            <div className="text-2xl md:text-3xl font-bold text-agro-700">{stat.valor}</div>
+            <div className="font-semibold text-gray-800 text-sm">{stat.label}</div>
+            <div className="text-xs text-gray-500 mt-1">{stat.desc}</div>
           </div>
         ))}
       </div>
 
-      <div className="flex justify-center mb-10">
-        <a href="https://jiampreditivo.netlify.app/" target="_blank" rel="noopener noreferrer" className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-4 shadow-lg text-center hover:shadow-xl transition transform hover:scale-105">
-          <img src={logojiam} alt="JIAM Preditivo" className="h-16 mx-auto mb-2" />
-          <h3 className="font-bold text-green-800">JIAM Preditivo</h3>
-          <p className="text-xs text-gray-500">Clique para conhecer</p>
-        </a>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-4 mb-10">
-        <div className="bg-white p-5 rounded-xl shadow-lg">
-          <div className="text-3xl mb-2">🌱</div>
-          <h3 className="font-bold text-gray-800">Missão</h3>
-          <p className="text-sm text-gray-600">Conectar os angolanos valorizando produtos locais</p>
+      <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="card p-6">
+          <div className="w-12 h-12 bg-agro-100 rounded-xl flex items-center justify-center mb-4">
+            <svg className="w-6 h-6 text-agro-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          </div>
+          <h3 className="font-bold text-gray-900 text-lg mb-2">Missão</h3>
+          <p className="text-gray-600 text-sm leading-relaxed">Conectar produtores e compradores globais, valorizando a produção agrícola local e promovendo a segurança alimentar.</p>
         </div>
-        <div className="bg-white p-5 rounded-xl shadow-lg">
-          <div className="text-3xl mb-2">👁️</div>
-          <h3 className="font-bold text-gray-800">Visão</h3>
-          <p className="text-sm text-gray-600">Ser o maior mercado digital de Angola</p>
+        <div className="card p-6">
+          <div className="w-12 h-12 bg-harvest-100 rounded-xl flex items-center justify-center mb-4">
+            <svg className="w-6 h-6 text-harvest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+          </div>
+          <h3 className="font-bold text-gray-900 text-lg mb-2">Visão</h3>
+          <p className="text-gray-600 text-sm leading-relaxed">Ser a maior plataforma de comércio agrícola de África, reconhecida pela transparência e inovação.</p>
         </div>
-        <div className="bg-white p-5 rounded-xl shadow-lg">
-          <div className="text-3xl mb-2">⭐</div>
-          <h3 className="font-bold text-gray-800">Valores</h3>
-          <p className="text-sm text-gray-600">Transparência, Inovação e Sustentabilidade</p>
+        <div className="card p-6">
+          <div className="w-12 h-12 bg-agro-100 rounded-xl flex items-center justify-center mb-4">
+            <svg className="w-6 h-6 text-agro-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+          </div>
+          <h3 className="font-bold text-gray-900 text-lg mb-2">Valores</h3>
+          <p className="text-gray-600 text-sm leading-relaxed">Transparência, Inovação, Sustentabilidade e Compromisso com o desenvolvimento do setor agrícola.</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-10">
-        <h2 className="text-xl font-bold text-center mb-6">👥 Nossa Equipa</h2>
-        <div className="grid md:grid-cols-3 gap-6">
+      <div className="card p-6 mb-12 bg-gradient-to-br from-agro-50 to-white border border-agro-200">
+        <div className="flex items-start gap-4">
+          <div className="w-14 h-14 bg-agro-700 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-gray-900 mb-1">JIAM Preditivo</h3>
+            <p className="text-gray-600 text-sm leading-relaxed mb-3">
+              Sistema de inteligência de dados que analisa mercado, preços, tendências e ajuda na tomada de decisão agrícola. 
+            </p>
+            <button onClick={() => setAbaAtiva('previsoes')} className="btn-primary text-sm">
+              Acessar Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="card p-8 mb-12">
+        <h2 className="section-title text-center mb-8">Nossa Equipa</h2>
+        <div className="grid md:grid-cols-3 gap-8">
           {equipa.map((membro, idx) => (
-            <div key={idx} className="text-center">
-              <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-3 border-4 border-green-500">
+            <div key={idx} className="text-center group">
+              <div className="w-28 h-28 rounded-full overflow-hidden mx-auto mb-4 border-4 border-agro-200 group-hover:border-agro-500 transition-colors shadow-md">
                 <img src={membro.imagem} alt={membro.nome} className="w-full h-full object-cover" />
               </div>
-              <h3 className="font-bold text-gray-800">{membro.nome}</h3>
-              <p className="text-green-600 text-sm">{membro.cargo}</p>
-              <p className="text-xs text-gray-500 mt-1">{membro.descricao}</p>
+              <h3 className="font-bold text-gray-900 text-lg">{membro.nome}</h3>
+              <p className="text-agro-600 text-sm font-medium">{membro.cargo}</p>
+              <p className="text-xs text-gray-500 mt-2 leading-relaxed">{membro.descricao}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-green-700 to-green-800 rounded-xl p-6 text-white text-center">
-        <p className="text-sm">📞 WhatsApp: {WHATSAPP_NUMBER} | ✉️ mercadoyangueservicosdigitais@gmail.com</p>
-        <p className="text-xs text-green-200 mt-2">© {new Date().getFullYear()} MercadoYangue — Criado por angolanos</p>
+      <div className="bg-gradient-to-r from-agro-800 to-agro-900 rounded-2xl p-8 text-white text-center shadow-xl">
+        <p className="text-lg mb-2">Contactos: {WHATSAPP_NUMBER} | mercadoyangueservicosdigitais@gmail.com</p>
+        <p className="text-sm text-agro-200">© {new Date().getFullYear()} AgriMarket — Promovendo o comércio agrícola global</p>
       </div>
     </div>
   );
 }
 
-// ============ LOGIN/CADASTRO COM TEcla ENTER ============
 function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
   const [modo, setModo] = useState("login");
   const [tipoCadastro, setTipoCadastro] = useState("cliente");
@@ -229,7 +241,7 @@ function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
       alert(`Bem-vindo, ${usuarioLogado.nome}!`);
       setAbaAtiva("produtos");
     } catch (error) {
-      alert("Erro no login");
+      alert("Erro no login. Verifique a conexão.");
     } finally {
       setLoading(false);
     }
@@ -241,7 +253,7 @@ function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
       return alert("Preencha província e município");
     }
     if (!aceitouTermos) return alert("Aceite os Termos de Uso");
-    
+
     setLoading(true);
     try {
       await fetch(`${API_URL}/auth/cadastro`, {
@@ -249,87 +261,78 @@ function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome, email, senha, tipo: tipoCadastro, provincia, municipio, aceitouContrato: true, aceitouTermos: true }),
       });
-      alert("Cadastro realizado! Faça login.");
+      alert("Cadastro realizado com sucesso! Faça login.");
       setModo("login");
     } catch (error) {
-      alert("Erro no cadastro");
+      alert("Erro no cadastro. Tente novamente.");
     } finally {
       setLoading(false);
     }
   };
 
   const TermosModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 max-w-2xl max-h-[80vh] overflow-y-auto mx-4">
-        <h3 className="text-xl font-bold text-green-700 mb-4">📜 Termos de Uso</h3>
-        <div className="space-y-3 text-sm">
-          <p><strong>1.</strong> Ao se cadastrar, você concorda com os termos da plataforma.</p>
-          <p><strong>2.</strong> Seus dados são usados exclusivamente para operar a plataforma.</p>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-6 max-w-lg max-h-[80vh] overflow-y-auto mx-4 shadow-2xl">
+        <h3 className="text-xl font-bold text-agro-700 mb-4">Termos de Uso</h3>
+        <div className="space-y-3 text-sm text-gray-600">
+          <p><strong>1.</strong> Ao cadastrar-se, concorda com os termos da plataforma.</p>
+          <p><strong>2.</strong> Os seus dados são usados exclusivamente para operar a plataforma.</p>
           <p><strong>3.</strong> Vendedores pagam 0.5% de comissão sobre cada venda.</p>
           <p><strong>4.</strong> Os vendedores são responsáveis pela qualidade dos produtos.</p>
-          <p><strong>5.</strong> Não compartilhamos seus dados com terceiros.</p>
+          <p><strong>5.</strong> Não compartilhamos os seus dados com terceiros.</p>
         </div>
-        <button onClick={() => { setAceitouTermos(true); setMostrarTermos(false); }} className="mt-6 w-full bg-green-600 text-white py-2 rounded-lg">Aceito</button>
+        <button onClick={() => { setAceitouTermos(true); setMostrarTermos(false); }} className="btn-primary w-full mt-6">Aceito os Termos</button>
       </div>
     </div>
   );
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow-lg">
-      <div className="flex gap-3 mb-6">
-        <button onClick={() => setModo("login")} className={`flex-1 py-2 rounded-lg font-semibold ${modo === "login" ? "bg-green-600 text-white" : "bg-gray-100"}`}>Login</button>
-        <button onClick={() => setModo("cadastro")} className={`flex-1 py-2 rounded-lg font-semibold ${modo === "cadastro" ? "bg-green-600 text-white" : "bg-gray-100"}`}>Cadastro</button>
-      </div>
+    <div className="max-w-md mx-auto">
+      <div className="card p-8">
+        <div className="flex gap-2 mb-6 bg-gray-100 p-1 rounded-lg">
+          <button onClick={() => setModo("login")} className={`flex-1 py-2.5 rounded-md font-semibold text-sm transition-all ${modo === "login" ? "bg-white text-agro-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>Entrar</button>
+          <button onClick={() => setModo("cadastro")} className={`flex-1 py-2.5 rounded-md font-semibold text-sm transition-all ${modo === "cadastro" ? "bg-white text-agro-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>Criar Conta</button>
+        </div>
 
-      {modo === "login" ? (
-        <>
-          <input 
-            type="email" 
-            placeholder="Email" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            className="w-full p-3 border rounded-lg mb-3 focus:ring-2 focus:ring-green-500 outline-none" 
-          />
-          <input 
-            type="password" 
-            placeholder="Senha" 
-            value={senha} 
-            onChange={(e) => setSenha(e.target.value)} 
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            className="w-full p-3 border rounded-lg mb-4 focus:ring-2 focus:ring-green-500 outline-none" 
-          />
-          <button onClick={handleLogin} disabled={loading} className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition">Entrar</button>
-        </>
-      ) : (
-        <>
-          <input type="text" placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} className="w-full p-3 border rounded-lg mb-3" />
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 border rounded-lg mb-3" />
-          <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} className="w-full p-3 border rounded-lg mb-3" />
-          <select value={tipoCadastro} onChange={(e) => setTipoCadastro(e.target.value)} className="w-full p-3 border rounded-lg mb-3">
-            <option value="cliente">Cliente</option>
-            <option value="vendedor">Vendedor</option>
-            <option value="entregador">Entregador</option>
-          </select>
-          {tipoCadastro !== "cliente" && (
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <input type="text" placeholder="Província" value={provincia} onChange={(e) => setProvincia(e.target.value)} className="w-full p-3 border rounded-lg" />
-              <input type="text" placeholder="Município" value={municipio} onChange={(e) => setMunicipio(e.target.value)} className="w-full p-3 border rounded-lg" />
-            </div>
-          )}
-          <label className="flex items-center gap-2 cursor-pointer mb-4">
-            <input type="checkbox" checked={aceitouTermos} onChange={() => setMostrarTermos(true)} className="w-4 h-4" />
-            <span className="text-sm">Aceito os <button type="button" onClick={() => setMostrarTermos(true)} className="text-green-600 underline">Termos de Uso</button></span>
-          </label>
-          <button onClick={handleCadastro} disabled={loading} className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold">Cadastrar</button>
-        </>
-      )}
-      {mostrarTermos && <TermosModal />}
+        {modo === "login" ? (
+          <div className="space-y-4">
+            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleLogin()} className="input-field" />
+            <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleLogin()} className="input-field" />
+            <button onClick={handleLogin} disabled={loading} className="btn-primary w-full">
+              {loading ? "Entrando..." : "Entrar"}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <input type="text" placeholder="Nome completo" value={nome} onChange={(e) => setNome(e.target.value)} className="input-field" />
+            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="input-field" />
+            <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} className="input-field" />
+            <select value={tipoCadastro} onChange={(e) => setTipoCadastro(e.target.value)} className="input-field">
+              <option value="cliente">Cliente</option>
+              <option value="vendedor">Vendedor</option>
+              <option value="entregador">Entregador</option>
+            </select>
+            {tipoCadastro !== "cliente" && (
+              <div className="grid grid-cols-2 gap-3">
+                <input type="text" placeholder="Província" value={provincia} onChange={(e) => setProvincia(e.target.value)} className="input-field" />
+                <input type="text" placeholder="Município" value={municipio} onChange={(e) => setMunicipio(e.target.value)} className="input-field" />
+              </div>
+            )}
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={aceitouTermos} onChange={() => setMostrarTermos(true)} className="w-4 h-4 rounded border-gray-300 text-agro-600 focus:ring-agro-500" />
+              <span className="text-sm text-gray-600">Aceito os <button type="button" onClick={() => setMostrarTermos(true)} className="text-agro-600 underline font-medium">Termos de Uso</button></span>
+            </label>
+            <button onClick={handleCadastro} disabled={loading} className="btn-primary w-full">
+              {loading ? "Cadastrando..." : "Criar Conta"}
+            </button>
+          </div>
+        )}
+        {mostrarTermos && <TermosModal />}
+      </div>
     </div>
   );
 }
 
-// ============ COMPONENTE PRINCIPAL APP ============
 export default function App() {
   const [produtos, setProdutos] = useState([]);
   const [carrinho, setCarrinho] = useState([]);
@@ -339,12 +342,10 @@ export default function App() {
   const [menuAberto, setMenuAberto] = useState(false);
   const [formaPagamento, setFormaPagamento] = useState({ tipo: "iban", iban: "", banco: "" });
 
-  // Carregar produtos
   useEffect(() => {
     axios.get(`${API_URL}/produtos`).then(res => setProdutos(res.data || [])).catch(err => console.error(err));
   }, []);
 
-  // Persistir carrinho
   useEffect(() => {
     localStorage.setItem("carrinho", JSON.stringify(carrinho));
   }, [carrinho]);
@@ -375,218 +376,289 @@ export default function App() {
   };
 
   const podeVerJIAM = usuario && (usuario.tipo === 'vendedor' || usuario.tipo === 'agricultor');
-  const podeVerEntregador = usuario && usuario.tipo === 'entregador';
   const podeVerGestao = usuario && (usuario.tipo === 'vendedor' || usuario.tipo === 'agricultor');
+  const podeVerEntregador = usuario && usuario.tipo === 'entregador';
 
   const menuItems = [
-    { id: 'produtos', label: '🛒 Produtos', mostrar: true },
-    { id: 'carrinho', label: '🛍️ Carrinho', mostrar: usuario?.tipo === 'cliente' },
-    { id: 'gestao', label: '📊 Vendas', mostrar: podeVerGestao },
-    { id: 'gestao-compras', label: '📋 Compras', mostrar: usuario?.tipo === 'cliente' },
-    { id: 'chat', label: '💬 Chat', mostrar: !!usuario },
-    { id: 'cadastrar', label: '➕ Cadastrar', mostrar: podeVerGestao },
-    { id: 'previsoes', label: '📊 JIAM Agro', mostrar: podeVerJIAM },
-    { id: 'rastreamento', label: '🗺️ Rastrear', mostrar: podeVerJIAM },
-    { id: 'entregador', label: '🚚 Entregas', mostrar: podeVerEntregador },
-    { id: 'logistica', label: '📦 Logística', mostrar: true },
-    { id: 'quemSomos', label: '🌍 Sobre', mostrar: true },
-    { id: 'ajuda', label: '❓ Ajuda', mostrar: true },
-    { id: 'guia', label: '📖 Guia', mostrar: true },
+    { id: 'produtos', label: 'Produtos', mostrar: true },
+    { id: 'carrinho', label: 'Carrinho', mostrar: usuario?.tipo === 'cliente' },
+    { id: 'gestao', label: 'Vendas', mostrar: podeVerGestao },
+    { id: 'gestao-compras', label: 'Compras', mostrar: usuario?.tipo === 'cliente' },
+    { id: 'chat', label: 'Chat', mostrar: !!usuario },
+    { id: 'cadastrar', label: 'Cadastrar', mostrar: podeVerGestao },
+    { id: 'previsoes', label: 'JIAM Agro', mostrar: podeVerJIAM },
+    { id: 'rastreamento', label: 'Rastrear', mostrar: !!usuario },
+    { id: 'entregador', label: 'Entregas', mostrar: podeVerEntregador },
+    { id: 'logistica', label: 'Logística', mostrar: true },
+    { id: 'quemSomos', label: 'Sobre', mostrar: true },
+    { id: 'ajuda', label: 'Ajuda', mostrar: true },
+    { id: 'guia', label: 'Guia', mostrar: true },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <WhatsAppButton telefone={WHATSAPP_NUMBER} />
-      
-      <header className="bg-gradient-to-r from-green-800 to-green-700 text-white sticky top-0 z-50 shadow-lg">
-        <div className="px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setAbaAtiva('produtos')}>
-            <img src="/logmercadoyangue.png" alt="Logo" className="h-10" />
-            <h1 className="text-lg font-bold">Mercado Yangue</h1>
-          </div>
-          <div className="hidden md:flex items-center gap-2">
-            {menuItems.filter(item => item.mostrar).slice(0, 6).map(item => (
-              <button key={item.id} onClick={() => setAbaAtiva(item.id)} className={`px-3 py-1.5 rounded-lg text-sm transition ${abaAtiva === item.id ? 'bg-white text-green-700' : 'hover:bg-green-600'}`}>
-                {item.label}
+
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setAbaAtiva('produtos')}>
+              <div className="w-9 h-9 bg-agro-700 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900 tracking-tight">AgriMarket</h1>
+                <p className="text-[10px] text-gray-500 -mt-0.5">Comércio Agrícola Global</p>
+              </div>
+            </div>
+
+            <div className="hidden lg:flex items-center gap-1">
+              {menuItems.filter(item => item.mostrar).slice(0, 7).map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => setAbaAtiva(item.id)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    abaAtiva === item.id
+                      ? 'bg-agro-50 text-agro-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+              {menuItems.filter(item => item.mostrar).length > 7 && (
+                <div className="relative">
+                  <button onClick={() => setMenuAberto(!menuAberto)} className="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                    Mais
+                    <svg className="w-4 h-4 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </button>
+                  {menuAberto && (
+                    <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 z-50 min-w-[180px]">
+                      {menuItems.filter(item => item.mostrar).slice(7).map(item => (
+                        <button key={item.id} onClick={() => { setAbaAtiva(item.id); setMenuAberto(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-agro-50 hover:text-agro-700">
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
+              {!usuario ? (
+                <button onClick={() => setAbaAtiva('login')} className="btn-primary text-sm py-2 px-4">
+                  Entrar
+                </button>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-gray-700 hidden sm:block">{usuario.nome?.split(' ')[0]}</span>
+                  <button onClick={logout} className="text-sm text-gray-500 hover:text-red-600 font-medium transition-colors">
+                    Sair
+                  </button>
+                </div>
+              )}
+              <button onClick={() => setMenuAberto(!menuAberto)} className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
               </button>
-            ))}
-            {menuItems.filter(item => item.mostrar).length > 6 && (
-              <div className="relative">
-                <button onClick={() => setMenuAberto(!menuAberto)} className="px-3 py-1.5 rounded-lg text-sm hover:bg-green-600">Mais ▼</button>
-                {menuAberto && (
-                  <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg py-2 z-50 min-w-[150px]">
-                    {menuItems.filter(item => item.mostrar).slice(6).map(item => (
-                      <button key={item.id} onClick={() => { setAbaAtiva(item.id); setMenuAberto(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50">
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {!usuario ? (
-              <button onClick={() => setAbaAtiva('login')} className="bg-white text-green-700 px-4 py-1.5 rounded-lg text-sm font-semibold ml-2">Entrar</button>
-            ) : (
-              <div className="flex items-center gap-2 ml-2 bg-green-900/30 px-3 py-1 rounded-full">
-                <span className="text-sm">👤 {usuario.nome?.split(' ')[0]}</span>
-                <button onClick={logout} className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded-lg text-xs">Sair</button>
-              </div>
-            )}
-          </div>
-          <div className="md:hidden flex items-center gap-2">
-            {!usuario ? (
-              <button onClick={() => setAbaAtiva('login')} className="bg-white text-green-700 px-3 py-1 rounded-lg text-sm">Entrar</button>
-            ) : (
-              <button onClick={logout} className="bg-red-600 px-3 py-1 rounded-lg text-sm">Sair</button>
-            )}
-            <button onClick={() => setMenuAberto(!menuAberto)} className="p-2">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-            </button>
+            </div>
           </div>
         </div>
       </header>
 
       {menuAberto && (
-        <div className="md:hidden fixed top-[57px] left-0 right-0 bg-white shadow-lg z-50 max-h-80 overflow-y-auto border-t">
-          <div className="p-2">
+        <div className="lg:hidden fixed top-16 left-0 right-0 bg-white shadow-lg border-t border-gray-100 z-50 max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <div className="p-3 space-y-0.5">
             {menuItems.filter(item => item.mostrar).map(item => (
-              <button key={item.id} onClick={() => { setAbaAtiva(item.id); setMenuAberto(false); }} className={`block w-full text-left px-4 py-2 rounded-lg text-sm ${abaAtiva === item.id ? 'bg-green-100 text-green-700 font-semibold' : 'text-gray-700'}`}>
+              <button key={item.id} onClick={() => { setAbaAtiva(item.id); setMenuAberto(false); }} className={`block w-full text-left px-4 py-3 rounded-lg text-sm ${abaAtiva === item.id ? 'bg-agro-50 text-agro-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`}>
                 {item.label}
               </button>
             ))}
+            {!usuario && (
+              <button onClick={() => { setAbaAtiva('login'); setMenuAberto(false); }} className="block w-full text-left px-4 py-3 rounded-lg text-sm text-agro-700 font-semibold hover:bg-agro-50 border-t border-gray-100 mt-2 pt-3">
+                Entrar / Criar Conta
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      <main className="container mx-auto px-4 py-6">
-        {abaAtiva === 'produtos' && <AbaProdutos produtos={produtos} setProdutos={setProdutos} setProdutoSelecionado={setProdutoSelecionado} adicionarNoCarrinho={adicionarAoCarrinho} usuario={usuario} setAbaAtiva={setAbaAtiva} />}
+      <main className="py-6">
+        {abaAtiva === 'produtos' && (
+          <AbaProdutos produtos={produtos} setProdutos={setProdutos} setProdutoSelecionado={setProdutoSelecionado} adicionarNoCarrinho={adicionarAoCarrinho} usuario={usuario} setAbaAtiva={setAbaAtiva} />
+        )}
         {abaAtiva === 'carrinho' && <AbaCarrinho carrinho={carrinho} setCarrinho={setCarrinho} usuario={usuario} setAbaAtiva={setAbaAtiva} />}
         {abaAtiva === 'login' && !usuario && <AbaLoginCadastro setUsuario={setUsuario} setAbaAtiva={setAbaAtiva} />}
         {abaAtiva === 'gestao' && podeVerGestao && <AbaGestaoVendas usuario={usuario} produtos={produtos} setProdutos={setProdutos} />}
         {abaAtiva === 'gestao-compras' && usuario?.tipo === 'cliente' && <AbaGestaoCompras usuario={usuario} produtos={produtos} setProdutos={setProdutos} />}
         {abaAtiva === 'chat' && usuario && <AbaChat usuario={usuario} />}
         {abaAtiva === 'previsoes' && podeVerJIAM && <AbaPrevisoesAgro usuario={usuario} />}
-        {abaAtiva === 'rastreamento' && podeVerJIAM && (produtoSelecionado ? <AbaRastreamento usuario={usuario} produtoId={produtoSelecionado._id} produto={produtoSelecionado} /> : <div className="text-center p-8 bg-white rounded-xl shadow"><p>Selecione um produto primeiro</p><button onClick={() => setAbaAtiva('produtos')} className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg">Ver Produtos</button></div>)}
+        {abaAtiva === 'rastreamento' && !!usuario && (produtoSelecionado ? <AbaRastreamento usuario={usuario} produtoId={produtoSelecionado._id} produto={produtoSelecionado} /> : <div className="container-page"><div className="card p-12 text-center"><p className="text-gray-500 mb-4">Selecione um produto para rastrear</p><button onClick={() => setAbaAtiva('produtos')} className="btn-primary">Ver Produtos</button></div></div>)}
         {abaAtiva === 'entregador' && podeVerEntregador && <AbaEntregador usuario={usuario} />}
-        {abaAtiva === 'logistica' && <AbaLogistica usuario={usuario} />}
+        {abaAtiva === 'logistica' && <AbaLogistica usuario={usuario} setAbaAtiva={setAbaAtiva} />}
         {abaAtiva === 'quemSomos' && <AbaQuemSomos setAbaAtiva={setAbaAtiva} />}
         {abaAtiva === 'ajuda' && <AbaAjuda />}
         {abaAtiva === 'guia' && <AbaGuiaUtilizacao />}
 
-        {/* FORMULÁRIO DE CADASTRO DE PRODUTO */}
         {abaAtiva === 'cadastrar' && usuario && (usuario.tipo === 'vendedor' || usuario.tipo === 'agricultor') && (
-          <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-lg">
-            <h2 className="text-2xl font-bold mb-4">🌾 Cadastrar Produto</h2>
-            <div className="bg-green-100 p-3 rounded-lg mb-4 text-sm text-green-800">
-              💡 Dica: Seja claro sobre o ponto de retirada ou como a entrega será feita.
-            </div>
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              const form = e.target;
-              const formData = new FormData(form);
-              
-              // Validar forma de pagamento
-              const tipoPagamento = formData.get('tipoPagamento') || 'iban';
-              const iban = formData.get('iban');
-              const telefoneExpress = formData.get('telefoneExpress');
-              
-              if (tipoPagamento === 'iban' && !iban) {
-                alert('Por favor, insira o IBAN para pagamento');
-                return;
-              }
-              
-              const formaPagamentoData = {
-                tipo: tipoPagamento,
-                iban: tipoPagamento === 'iban' ? iban : null,
-                telefone: tipoPagamento === 'express' ? telefoneExpress : null,
-                banco: formData.get('banco') || null
-              };
-              
-              const envio = new FormData();
-              envio.append('nome', formData.get('nome'));
-              envio.append('preco', formData.get('preco'));
-              envio.append('quantidade', formData.get('quantidade'));
-              envio.append('unidade', formData.get('unidade'));
-              envio.append('imagem', formData.get('imagem'));
-              envio.append('provincia', formData.get('provincia'));
-              envio.append('municipio', formData.get('municipio'));
-              envio.append('descricao', formData.get('descricao'));
-              envio.append('nomeVendedor', usuario.nome);
-              envio.append('formaPagamento', JSON.stringify(formaPagamentoData));
-              envio.append('contactos', formData.get('contactos'));
+          <div className="container-page">
+            <div className="max-w-3xl mx-auto card p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Cadastrar Produto</h2>
+              <div className="bg-agro-50 border border-agro-200 p-4 rounded-xl mb-6 text-sm text-agro-800">
+                Seja claro sobre o ponto de retirada e as condições de entrega.
+              </div>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const formData = new FormData(form);
+                const tipoPagamento = formData.get('tipoPagamento') || 'iban';
+                const iban = formData.get('iban');
+                const telefoneExpress = formData.get('telefoneExpress');
 
-              try {
-                const token = localStorage.getItem('token');
-                const response = await fetch(`${API_URL}/produtos`, {
-                  method: 'POST',
-                  body: envio,
-                  headers: { Authorization: `Bearer ${token}` },
-                });
-                if (response.ok) {
-                  alert('Produto cadastrado com sucesso!');
-                  form.reset();
-                } else {
-                  const erro = await response.json();
-                  alert('Erro ao cadastrar: ' + (erro.message || JSON.stringify(erro)));
+                if (tipoPagamento === 'iban' && !iban) {
+                  alert('Por favor, insira o IBAN para pagamento');
+                  return;
                 }
-              } catch (error) {
-                alert('Erro de rede: ' + error.message);
-              }
-            }} encType="multipart/form-data" className="space-y-4">
-              <input type="text" name="nome" required placeholder="Nome do produto" className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
-              <div className="grid md:grid-cols-2 gap-4">
-                <input type="number" name="preco" step="0.01" required placeholder="Preço (Kz)" className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
-                <div className="flex gap-2">
-                  <input type="number" name="quantidade" required placeholder="Quantidade" className="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
-                  <select name="unidade" required className="p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
-                    <option value="kg">Kg</option><option value="l">Litro</option><option value="un">Unidade</option>
-                    <option value="caixa">Caixa</option><option value="saco">Saco</option>
-                  </select>
+
+                const formaPagamentoData = {
+                  tipo: tipoPagamento,
+                  iban: tipoPagamento === 'iban' ? iban : null,
+                  telefone: tipoPagamento === 'express' ? telefoneExpress : null,
+                  banco: formData.get('banco') || null
+                };
+
+                const envio = new FormData();
+                envio.append('nome', formData.get('nome'));
+                envio.append('preco', formData.get('preco'));
+                envio.append('quantidade', formData.get('quantidade'));
+                envio.append('unidade', formData.get('unidade'));
+                envio.append('imagem', formData.get('imagem'));
+                envio.append('provincia', formData.get('provincia'));
+                envio.append('municipio', formData.get('municipio'));
+                envio.append('descricao', formData.get('descricao'));
+                envio.append('nomeVendedor', usuario.nome);
+                envio.append('formaPagamento', JSON.stringify(formaPagamentoData));
+                envio.append('contactos', formData.get('contactos'));
+
+                try {
+                  const token = localStorage.getItem('token');
+                  const response = await fetch(`${API_URL}/produtos`, {
+                    method: 'POST',
+                    body: envio,
+                    headers: { Authorization: `Bearer ${token}` },
+                  });
+                  if (response.ok) {
+                    alert('Produto cadastrado com sucesso!');
+                    form.reset();
+                  } else {
+                    const erro = await response.json();
+                    alert('Erro: ' + (erro.message || JSON.stringify(erro)));
+                  }
+                } catch (error) {
+                  alert('Erro de rede: ' + error.message);
+                }
+              }} encType="multipart/form-data" className="space-y-5">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Produto</label>
+                    <input type="text" name="nome" required placeholder="Ex: Milho Branco" className="input-field" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Preço (Kz)</label>
+                    <input type="number" name="preco" step="0.01" required placeholder="0.00" className="input-field" />
+                  </div>
                 </div>
-              </div>
-              <input type="file" name="imagem" accept="image/*" required className="w-full p-2 border rounded-lg" />
-              <div className="grid md:grid-cols-2 gap-4">
-                <input type="text" name="provincia" placeholder="Província" className="w-full p-3 border rounded-lg" />
-                <input type="text" name="municipio" placeholder="Município" className="w-full p-3 border rounded-lg" />
-              </div>
-              
-              {/* Forma de Pagamento Melhorada */}
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-semibold mb-3">💰 Formas de Pagamento Aceitas</h3>
-                <div className="space-y-3">
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="tipoPagamento" value="iban" defaultChecked /> 
-                    <span>💳 Transferência Bancária (IBAN)</span>
-                  </label>
-                  <div className="ml-6">
-                    <input type="text" name="iban" placeholder="IBAN" className="w-full p-2 border rounded" />
-                    <select name="banco" className="w-full p-2 border rounded mt-2">
-                      <option value="">Selecione o Banco</option>
-                      {bancosAngola.map(b => <option key={b} value={b}>{b}</option>)}
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade</label>
+                    <input type="number" name="quantidade" required placeholder="0" className="input-field" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Unidade</label>
+                    <select name="unidade" required className="input-field">
+                      <option value="kg">Kg</option>
+                      <option value="l">Litro</option>
+                      <option value="un">Unidade</option>
+                      <option value="caixa">Caixa</option>
+                      <option value="saco">Saco</option>
+                      <option value="ton">Tonelada</option>
                     </select>
                   </div>
-                  
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="tipoPagamento" value="express" /> 
-                    <span>📱 Multicaixa Express</span>
-                  </label>
-                  <div className="ml-6">
-                    <input type="tel" name="telefoneExpress" placeholder="Número de telefone (Multicaixa)" className="w-full p-2 border rounded" />
-                    <p className="text-xs text-gray-500 mt-1">O comprador pagará diretamente via Multicaixa Express</p>
-                  </div>
-                  
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="tipoPagamento" value="dinheiro" /> 
-                    <span>💵 Dinheiro na Entrega</span>
-                  </label>
                 </div>
-              </div>
-              
-              <input type="text" name="contactos" placeholder="Contactos (Ex: +244 923 000 000)" className="w-full p-3 border rounded-lg" />
-              <textarea name="descricao" rows="3" placeholder="Descrição do produto" className="w-full p-3 border rounded-lg"></textarea>
-              
-              <button type="submit" className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition">Cadastrar Produto</button>
-            </form>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Imagem do Produto</label>
+                  <input type="file" name="imagem" accept="image/*" required className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-agro-50 file:text-agro-700 hover:file:bg-agro-100" />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Província</label>
+                    <input type="text" name="provincia" placeholder="Ex: Luanda" className="input-field" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Município</label>
+                    <input type="text" name="municipio" placeholder="Ex: Viana" className="input-field" />
+                  </div>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-5 bg-gray-50">
+                  <h3 className="font-semibold text-gray-800 mb-4">Formas de Pagamento</h3>
+                  <div className="space-y-4">
+                    <label className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-agro-300">
+                      <input type="radio" name="tipoPagamento" value="iban" defaultChecked className="text-agro-600 focus:ring-agro-500" />
+                      <div>
+                        <span className="font-medium text-gray-800">Transferência Bancária (IBAN)</span>
+                        <p className="text-xs text-gray-500">Receba por transferência</p>
+                      </div>
+                    </label>
+                    <div className="ml-8 space-y-3">
+                      <input type="text" name="iban" placeholder="IBAN" className="input-field" />
+                      <select name="banco" className="input-field">
+                        <option value="">Selecione o Banco</option>
+                        {bancosAngola.map(b => <option key={b} value={b}>{b}</option>)}
+                      </select>
+                    </div>
+
+                    <label className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-agro-300">
+                      <input type="radio" name="tipoPagamento" value="express" className="text-agro-600 focus:ring-agro-500" />
+                      <div>
+                        <span className="font-medium text-gray-800">Multicaixa Express</span>
+                        <p className="text-xs text-gray-500">Pagamento móvel</p>
+                      </div>
+                    </label>
+                    <div className="ml-8">
+                      <input type="tel" name="telefoneExpress" placeholder="Número de telefone" className="input-field" />
+                    </div>
+
+                    <label className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-agro-300">
+                      <input type="radio" name="tipoPagamento" value="dinheiro" className="text-agro-600 focus:ring-agro-500" />
+                      <div>
+                        <span className="font-medium text-gray-800">Dinheiro na Entrega</span>
+                        <p className="text-xs text-gray-500">Pague ao receber</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Contactos</label>
+                  <input type="text" name="contactos" placeholder="Ex: +244 923 000 000" className="input-field" />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                  <textarea name="descricao" rows="4" placeholder="Descreva o produto, origem, qualidade, prazos..." className="input-field resize-none"></textarea>
+                </div>
+
+                <button type="submit" className="btn-primary w-full text-base py-3">
+                  Cadastrar Produto
+                </button>
+              </form>
+            </div>
           </div>
         )}
       </main>

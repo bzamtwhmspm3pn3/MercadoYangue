@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { HelpCircle, MessageCircle, ChevronDown, ChevronUp, Info, Send, X, Bot, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { HelpCircle, MessageCircle, ChevronDown, ChevronUp, Info, Send, X, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import axios from "axios";
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -8,7 +8,7 @@ export default function AbaAjuda({ usuario }) {
   const [perguntaAtiva, setPerguntaAtiva] = useState(null);
   const [chatAberto, setChatAberto] = useState(false);
   const [mensagens, setMensagens] = useState([
-    { remetente: "bot", texto: "Olá! Sou a Yangue IA — assistente virtual do Mercado Yangue. Posso ajudar com dúvidas sobre compras, vendas, entregas, o sistema JIAM Preditivo e muito mais. Como posso ajudar você hoje?" },
+    { remetente: "bot", texto: "Ola! Sou o assistente virtual da AgriMarket. Posso ajudar com duvidas sobre compras, vendas, entregas, JIAM Preditivo e muito mais. Como posso ajudar hoje?" },
   ]);
   const [input, setInput] = useState("");
   const [reconhecimentoAtivo, setReconhecimentoAtivo] = useState(false);
@@ -21,31 +21,30 @@ export default function AbaAjuda({ usuario }) {
   const perguntas = [
     {
       titulo: "Como criar a minha conta?",
-      resposta: "Clique em 'Iniciar Sessão/Cadastrar' no topo da página, escolha 'Cadastro' e preencha os seus dados. Receberá um e-mail de confirmação e pronto, estará dentro do Mercado Yangue!",
+      resposta: "Clique em 'Entrar' no topo da pagina, escolha 'Criar Conta' e preencha os seus dados. Recebera um e-mail de confirmacao e pronto, estara dentro da AgriMarket!",
     },
     {
       titulo: "Como posso vender um produto?",
-      resposta: "Cadastre-se como Vendedor/Agricultor, aceite o Contrato Digital (comissão de 0.5% por venda), acesse a aba 'Cadastrar Produto', adicione fotos, descrição, preço e quantidade. Publique e seu produto será exibido para milhares de compradores em todo o país.",
+      resposta: "Cadastre-se como Vendedor/Agricultor, aceite o Contrato Digital (comissao de 0.5% por venda), acesse a aba 'Cadastrar Produto', adicione fotos, descricao, preco e quantidade. Publique e seu produto sera exibido para compradores em todo o pais.",
     },
     {
-      titulo: "Como comprar com segurança?",
-      resposta: "Analise as informações do produto, fale com o vendedor pelo chat interno. Evite pagamentos fora da plataforma e guarde os comprovativos. A segurança é a base da confiança Yangue.",
+      titulo: "Como comprar com seguranca?",
+      resposta: "Analise as informacoes do produto, fale com o vendedor pelo chat interno. Evite pagamentos fora da plataforma e guarde os comprovativos. A seguranca e a base da confianca.",
     },
     {
       titulo: "Como funciona o JIAM Preditivo?",
-      resposta: "O JIAM Preditivo é nosso sistema de inteligência de dados que analisa mercado, preços, tendências e ajuda na tomada de decisão agrícola. Acesse a aba 'JIAM Previsões' para análises detalhadas dos seus produtos!",
+      resposta: "O JIAM Preditivo e nosso sistema de inteligencia de dados que analisa mercado, precos, tendencias e ajuda na tomada de decisao agricola. Acesse a aba 'JIAM Agro' para analises detalhadas dos seus produtos!",
     },
     {
       titulo: "Como acompanhar as minhas encomendas?",
-      resposta: "Acesse a aba 'Rastrear' para acompanhar suas entregas em tempo real. Você verá a localização do entregador, rota e tempo estimado.",
+      resposta: "Acesse a aba 'Rastrear' para acompanhar suas entregas em tempo real. Voce vera a localizacao do entregador, rota e tempo estimado.",
     },
     {
-      titulo: "Quero ser entregador, como faço?",
-      resposta: "Cadastre-se como Entregador, informe veículo, placa e telefone, ative sua localização, receba solicitações de entrega, aceite e realize as entregas. Entregadores ativos com boas avaliações recebem mais solicitações!",
+      titulo: "Quero ser entregador, como faco?",
+      resposta: "Cadastre-se como Entregador, informe veiculo, placa e telefone, ative sua localizacao, receba solicitacoes de entrega, aceite e realize as entregas.",
     },
   ];
 
-  // Inicializar reconhecimento de voz
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
@@ -109,11 +108,11 @@ export default function AbaAjuda({ usuario }) {
         mensagem: mensagem,
         sessionId: usuario?.id || 'guest'
       });
-      const respostaTexto = resposta.data.resposta || "Desculpe, não consegui processar sua solicitação.";
+      const respostaTexto = resposta.data.resposta || "Desculpe, nao consegui processar sua solicitacao.";
       setMensagens((msgs) => [...msgs, { remetente: "bot", texto: respostaTexto }]);
       if (vozAtiva) falar(respostaTexto);
     } catch (err) {
-      console.error("Erro ao obter resposta da IA:", err);
+      console.error("Erro ao obter resposta:", err);
       const erroMsg = "Erro ao conectar com o assistente. Tente novamente mais tarde.";
       setMensagens((msgs) => [...msgs, { remetente: "bot", texto: erroMsg }]);
       if (vozAtiva) falar(erroMsg);
@@ -121,125 +120,129 @@ export default function AbaAjuda({ usuario }) {
   };
 
   return (
-    <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-8 mt-6 relative">
-      {/* Cabeçalho */}
-      <div className="flex items-center gap-3 mb-6">
-        <HelpCircle className="h-9 w-9 text-green-700" />
-        <h2 className="text-3xl font-bold text-green-800">Ajuda Interactiva</h2>
-      </div>
+    <div className="container-page">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h2 className="section-title mb-2">Ajuda</h2>
+          <p className="text-gray-600">
+            Tem duvidas? Encontre respostas rapidas e praticas para a sua experiencia na AgriMarket.
+          </p>
+        </div>
 
-      <p className="text-green-900 mb-6 text-sm md:text-base leading-relaxed">
-        Tens dúvidas? Estás no sítio certo. Aqui encontras respostas rápidas, práticas e adaptadas à tua experiência no <strong>Mercado Yangue</strong>.
-        E agora com a <strong>IA Yangue</strong> — uma assistente inteligente pronta a ajudar-te em tempo real!
-      </p>
-
-      {/* FAQ Accordion */}
-      <div className="space-y-4">
-        {perguntas.map((p, index) => (
-          <div key={index} className="border border-green-200 rounded-xl overflow-hidden shadow-sm">
-            <button
-              className="w-full flex justify-between items-center p-4 bg-green-50 hover:bg-green-100 transition"
-              onClick={() => togglePergunta(index)}
-            >
-              <span className="font-semibold text-green-800">{p.titulo}</span>
-              {perguntaAtiva === index ? <ChevronUp className="h-5 w-5 text-green-700" /> : <ChevronDown className="h-5 w-5 text-green-700" />}
-            </button>
-            {perguntaAtiva === index && (
-              <div className="p-4 bg-white text-sm text-green-700 border-t border-green-100">
-                {p.resposta}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Seção de contacto */}
-      <div className="mt-10 bg-green-100 border border-green-300 rounded-xl p-5 flex items-start gap-3">
-        <Info className="h-6 w-6 text-green-700 mt-1" />
-        <p className="text-green-800 text-sm">
-          Ainda com dúvidas? Contacta-nos via WhatsApp <strong>+244 928 565 837</strong> ou e-mail <strong>mercadoyangueservicosdigitais@gmail.com</strong>.
-          Estamos aqui para te ajudar — sempre.
-        </p>
-      </div>
-
-      {/* Botão flutuante do Chatbot IA */}
-      <button
-        onClick={() => setChatAberto(!chatAberto)}
-        className="fixed bottom-32 right-6 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-full p-4 shadow-2xl flex items-center justify-center transition z-50"
-      >
-        {chatAberto ? <X className="h-6 w-6" /> : <Bot className="h-6 w-6" />}
-      </button>
-
-      {/* Janela do Chatbot IA */}
-      {chatAberto && (
-        <div className="fixed bottom-44 right-6 bg-white w-80 md:w-96 rounded-2xl shadow-2xl border border-green-400 flex flex-col overflow-hidden z-50">
-          <div className="bg-gradient-to-r from-green-700 to-green-600 text-white px-4 py-3 font-semibold flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <Bot className="h-5 w-5" />
-              <span>Yangue IA — Assistente Virtual</span>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setVozAtiva(!vozAtiva)} className="p-1 rounded hover:bg-white/20" title={vozAtiva ? 'Desativar voz' : 'Ativar voz'}>
-                {vozAtiva ? <Volume2 size={16} /> : <VolumeX size={16} />}
-              </button>
-              <button onClick={iniciarReconhecimento} className="p-1 rounded hover:bg-white/20" title="Falar com IA">
-                {reconhecimentoAtivo ? <MicOff size={16} className="text-red-300" /> : <Mic size={16} />}
-              </button>
-              <button onClick={() => setChatAberto(false)} className="p-1 rounded hover:bg-white/20">
-                <X size={16} />
-              </button>
-            </div>
-          </div>
-
-          <div ref={chatRef} className="flex-1 overflow-y-auto p-3 space-y-2 text-sm bg-green-50 h-80">
-            {mensagens.map((m, i) => (
-              <div
-                key={i}
-                className={`flex ${m.remetente === "user" ? "justify-end" : "justify-start"}`}
+        <div className="space-y-3">
+          {perguntas.map((p, index) => (
+            <div key={index} className="card overflow-hidden">
+              <button
+                className="w-full flex justify-between items-center p-5 text-left hover:bg-gray-50 transition-colors"
+                onClick={() => togglePergunta(index)}
               >
-                <div
-                  className={`p-2 rounded-lg max-w-[85%] ${
-                    m.remetente === "user"
-                      ? "bg-green-700 text-white"
-                      : "bg-white text-green-800 border border-green-200"
-                  }`}
-                >
-                  <div className="text-xs opacity-70 mb-1">{m.remetente === "user" ? "Você" : "Yangue IA"}</div>
-                  <p className="text-sm whitespace-pre-wrap">{m.texto}</p>
+                <span className="font-medium text-gray-900 pr-4">{p.titulo}</span>
+                {perguntaAtiva === index ? (
+                  <ChevronUp className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                )}
+              </button>
+              {perguntaAtiva === index && (
+                <div className="px-5 pb-5 text-gray-600 text-sm leading-relaxed border-t border-gray-100 pt-4">
+                  {p.resposta}
                 </div>
-              </div>
-            ))}
-            {reconhecimentoAtivo && (
-              <div className="flex justify-start">
-                <div className="bg-gray-200 text-gray-600 p-2 rounded-lg text-sm">Ouvindo...</div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          ))}
+        </div>
 
-          <div className="flex p-2 border-t border-green-200 bg-white gap-2">
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleEnviar()}
-              placeholder="Escreva sua pergunta..."
-              className="flex-1 border border-green-300 rounded-lg p-2 text-sm text-black focus:ring-2 focus:ring-green-500 focus:outline-none"
-            />
-            <button
-              onClick={iniciarReconhecimento}
-              className={`p-2 rounded-lg transition ${reconhecimentoAtivo ? 'bg-red-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-              title="Falar"
-            >
-              {reconhecimentoAtivo ? <MicOff size={16} /> : <Mic size={16} />}
-            </button>
-            <button
-              onClick={() => handleEnviar()}
-              className="bg-green-700 hover:bg-green-800 text-white rounded-lg p-2 flex items-center justify-center transition"
-            >
-              <Send size={16} />
-            </button>
+        <div className="mt-10 bg-agro-50 border border-agro-200 rounded-2xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-agro-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-agro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-1">Ainda com duvidas?</h3>
+              <p className="text-sm text-gray-600">
+                Contacte-nos via WhatsApp <strong>+244 928 565 837</strong> ou e-mail{' '}
+                <strong>mercadoyangueservicosdigitais@gmail.com</strong>.
+              </p>
+            </div>
           </div>
         </div>
-      )}
+
+        <button
+          onClick={() => setChatAberto(!chatAberto)}
+          className="fixed bottom-6 right-6 bg-agro-700 hover:bg-agro-800 text-white rounded-full p-4 shadow-2xl flex items-center justify-center transition z-50"
+        >
+          {chatAberto ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
+        </button>
+
+        {chatAberto && (
+          <div className="fixed bottom-24 right-6 bg-white w-80 md:w-96 rounded-2xl shadow-2xl border border-agro-200 flex flex-col overflow-hidden z-50">
+            <div className="bg-gradient-to-r from-agro-700 to-agro-600 text-white px-4 py-3 font-semibold flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>Assistente AgriMarket</span>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => setVozAtiva(!vozAtiva)} className="p-1 rounded hover:bg-white/20" title={vozAtiva ? 'Desativar voz' : 'Ativar voz'}>
+                  {vozAtiva ? <Volume2 size={16} /> : <VolumeX size={16} />}
+                </button>
+                <button onClick={iniciarReconhecimento} className="p-1 rounded hover:bg-white/20" title="Falar">
+                  {reconhecimentoAtivo ? <MicOff size={16} className="text-red-300" /> : <Mic size={16} />}
+                </button>
+                <button onClick={() => setChatAberto(false)} className="p-1 rounded hover:bg-white/20">
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            <div ref={chatRef} className="flex-1 overflow-y-auto p-3 space-y-2 text-sm bg-gray-50 h-80">
+              {mensagens.map((m, i) => (
+                <div key={i} className={`flex ${m.remetente === "user" ? "justify-end" : "justify-start"}`}>
+                  <div className={`p-2 rounded-lg max-w-[85%] ${
+                    m.remetente === "user"
+                      ? "bg-agro-700 text-white"
+                      : "bg-white text-gray-800 border border-agro-200"
+                  }`}>
+                    <div className="text-xs opacity-70 mb-1">{m.remetente === "user" ? "Voce" : "Assistente"}</div>
+                    <p className="text-sm whitespace-pre-wrap">{m.texto}</p>
+                  </div>
+                </div>
+              ))}
+              {reconhecimentoAtivo && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-200 text-gray-600 p-2 rounded-lg text-sm">Ouvindo...</div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex p-2 border-t border-gray-200 bg-white gap-2">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleEnviar()}
+                placeholder="Digite sua pergunta..."
+                className="flex-1 border border-gray-200 rounded-lg p-2 text-sm text-gray-900 focus:ring-2 focus:ring-agro-500 focus:outline-none"
+              />
+              <button
+                onClick={iniciarReconhecimento}
+                className={`p-2 rounded-lg transition ${reconhecimentoAtivo ? 'bg-red-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+                title="Falar"
+              >
+                {reconhecimentoAtivo ? <MicOff size={16} /> : <Mic size={16} />}
+              </button>
+              <button
+                onClick={() => handleEnviar()}
+                className="bg-agro-700 hover:bg-agro-800 text-white rounded-lg p-2 flex items-center justify-center transition"
+              >
+                <Send size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
