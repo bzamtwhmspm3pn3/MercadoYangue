@@ -103,7 +103,7 @@ app.use("/api/geolocalizacao", geolocalizacaoRoutes);
 app.get("/api/health", (req, res) => {
   res.json({
     success: true,
-    message: "AgriMarket + JIAM Preditivo Online",
+    message: "Mercado Yangue + JIAM Preditivo Online",
     timestamp: new Date().toISOString(),
     modules: {
       mercado: true,
@@ -187,11 +187,11 @@ app.post("/api/chatbot", async (req, res) => {
     let resposta = "Desculpa, ainda estou a aprender sobre isso.";
 
     if (/(olá|ola|oi|bom dia|boa tarde|boa noite)/.test(msg)) {
-      resposta = "Ola! Seja bem-vindo a AgriMarket — a plataforma global de comercio agricola. Em que posso ajudar?";
+      resposta = "Ola! Seja bem-vindo ao Mercado Yangue — a plataforma angolana de comercio agricola. Em que posso ajudar?";
     } else if (/(obrigad[ao]|valeu|grato)/.test(msg)) {
       resposta = "De nada! Estamos aqui para ajudar no seu negocio agricola.";
     } else if (/(tchau|adeus|até logo)/.test(msg)) {
-      resposta = "Ate logo! Volte sempre a AgriMarket.";
+      resposta = "Ate logo! Volte sempre ao Mercado Yangue.";
     } else if (msg.includes("vender")) {
       resposta = "Para vender, va a aba 'Cadastrar Produtos', adicione fotos, descricao e preco. Simples e rapido!";
     } else if (msg.includes("comprar")) {

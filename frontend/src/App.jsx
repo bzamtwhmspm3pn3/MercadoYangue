@@ -113,16 +113,16 @@ function AbaQuemSomos({ setAbaAtiva }) {
         <div className="relative h-[420px] md:h-[520px] bg-[url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center">
           <div className="absolute inset-0 z-20 flex items-center justify-center p-6">
             <div className="text-center max-w-3xl">
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 tracking-tight">AgriMarket</h1>
-              <p className="text-lg md:text-xl text-gray-100 leading-relaxed mb-8 max-w-2xl mx-auto">
-                A plataforma global que conecta produtores agrícolas a compradores do mundo inteiro. 
-                Comércio justo, rastreável e sustentável.
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">Mercado Yangue</h1>
+              <p className="text-lg md:text-xl text-green-100 leading-relaxed mb-8 max-w-2xl mx-auto">
+                A Infraestrutura Inteligente para o Agronegócio Angolano. Conectamos produtores e compradores, 
+                eliminamos perdas e geramos previsibilidade através do JIAM Preditivo.
               </p>
               <div className="flex flex-wrap gap-4 justify-center">
-                <button onClick={() => handleAction('vender')} className="bg-harvest-500 hover:bg-harvest-600 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg">
+                <button onClick={() => handleAction('vender')} className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg">
                   Quero Vender
                 </button>
-                <button onClick={() => handleAction('comprar')} className="bg-white hover:bg-gray-100 text-agro-800 px-6 py-3 rounded-lg font-semibold transition shadow-lg">
+                <button onClick={() => handleAction('comprar')} className="bg-white hover:bg-gray-100 text-green-800 px-6 py-3 rounded-lg font-semibold transition shadow-lg">
                   Quero Comprar
                 </button>
                 <button onClick={() => handleAction('entregador')} className="border-2 border-white/60 hover:bg-white/10 text-white px-6 py-3 rounded-lg font-semibold transition">
@@ -168,23 +168,12 @@ function AbaQuemSomos({ setAbaAtiva }) {
         </div>
       </div>
 
-      <div className="card p-6 mb-12 bg-gradient-to-br from-agro-50 to-white border border-agro-200">
-        <div className="flex items-start gap-4">
-          <div className="w-14 h-14 bg-agro-700 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
-            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </div>
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-900 mb-1">JIAM Preditivo</h3>
-            <p className="text-gray-600 text-sm leading-relaxed mb-3">
-              Sistema de inteligência de dados que analisa mercado, preços, tendências e ajuda na tomada de decisão agrícola. 
-            </p>
-            <button onClick={() => setAbaAtiva('previsoes')} className="btn-primary text-sm">
-              Acessar Dashboard
-            </button>
-          </div>
-        </div>
+      <div className="flex justify-center mb-10">
+        <button onClick={() => setAbaAtiva('previsoes')} className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-4 shadow-lg text-center hover:shadow-xl transition transform hover:scale-105 border border-green-200 w-full max-w-md">
+          <img src="/logmercadoyangue.png" alt="Mercado Yangue" className="h-12 mx-auto mb-2" />
+          <h3 className="font-bold text-green-800">JIAM Preditivo</h3>
+          <p className="text-xs text-gray-500">Clique para aceder ao dashboard de análises</p>
+        </button>
       </div>
 
       <div className="card p-8 mb-12">
@@ -203,9 +192,9 @@ function AbaQuemSomos({ setAbaAtiva }) {
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-agro-800 to-agro-900 rounded-2xl p-8 text-white text-center shadow-xl">
-        <p className="text-lg mb-2">Contactos: {WHATSAPP_NUMBER} | mercadoyangueservicosdigitais@gmail.com</p>
-        <p className="text-sm text-agro-200">© {new Date().getFullYear()} AgriMarket — Promovendo o comércio agrícola global</p>
+      <div className="bg-gradient-to-r from-green-700 to-green-800 rounded-2xl p-8 text-white text-center shadow-xl">
+        <p className="text-lg mb-2">📞 {WHATSAPP_NUMBER} | ✉️ mercadoyangueservicosdigitais@gmail.com</p>
+        <p className="text-sm text-green-200">© {new Date().getFullYear()} Mercado Yangue — Criado por angolanos</p>
       </div>
     </div>
   );
@@ -402,16 +391,9 @@ export default function App() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setAbaAtiva('produtos')}>
-              <div className="w-9 h-9 bg-agro-700 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 tracking-tight">AgriMarket</h1>
-                <p className="text-[10px] text-gray-500 -mt-0.5">Comércio Agrícola Global</p>
-              </div>
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setAbaAtiva('produtos')}>
+              <img src="/logmercadoyangue.png" alt="Mercado Yangue" className="h-10" />
+              <h1 className="text-lg font-bold text-gray-900">Mercado Yangue</h1>
             </div>
 
             <div className="hidden lg:flex items-center gap-1">

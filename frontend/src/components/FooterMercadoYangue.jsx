@@ -162,7 +162,7 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
           </ul>
           <div className="mt-4 pt-3 border-t border-agro-700">
             <p className="text-xs text-agro-300 text-center">
-              © {new Date().getFullYear()} AgriMarket — Plataforma de Comércio Agrícola
+              © {new Date().getFullYear()} Mercado Yangue — Criado por angolanos
             </p>
             <p className="text-xs text-agro-400 text-center mt-1">
               Promovendo o comércio agrícola global

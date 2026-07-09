@@ -222,7 +222,7 @@ function AbaPrevisoesAgro({ usuario }) {
       doc.text("JIAM Preditivo - Relatorio de Analise", 105, 20, { align: 'center' });
       doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
-      doc.text("AgriMarket - Inteligencia para o Agronegocio", 105, 28, { align: 'center' });
+      doc.text("Mercado Yangue - Inteligencia para o Agronegocio", 105, 28, { align: 'center' });
       doc.setFontSize(9);
       doc.setTextColor(100, 100, 100);
       doc.text(`Relatorio N: ${numeroRelatorio}`, 14, 42);
@@ -335,8 +335,8 @@ function AbaPrevisoesAgro({ usuario }) {
 
       doc.setFontSize(8);
       doc.setTextColor(100, 100, 100);
-      doc.text("Relatorio gerado pelo sistema JIAM Preditivo da AgriMarket.", 105, 278, { align: 'center' });
-      doc.text(`Copyright ${new Date().getFullYear()} AgriMarket - Todos os direitos reservados.`, 105, 284, { align: 'center' });
+      doc.text("Relatorio gerado pelo sistema JIAM Preditivo da Mercado Yangue.", 105, 278, { align: 'center' });
+      doc.text(`Copyright ${new Date().getFullYear()} Mercado Yangue - Todos os direitos reservados.`, 105, 284, { align: 'center' });
 
       doc.save(`relatorio_jiam_${nomeProdutoLimpo.replace(/\s/g, '_')}_${numeroRelatorio}.pdf`);
     } catch (error) {

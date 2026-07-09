@@ -8,7 +8,7 @@ export default function AbaAjuda({ usuario }) {
   const [perguntaAtiva, setPerguntaAtiva] = useState(null);
   const [chatAberto, setChatAberto] = useState(false);
   const [mensagens, setMensagens] = useState([
-    { remetente: "bot", texto: "Ola! Sou o assistente virtual da AgriMarket. Posso ajudar com duvidas sobre compras, vendas, entregas, JIAM Preditivo e muito mais. Como posso ajudar hoje?" },
+    { remetente: "bot", texto: "Ola! Sou o assistente virtual do Mercado Yangue. Posso ajudar com duvidas sobre compras, vendas, entregas, JIAM Preditivo e muito mais. Como posso ajudar hoje?" },
   ]);
   const [input, setInput] = useState("");
   const [reconhecimentoAtivo, setReconhecimentoAtivo] = useState(false);
@@ -21,7 +21,7 @@ export default function AbaAjuda({ usuario }) {
   const perguntas = [
     {
       titulo: "Como criar a minha conta?",
-      resposta: "Clique em 'Entrar' no topo da pagina, escolha 'Criar Conta' e preencha os seus dados. Recebera um e-mail de confirmacao e pronto, estara dentro da AgriMarket!",
+      resposta: "Clique em 'Entrar' no topo da pagina, escolha 'Criar Conta' e preencha os seus dados. Recebera um e-mail de confirmacao e pronto, estara dentro da Mercado Yangue!",
     },
     {
       titulo: "Como posso vender um produto?",
@@ -125,7 +125,7 @@ export default function AbaAjuda({ usuario }) {
         <div className="mb-8">
           <h2 className="section-title mb-2">Ajuda</h2>
           <p className="text-gray-600">
-            Tem duvidas? Encontre respostas rapidas e praticas para a sua experiencia na AgriMarket.
+            Tem duvidas? Encontre respostas rapidas e praticas para a sua experiencia na Mercado Yangue.
           </p>
         </div>
 
@@ -183,7 +183,7 @@ export default function AbaAjuda({ usuario }) {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                <span>Assistente AgriMarket</span>
+                <span>Assistente Mercado Yangue</span>
               </div>
               <div className="flex gap-2">
                 <button onClick={() => setVozAtiva(!vozAtiva)} className="p-1 rounded hover:bg-white/20" title={vozAtiva ? 'Desativar voz' : 'Ativar voz'}>
