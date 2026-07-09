@@ -20,7 +20,10 @@ LabelList,
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable"; 
 
-export default function AbaGestaoCompras({ novasCompras, usuario }) {
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+export default function AbaGestaoCompras({ usuario, setAbaAtiva }) {
+  const [novasCompras, setNovasCompras] = useState(null);
   const [compras, setCompras] = useState([]);
   const [filtroVendedor, setFiltroVendedor] = useState("");
   const [filtroProduto, setFiltroProduto] = useState("");
@@ -37,7 +40,7 @@ export default function AbaGestaoCompras({ novasCompras, usuario }) {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    fetch("https://mercadoyangue-i3in.onrender.com/api/compras/minhas", {
+    fetch(`${API_URL}/compras/minhas`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => (r.ok ? r.json() : Promise.reject(r)))

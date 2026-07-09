@@ -7,6 +7,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable"; 
 import QRCode from "qrcode";
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 
 
 const GerarFacturaPremium = ({ venda, usuario, formatarKz }) => {
@@ -39,7 +41,7 @@ useEffect(() => {
 
     // 🔹 Tenta buscar do backend
     try {
-      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/fatura/proximo-numero", {
+      const res = await fetch(`${API_URL}/fatura/proximo-numero`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vendedorId: usuario.id }),
@@ -446,7 +448,7 @@ useEffect(() => {
 
   const carregarProdutos = async () => {
     try {
-      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/produtos/meus-produtos", {
+      const res = await fetch(`${API_URL}/produtos/meus-produtos`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Erro ao buscar produtos");
@@ -460,7 +462,7 @@ useEffect(() => {
 
   const carregarVendas = async () => {
     try {
-      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/vendas/vendedor", {
+      const res = await fetch(`${API_URL}/vendas/vendedor`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Erro ao buscar vendas do vendedor");
@@ -481,7 +483,7 @@ useEffect(() => {
   const confirmarVenda = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`https://mercadoyangue-i3in.onrender.com/api/vendas/${id}/confirmar`, {
+      const res = await fetch(`${API_URL}/vendas/${id}/confirmar`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
       });

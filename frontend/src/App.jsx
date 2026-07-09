@@ -109,7 +109,7 @@ function AbaQuemSomos({ setAbaAtiva }) {
   return (
     <div className="container-page">
       <div className="relative rounded-2xl overflow-hidden mb-12 shadow-xl">
-        <div className="absolute inset-0 bg-gradient-to-r from-agro-900/85 to-agro-700/85 z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-green-900/85 to-green-700/85 z-10"></div>
         <div className="relative h-[420px] md:h-[520px] bg-[url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center">
           <div className="absolute inset-0 z-20 flex items-center justify-center p-6">
             <div className="text-center max-w-3xl">
@@ -136,8 +136,8 @@ function AbaQuemSomos({ setAbaAtiva }) {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
         {estatisticas.map((stat, idx) => (
-          <div key={idx} className="card p-5 text-center border-b-4 border-agro-500">
-            <div className="text-2xl md:text-3xl font-bold text-agro-700">{stat.valor}</div>
+          <div key={idx} className="card p-5 text-center border-b-4 border-green-600">
+            <div className="text-2xl md:text-3xl font-bold text-green-700">{stat.valor}</div>
             <div className="font-semibold text-gray-800 text-sm">{stat.label}</div>
             <div className="text-xs text-gray-500 mt-1">{stat.desc}</div>
           </div>
@@ -146,22 +146,22 @@ function AbaQuemSomos({ setAbaAtiva }) {
 
       <div className="grid md:grid-cols-3 gap-6 mb-12">
         <div className="card p-6">
-          <div className="w-12 h-12 bg-agro-100 rounded-xl flex items-center justify-center mb-4">
-            <svg className="w-6 h-6 text-agro-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
           </div>
           <h3 className="font-bold text-gray-900 text-lg mb-2">Missão</h3>
           <p className="text-gray-600 text-sm leading-relaxed">Conectar produtores e compradores globais, valorizando a produção agrícola local e promovendo a segurança alimentar.</p>
         </div>
         <div className="card p-6">
-          <div className="w-12 h-12 bg-harvest-100 rounded-xl flex items-center justify-center mb-4">
-            <svg className="w-6 h-6 text-harvest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+          <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+            <svg className="w-6 h-6 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
           </div>
           <h3 className="font-bold text-gray-900 text-lg mb-2">Visão</h3>
           <p className="text-gray-600 text-sm leading-relaxed">Ser a maior plataforma de comércio agrícola de África, reconhecida pela transparência e inovação.</p>
         </div>
         <div className="card p-6">
-          <div className="w-12 h-12 bg-agro-100 rounded-xl flex items-center justify-center mb-4">
-            <svg className="w-6 h-6 text-agro-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+          <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
           </div>
           <h3 className="font-bold text-gray-900 text-lg mb-2">Valores</h3>
           <p className="text-gray-600 text-sm leading-relaxed">Transparência, Inovação, Sustentabilidade e Compromisso com o desenvolvimento do setor agrícola.</p>
@@ -181,11 +181,11 @@ function AbaQuemSomos({ setAbaAtiva }) {
         <div className="grid md:grid-cols-3 gap-8">
           {equipa.map((membro, idx) => (
             <div key={idx} className="text-center group">
-              <div className="w-28 h-28 rounded-full overflow-hidden mx-auto mb-4 border-4 border-agro-200 group-hover:border-agro-500 transition-colors shadow-md">
+              <div className="w-28 h-28 rounded-full overflow-hidden mx-auto mb-4 border-4 border-green-200 group-hover:border-green-500 transition-colors shadow-md">
                 <img src={membro.imagem} alt={membro.nome} className="w-full h-full object-cover" />
               </div>
               <h3 className="font-bold text-gray-900 text-lg">{membro.nome}</h3>
-              <p className="text-agro-600 text-sm font-medium">{membro.cargo}</p>
+              <p className="text-green-600 text-sm font-medium">{membro.cargo}</p>
               <p className="text-xs text-gray-500 mt-2 leading-relaxed">{membro.descricao}</p>
             </div>
           ))}
@@ -262,7 +262,7 @@ function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
   const TermosModal = () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-6 max-w-lg max-h-[80vh] overflow-y-auto mx-4 shadow-2xl">
-        <h3 className="text-xl font-bold text-agro-700 mb-4">Termos de Uso</h3>
+        <h3 className="text-xl font-bold text-green-700 mb-4">Termos de Uso</h3>
         <div className="space-y-3 text-sm text-gray-600">
           <p><strong>1.</strong> Ao cadastrar-se, concorda com os termos da plataforma.</p>
           <p><strong>2.</strong> Os seus dados são usados exclusivamente para operar a plataforma.</p>
@@ -279,8 +279,8 @@ function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
     <div className="max-w-md mx-auto">
       <div className="card p-8">
         <div className="flex gap-2 mb-6 bg-gray-100 p-1 rounded-lg">
-          <button onClick={() => setModo("login")} className={`flex-1 py-2.5 rounded-md font-semibold text-sm transition-all ${modo === "login" ? "bg-white text-agro-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>Entrar</button>
-          <button onClick={() => setModo("cadastro")} className={`flex-1 py-2.5 rounded-md font-semibold text-sm transition-all ${modo === "cadastro" ? "bg-white text-agro-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>Criar Conta</button>
+          <button onClick={() => setModo("login")} className={`flex-1 py-2.5 rounded-md font-semibold text-sm transition-all ${modo === "login" ? "bg-white text-green-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>Entrar</button>
+          <button onClick={() => setModo("cadastro")} className={`flex-1 py-2.5 rounded-md font-semibold text-sm transition-all ${modo === "cadastro" ? "bg-white text-green-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>Criar Conta</button>
         </div>
 
         {modo === "login" ? (
@@ -308,8 +308,8 @@ function AbaLoginCadastro({ setUsuario, setAbaAtiva }) {
               </div>
             )}
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={aceitouTermos} onChange={() => setMostrarTermos(true)} className="w-4 h-4 rounded border-gray-300 text-agro-600 focus:ring-agro-500" />
-              <span className="text-sm text-gray-600">Aceito os <button type="button" onClick={() => setMostrarTermos(true)} className="text-agro-600 underline font-medium">Termos de Uso</button></span>
+              <input type="checkbox" checked={aceitouTermos} onChange={() => setMostrarTermos(true)} className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500" />
+              <span className="text-sm text-gray-600">Aceito os <button type="button" onClick={() => setMostrarTermos(true)} className="text-green-600 underline font-medium">Termos de Uso</button></span>
             </label>
             <button onClick={handleCadastro} disabled={loading} className="btn-primary w-full">
               {loading ? "Cadastrando..." : "Criar Conta"}
@@ -344,15 +344,27 @@ export default function App() {
     if (salvo) setCarrinho(JSON.parse(salvo));
   }, []);
 
-  const adicionarAoCarrinho = (produto) => {
+  const navigateToChat = () => setAbaAtiva('chat');
+
+  const adicionarAoCarrinho = (data) => {
     if (!usuario || usuario.tipo !== 'cliente') {
       alert('Faça login como cliente');
       setAbaAtiva('login');
       return;
     }
+    if (Array.isArray(data)) {
+      setCarrinho(data);
+      setAbaAtiva('carrinho');
+      return;
+    }
+    if (data && Array.isArray(data.itens)) {
+      setCarrinho(data.itens);
+      setAbaAtiva('carrinho');
+      return;
+    }
     setCarrinho(prev => {
-      const existe = prev.find(item => item._id === produto._id);
-      return existe ? prev.map(item => item._id === produto._id ? { ...item, quantidade: item.quantidade + 1 } : item) : [...prev, { ...produto, quantidade: 1 }];
+      const existe = prev.find(item => item._id === data._id || item.produto?._id === data._id);
+      return existe ? prev.map(item => (item._id === data._id || item.produto?._id === data._id) ? { ...item, quantidade: item.quantidade + 1 } : item) : [...prev, { ...data, quantidade: 1 }];
     });
     setAbaAtiva('carrinho');
   };
@@ -388,12 +400,12 @@ export default function App() {
     <div className="min-h-screen bg-gray-50">
       <WhatsAppButton telefone={WHATSAPP_NUMBER} />
 
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+      <header className="bg-gradient-to-r from-green-800 to-green-700 text-white sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => setAbaAtiva('produtos')}>
-              <img src="/logmercadoyangue.png" alt="Mercado Yangue" className="h-10" />
-              <h1 className="text-lg font-bold text-gray-900">Mercado Yangue</h1>
+              <img src="/logmercadoyangue.png" alt="Mercado Yangue" className="h-9" />
+              <h1 className="text-base font-bold">Mercado Yangue</h1>
             </div>
 
             <div className="hidden lg:flex items-center gap-1">
@@ -401,10 +413,10 @@ export default function App() {
                 <button
                   key={item.id}
                   onClick={() => setAbaAtiva(item.id)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                     abaAtiva === item.id
-                      ? 'bg-agro-50 text-agro-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-white text-green-700'
+                      : 'text-white/80 hover:text-white hover:bg-green-600/50'
                   }`}
                 >
                   {item.label}
@@ -412,14 +424,13 @@ export default function App() {
               ))}
               {menuItems.filter(item => item.mostrar).length > 7 && (
                 <div className="relative">
-                  <button onClick={() => setMenuAberto(!menuAberto)} className="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
-                    Mais
-                    <svg className="w-4 h-4 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  <button onClick={() => setMenuAberto(!menuAberto)} className="px-3 py-1.5 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-green-600/50">
+                    Mais ▼
                   </button>
                   {menuAberto && (
-                    <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 z-50 min-w-[180px]">
+                    <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg py-1.5 z-50 min-w-[180px]">
                       {menuItems.filter(item => item.mostrar).slice(7).map(item => (
-                        <button key={item.id} onClick={() => { setAbaAtiva(item.id); setMenuAberto(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-agro-50 hover:text-agro-700">
+                        <button key={item.id} onClick={() => { setAbaAtiva(item.id); setMenuAberto(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700">
                           {item.label}
                         </button>
                       ))}
@@ -431,18 +442,16 @@ export default function App() {
 
             <div className="flex items-center gap-3">
               {!usuario ? (
-                <button onClick={() => setAbaAtiva('login')} className="btn-primary text-sm py-2 px-4">
+                <button onClick={() => setAbaAtiva('login')} className="bg-white text-green-700 px-4 py-1.5 rounded-lg text-sm font-semibold">
                   Entrar
                 </button>
               ) : (
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-700 hidden sm:block">{usuario.nome?.split(' ')[0]}</span>
-                  <button onClick={logout} className="text-sm text-gray-500 hover:text-red-600 font-medium transition-colors">
-                    Sair
-                  </button>
+                <div className="flex items-center gap-2 bg-green-900/30 px-3 py-1 rounded-full">
+                  <span className="text-sm">👤 {usuario.nome?.split(' ')[0]}</span>
+                  <button onClick={logout} className="bg-red-600 hover:bg-red-700 px-2.5 py-0.5 rounded-lg text-xs">Sair</button>
                 </div>
               )}
-              <button onClick={() => setMenuAberto(!menuAberto)} className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100">
+              <button onClick={() => setMenuAberto(!menuAberto)} className="lg:hidden p-1.5 rounded-lg text-white/80 hover:bg-green-600/50">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
               </button>
             </div>
@@ -453,13 +462,13 @@ export default function App() {
       {menuAberto && (
         <div className="lg:hidden fixed top-16 left-0 right-0 bg-white shadow-lg border-t border-gray-100 z-50 max-h-[calc(100vh-4rem)] overflow-y-auto">
           <div className="p-3 space-y-0.5">
-            {menuItems.filter(item => item.mostrar).map(item => (
-              <button key={item.id} onClick={() => { setAbaAtiva(item.id); setMenuAberto(false); }} className={`block w-full text-left px-4 py-3 rounded-lg text-sm ${abaAtiva === item.id ? 'bg-agro-50 text-agro-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`}>
+              {menuItems.filter(item => item.mostrar).map(item => (
+              <button key={item.id} onClick={() => { setAbaAtiva(item.id); setMenuAberto(false); }} className={`block w-full text-left px-4 py-3 rounded-lg text-sm ${abaAtiva === item.id ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`}>
                 {item.label}
               </button>
             ))}
             {!usuario && (
-              <button onClick={() => { setAbaAtiva('login'); setMenuAberto(false); }} className="block w-full text-left px-4 py-3 rounded-lg text-sm text-agro-700 font-semibold hover:bg-agro-50 border-t border-gray-100 mt-2 pt-3">
+              <button onClick={() => { setAbaAtiva('login'); setMenuAberto(false); }} className="block w-full text-left px-4 py-3 rounded-lg text-sm text-green-700 font-semibold hover:bg-green-50 border-t border-gray-100 mt-2 pt-3">
                 Entrar / Criar Conta
               </button>
             )}
@@ -471,10 +480,10 @@ export default function App() {
         {abaAtiva === 'produtos' && (
           <AbaProdutos produtos={produtos} setProdutos={setProdutos} setProdutoSelecionado={setProdutoSelecionado} adicionarNoCarrinho={adicionarAoCarrinho} usuario={usuario} setAbaAtiva={setAbaAtiva} />
         )}
-        {abaAtiva === 'carrinho' && <AbaCarrinho carrinho={carrinho} setCarrinho={setCarrinho} usuario={usuario} setAbaAtiva={setAbaAtiva} />}
+        {abaAtiva === 'carrinho' && <AbaCarrinho carrinho={carrinho} setCarrinho={setCarrinho} usuario={usuario} setAbaAtiva={setAbaAtiva} navigateToChat={navigateToChat} />}
         {abaAtiva === 'login' && !usuario && <AbaLoginCadastro setUsuario={setUsuario} setAbaAtiva={setAbaAtiva} />}
         {abaAtiva === 'gestao' && podeVerGestao && <AbaGestaoVendas usuario={usuario} produtos={produtos} setProdutos={setProdutos} />}
-        {abaAtiva === 'gestao-compras' && usuario?.tipo === 'cliente' && <AbaGestaoCompras usuario={usuario} produtos={produtos} setProdutos={setProdutos} />}
+        {abaAtiva === 'gestao-compras' && usuario?.tipo === 'cliente' && <AbaGestaoCompras usuario={usuario} setAbaAtiva={setAbaAtiva} />}
         {abaAtiva === 'chat' && usuario && <AbaChat usuario={usuario} />}
         {abaAtiva === 'previsoes' && podeVerJIAM && <AbaPrevisoesAgro usuario={usuario} />}
         {abaAtiva === 'rastreamento' && !!usuario && (produtoSelecionado ? <AbaRastreamento usuario={usuario} produtoId={produtoSelecionado._id} produto={produtoSelecionado} /> : <div className="container-page"><div className="card p-12 text-center"><p className="text-gray-500 mb-4">Selecione um produto para rastrear</p><button onClick={() => setAbaAtiva('produtos')} className="btn-primary">Ver Produtos</button></div></div>)}
@@ -488,7 +497,7 @@ export default function App() {
           <div className="container-page">
             <div className="max-w-3xl mx-auto card p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Cadastrar Produto</h2>
-              <div className="bg-agro-50 border border-agro-200 p-4 rounded-xl mb-6 text-sm text-agro-800">
+              <div className="bg-green-50 border border-green-200 p-4 rounded-xl mb-6 text-sm text-green-800">
                 Seja claro sobre o ponto de retirada e as condições de entrega.
               </div>
               <form onSubmit={async (e) => {
@@ -573,7 +582,7 @@ export default function App() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Imagem do Produto</label>
-                  <input type="file" name="imagem" accept="image/*" required className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-agro-50 file:text-agro-700 hover:file:bg-agro-100" />
+                  <input type="file" name="imagem" accept="image/*" required className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100" />
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -590,8 +599,8 @@ export default function App() {
                 <div className="border border-gray-200 rounded-xl p-5 bg-gray-50">
                   <h3 className="font-semibold text-gray-800 mb-4">Formas de Pagamento</h3>
                   <div className="space-y-4">
-                    <label className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-agro-300">
-                      <input type="radio" name="tipoPagamento" value="iban" defaultChecked className="text-agro-600 focus:ring-agro-500" />
+                    <label className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-green-300">
+                      <input type="radio" name="tipoPagamento" value="iban" defaultChecked className="text-green-600 focus:ring-green-500" />
                       <div>
                         <span className="font-medium text-gray-800">Transferência Bancária (IBAN)</span>
                         <p className="text-xs text-gray-500">Receba por transferência</p>
@@ -605,8 +614,8 @@ export default function App() {
                       </select>
                     </div>
 
-                    <label className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-agro-300">
-                      <input type="radio" name="tipoPagamento" value="express" className="text-agro-600 focus:ring-agro-500" />
+                    <label className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-green-300">
+                      <input type="radio" name="tipoPagamento" value="express" className="text-green-600 focus:ring-green-500" />
                       <div>
                         <span className="font-medium text-gray-800">Multicaixa Express</span>
                         <p className="text-xs text-gray-500">Pagamento móvel</p>
@@ -616,8 +625,8 @@ export default function App() {
                       <input type="tel" name="telefoneExpress" placeholder="Número de telefone" className="input-field" />
                     </div>
 
-                    <label className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-agro-300">
-                      <input type="radio" name="tipoPagamento" value="dinheiro" className="text-agro-600 focus:ring-agro-500" />
+                    <label className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-green-300">
+                      <input type="radio" name="tipoPagamento" value="dinheiro" className="text-green-600 focus:ring-green-500" />
                       <div>
                         <span className="font-medium text-gray-800">Dinheiro na Entrega</span>
                         <p className="text-xs text-gray-500">Pague ao receber</p>

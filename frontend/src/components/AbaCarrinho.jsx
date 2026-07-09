@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import ConfirmacaoPagamentoProtegido from "./ConfirmacaoPagamentoProtegido";
 import { FaTrashAlt, FaExclamationTriangle, FaMoneyBillWave } from "react-icons/fa";
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 const formatarKz = (valor) =>
   new Intl.NumberFormat("pt-AO", {
     style: "currency",
@@ -19,7 +21,7 @@ function AbaCarrinho({ carrinho, setCarrinho, usuario, enviarMensagemChat, navig
   const fetchCarrinho = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/carrinho/meu", {
+      const res = await fetch(`${API_URL}/carrinho/meu`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Erro ao carregar carrinho");
@@ -33,7 +35,7 @@ function AbaCarrinho({ carrinho, setCarrinho, usuario, enviarMensagemChat, navig
   const fetchHistorico = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("https://mercadoyangue-i3in.onrender.com/api/carrinho/historico", {
+      const res = await fetch(`${API_URL}/carrinho/historico`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Erro ao carregar histórico");
@@ -69,7 +71,7 @@ function AbaCarrinho({ carrinho, setCarrinho, usuario, enviarMensagemChat, navig
   const removerDoCarrinho = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`https://mercadoyangue-i3in.onrender.com/api/carrinho/remove/${id}`, {
+      const res = await fetch(`${API_URL}/carrinho/remove/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

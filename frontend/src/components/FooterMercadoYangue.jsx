@@ -72,12 +72,12 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
       initial={{ opacity: 0, y: 60 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 1 }}
-      className="relative bg-gradient-to-b from-agro-800 to-agro-950 text-gray-100 py-12 mt-16 shadow-xl overflow-hidden"
+      className="relative bg-gradient-to-b from-green-800 to-green-900 text-gray-100 py-12 mt-16 shadow-xl overflow-hidden"
     >
       <motion.div
         animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
         transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-        className="absolute inset-0 opacity-10 bg-gradient-to-r from-agro-400 via-harvest-300 to-agro-500 bg-[length:200%_200%]"
+        className="absolute inset-0 opacity-10 bg-gradient-to-r from-green-400 via-yellow-300 to-green-500 bg-[length:200%_200%]"
       />
 
       <div className="relative max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 z-10">
@@ -90,7 +90,7 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
           <div className="space-y-3 max-h-64 overflow-y-auto pr-2 scrollbar-thin">
             {loading ? (
               <div className="flex justify-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-agro-600"></div>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
               </div>
             ) : testemunhos.length > 0 ? (
               testemunhos.slice(0, 5).map((t, i) => (
@@ -99,17 +99,17 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="bg-agro-50 rounded-lg p-3 text-sm shadow-sm border border-agro-100"
+                  className="bg-green-100 rounded-lg p-3 text-sm shadow-sm border border-green-200"
                 >
-                  <p className="italic text-agro-700 mb-1">"{t.texto.length > 100 ? t.texto.substring(0, 100) + '...' : t.texto}"</p>
-                  <div className="flex items-center justify-between text-xs text-agro-600">
+                  <p className="italic text-green-800 mb-1 font-medium">"{t.texto.length > 100 ? t.texto.substring(0, 100) + '...' : t.texto}"</p>
+                  <div className="flex items-center justify-between text-xs text-green-700">
                     <span>— {t.nome}</span>
                     <span className="flex">{"★".repeat(t.estrelas)}{"☆".repeat(5 - t.estrelas)}</span>
                   </div>
                 </motion.div>
               ))
             ) : (
-              <p className="text-sm text-agro-600 italic text-center py-4">
+              <p className="text-sm text-gray-500 italic text-center py-4">
                 Ainda sem avaliações. Seja o primeiro a deixar a sua opinião!
               </p>
             )}
@@ -118,7 +118,7 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
           <motion.button
             whileHover={{ scale: 1.02 }}
             onClick={() => setShowModal(true)}
-            className="mt-4 w-full bg-harvest-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-harvest-600 transition flex items-center justify-center gap-2"
+            className="mt-4 w-full bg-green-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
           >
             <Star className="w-4 h-4" /> Avaliar Plataforma
           </motion.button>
@@ -126,45 +126,45 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-agro-200">Informação</h3>
+            <h3 className="text-lg font-semibold mb-3 text-green-200">Informação</h3>
             <div className="flex flex-col gap-2">
-              <button onClick={() => setAbaAtiva("quemSomos")} className="flex items-center gap-2 bg-agro-700 hover:bg-agro-600 px-3 py-2 rounded-lg text-sm transition text-left">
+              <button onClick={() => setAbaAtiva("quemSomos")} className="flex items-center gap-2 bg-green-700 hover:bg-green-600 px-3 py-2 rounded-lg text-sm transition text-left">
                 <Info size={16} /> Sobre Nós
               </button>
-              <button onClick={() => setAbaAtiva("ajuda")} className="flex items-center gap-2 bg-agro-700 hover:bg-agro-600 px-3 py-2 rounded-lg text-sm transition text-left">
+              <button onClick={() => setAbaAtiva("ajuda")} className="flex items-center gap-2 bg-green-700 hover:bg-green-600 px-3 py-2 rounded-lg text-sm transition text-left">
                 <HelpCircle size={16} /> Ajuda
               </button>
-              <button onClick={() => setAbaAtiva("guia")} className="flex items-center gap-2 bg-agro-700 hover:bg-agro-600 px-3 py-2 rounded-lg text-sm transition text-left">
+              <button onClick={() => setAbaAtiva("guia")} className="flex items-center gap-2 bg-green-700 hover:bg-green-600 px-3 py-2 rounded-lg text-sm transition text-left">
                 <BookOpen size={16} /> Guia de Utilização
               </button>
             </div>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-agro-200">Links Úteis</h3>
+            <h3 className="text-lg font-semibold mb-3 text-green-200">Links Úteis</h3>
             <div className="flex flex-col gap-2">
-              <button onClick={() => setAbaAtiva("produtos")} className="text-sm text-agro-300 hover:text-white transition text-left">Produtos</button>
-              <button onClick={() => setAbaAtiva("logistica")} className="text-sm text-agro-300 hover:text-white transition text-left">Entregas</button>
-              <button onClick={() => setAbaAtiva("quemSomos")} className="text-sm text-agro-300 hover:text-white transition text-left">Quem Somos</button>
-              <button onClick={() => setAbaAtiva("ajuda")} className="text-sm text-agro-300 hover:text-white transition text-left">Ajuda</button>
+              <button onClick={() => setAbaAtiva("produtos")} className="text-sm text-green-300 hover:text-white transition text-left">Produtos</button>
+              <button onClick={() => setAbaAtiva("logistica")} className="text-sm text-green-300 hover:text-white transition text-left">Entregas</button>
+              <button onClick={() => setAbaAtiva("quemSomos")} className="text-sm text-green-300 hover:text-white transition text-left">Quem Somos</button>
+              <button onClick={() => setAbaAtiva("ajuda")} className="text-sm text-green-300 hover:text-white transition text-left">Ajuda</button>
             </div>
           </div>
         </div>
 
-        <div className="bg-agro-800/50 rounded-xl p-4 border border-agro-700/30">
-          <h3 className="text-lg font-semibold mb-3 text-agro-200 flex items-center gap-2">
+        <div className="bg-green-800/50 rounded-xl p-4 border border-green-700/30">
+          <h3 className="text-lg font-semibold mb-3 text-green-200 flex items-center gap-2">
             <Mail size={18} /> Contacte-nos
           </h3>
-          <ul className="text-sm text-agro-200 space-y-2">
+          <ul className="text-sm text-green-200 space-y-2">
             <li className="flex items-center gap-2"><Mail size={14} /> mercadoyangueservicosdigitais@gmail.com</li>
             <li className="flex items-center gap-2"><Phone size={14} /> +244 928 565 837</li>
             <li className="flex items-center gap-2"><Globe size={14} /> Angola</li>
           </ul>
-          <div className="mt-4 pt-3 border-t border-agro-700">
-            <p className="text-xs text-agro-300 text-center">
+          <div className="mt-4 pt-3 border-t border-green-700">
+            <p className="text-xs text-green-300 text-center">
               © {new Date().getFullYear()} Mercado Yangue — Criado por angolanos
             </p>
-            <p className="text-xs text-agro-400 text-center mt-1">
+            <p className="text-xs text-green-400 text-center mt-1">
               Promovendo o comércio agrícola global
             </p>
           </div>
@@ -187,7 +187,7 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
               className="bg-white rounded-2xl p-6 w-11/12 md:w-[450px] shadow-2xl"
             >
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-agro-800">Avalie a Plataforma</h3>
+                <h3 className="text-xl font-bold text-green-800">Avalie a Plataforma</h3>
                 <button onClick={() => setShowModal(false)} className="p-1 hover:bg-gray-100 rounded-full">
                   <X className="text-gray-500 hover:text-red-500" size={20} />
                 </button>
@@ -206,7 +206,7 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
                     key={n}
                     onClick={() => setAvaliacao(n)}
                     className={`cursor-pointer w-8 h-8 transition ${
-                      n <= avaliacao ? "text-harvest-400 fill-harvest-400" : "text-gray-300 hover:text-harvest-200"
+                      n <= avaliacao ? "text-yellow-400 fill-yellow-400" : "text-gray-300 hover:text-yellow-200"
                     }`}
                   />
                 ))}
@@ -229,7 +229,7 @@ export default function FooterMercadoYangue({ setAbaAtiva }) {
                 </button>
                 <button
                   onClick={handleEnviar}
-                  className="flex-1 px-4 py-2 bg-agro-700 text-white rounded-lg hover:bg-agro-800 transition font-semibold"
+                  className="flex-1 px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition font-semibold"
                 >
                   Enviar Avaliação
                 </button>

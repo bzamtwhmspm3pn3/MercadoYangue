@@ -3,6 +3,8 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { connectSocket } from "../socket";
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 /* Configurações */
 const emojisDisponiveis = ["😀", "😄", "❤️", "🙏", "👍", "💡", "🔥", "😢"];
 const tiposAceitos = [
@@ -237,7 +239,7 @@ const enviarMensagem = useCallback(() => {
   };
 
   try { socketRef.current?.emit("novaMensagem", novaMsg); } catch {}
-  fetch("https://mercadoyangue-i3in.onrender.com/api/chat/enviar", {
+  fetch(`${API_URL}/chat/enviar`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
     body: JSON.stringify({
@@ -280,7 +282,7 @@ const abrirConversa = useCallback(async (nomeContato) => {
   let dados = [];
   try {
     const res = await fetch(
-      `https://mercadoyangue-i3in.onrender.com/api/chat/historico/${encodeURIComponent(usuario.nome)}/${encodeURIComponent(nomeTrim)}`,
+      `${API_URL}/chat/historico/${encodeURIComponent(usuario.nome)}/${encodeURIComponent(nomeTrim)}`,
       { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
     );
     dados = res.ok ? await res.json() : pegarHistorico(nomeTrim);
@@ -407,7 +409,7 @@ const handleMensagemChange = (e) => {
     salvarHistorico(destinatario, novoHistorico);
     setHistorico(novoHistorico);
     socketRef.current?.emit("sendMessage", novaMsg);
-    fetch("https://mercadoyangue-i3in.onrender.com/api/chat/enviar", {
+    fetch(`${API_URL}/chat/enviar`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
       body: JSON.stringify({ remetente: novaMsg.remetente, destinatario: novaMsg.destinatario, conteudo: novaMsg.texto }),
